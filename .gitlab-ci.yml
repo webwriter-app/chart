@@ -1,0 +1,11 @@
+stages:
+  - deploy
+
+deploy:
+  stage: deploy
+  image: node:16-alpine
+  only:
+    - master
+  script:
+    - yarn
+    - npx netlify-cli deploy --dir=dist --site f71c745a-88c8-458e-8af2-47b7543711bb --auth $NETLIFY_AUTH_TOKEN --prod
