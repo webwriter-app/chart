@@ -1,9 +1,10 @@
 {
-  "name": "ww-chart",
-  "version": "0.0.0",
+  "name": "@luiskugel/ww-chart",
+  "version": "0.0.1",
   "description": "ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.",
   "author": "Luis Kugel",
   "license": "UNLICENSED",
+  "type": "module",
   "main": "dist/widget.es.js",
   "exports": {
     ".": "./dist/widget.es.js"
