@@ -30,7 +30,6 @@ deploy-webpage:
   script:
     - yarn
     - yarn build
-    - echo "<script type="module" src='./ww-chart.js'></script><ww-chart />" > dist/index.html
     - npx netlify-cli deploy --dir=dist --site f71c745a-88c8-458e-8af2-47b7543711bb --auth $NETLIFY_AUTH_TOKEN --prod
 
 deploy-npm:

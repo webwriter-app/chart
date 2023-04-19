@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  esbuild: {},
   build: {
     lib: {
       entry: "src/widget.ts",
