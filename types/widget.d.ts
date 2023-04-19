@@ -1,4 +1,5 @@
 import { LitElement } from "lit";
+import "./index.css";
 /**
  * An example element.
  *

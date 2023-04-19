@@ -1,15 +1,14 @@
 {
   "name": "@luiskugel/ww-chart",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.",
   "author": "Luis Kugel",
   "license": "UNLICENSED",
   "type": "module",
-  "main": "dist/widget.es.js",
+  "main": "dist/widget.js",
   "exports": {
-    ".": "./dist/widget.es.js"
+    ".": "./dist/widget.js"
   },
-  "types": "types/wighet.d.ts",
   "files": [
     "dist",
     "types"
@@ -23,7 +22,7 @@
   ],
   "scripts": {
     "dev": "vite --open",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && ./create-files.sh",
     "check-prettier": "npx prettier --check .",
     "run-prettier": "npx prettier --write .",
     "test": "vitest",
