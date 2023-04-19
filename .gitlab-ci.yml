@@ -27,7 +27,9 @@ deploy-webpage:
   image: node:16-alpine
   only:
     - main
+    - develop
   script:
+    - chmod +x ./create-files.sh
     - yarn
     - yarn build
     - npx netlify-cli deploy --dir=dist --site f71c745a-88c8-458e-8af2-47b7543711bb --auth $NETLIFY_AUTH_TOKEN --prod
@@ -38,6 +40,7 @@ deploy-npm:
   only:
     - main
   script:
+    - chmod +x ./create-files.sh
     - yarn
     - yarn build
     - npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN

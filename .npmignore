@@ -1,0 +1,8 @@
+prettierrc.json
+tsconfig.json
+tsconfig.node.json
+vite.config.ts
+index.html
+create-files.sh
+.gitlab-ci.yml
+.gitignore

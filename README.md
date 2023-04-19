@@ -2,6 +2,8 @@
 
 This project aims to develop an interactive data visualization widget for the WebWriter tool, with the goal of improving data literacy and facilitating the learning of mathematical concepts in schools.
 
+_This Project is part of my bachelors thesis at RWTH Aachen i9._
+
 ## Motivation
 
 Data visualization is a critical skill for understanding complex information and making informed decisions. In addition, studies have shown that interactive diagrams can aid in the learning of mathematical concepts. The development of an interactive data visualization widget can help bridge the gap between traditional teaching methods and modern learning techniques.
@@ -28,4 +30,4 @@ There are two ways to use the widget:
 
 ## Usage
 
-After installing the "ww-chart" npm package or accessing the widget through the URL, you can easily add the widget to your digital worksheet. The widget supports both static and interactive data visualization options, as well as linked diagrams for dynamic exploration.
+After installing the "ww-chart" npm package, you can easily add the widget to your digital worksheet.
