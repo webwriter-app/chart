@@ -1,9 +1,13 @@
 :host,
 #main {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  margin-top: 1px;
+  margin-left: 1px;
+  /* max-width: 1280px; */
+  /* margin: 0 auto; */
+  /* padding: 2rem; */
+
+  /* margin-bottom: 1vh; */
+  /* text-align: center; */
   /* background-color: blue; */
 }
 
@@ -68,4 +72,57 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+div {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#main {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+#options-panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 30%;
+  height: 100%;
+  background-color: #eee;
+}
+
+#options-panel div {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+  padding-left: 3rem;
+  padding-right: 3rem;
+}
+
+#options-panel div * {
+  margin-bottom: 1rem;
+}
+
+#preview-area {
+  position: absolute;
+  left: 0%;
+  top: 0;
+  width: 70%;
+  height: 60%;
+}
+
+#data-panel {
+  position: absolute;
+  left: 0;
+  bottom: 0%;
+  width: 70%;
+  /* height: 40%; */
+  height: 40vh;
+  background-color: #d6d4d4;
 }

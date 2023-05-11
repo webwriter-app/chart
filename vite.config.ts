@@ -7,8 +7,6 @@ export default defineConfig({
       entry: "src/widget.ts",
       formats: ["es"],
     },
-    rollupOptions: {
-      // external: /^lit/,
-    },
+    rollupOptions: {},
   },
 });

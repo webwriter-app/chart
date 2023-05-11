@@ -1,8 +1,8 @@
 import { ChartData } from "./interfaces";
+import randomWords from "random-words";
 
 export const converter = {
   fromAttribute: (value: string | null, type: unknown): any => {
-    console.log(value, type);
     if (!value) return null;
     if (type === Number || type === "number") return parseInt(value);
     if (type === Boolean || type === "boolean") return value === "true";
@@ -19,6 +19,16 @@ export const converter = {
         newObj[key] = converter.fromAttribute(obj[key], objType);
       }
       return newObj;
+    }
+
+    if (String(type).startsWith("Array<")) {
+      const arr = JSON.parse(value.toString());
+      const arrType = String(type).replace("Array<", "").replace(">", "");
+      const newArr: string[] = [];
+      for (const item of arr) {
+        newArr.push(converter.fromAttribute(item, arrType));
+      }
+      return newArr;
     }
 
     if (String(type) === "ChartData") {
@@ -101,4 +111,33 @@ export function addAlphaToRGB(color: string, alpha: number): string {
 
 export function removeAlphaFromRGB(color: string): string {
   return color.replace(/,.*\)/, ")");
+}
+
+export function randomNumber(min?: number, max?: number): number {
+  if (min && max) return Math.floor(Math.random() * (max - min) + min);
+  return Math.floor(Math.random() * 100);
+}
+
+export function randomColor(): string {
+  const h = randomNumber(0, 360);
+  const l = randomNumber(30, 60);
+
+  return hslToHex(h, 100, l);
+}
+
+export function randomString(): string {
+  return randomWords(1)[0];
+}
+
+function hslToHex(h: number, s: number, l: number) {
+  l /= 100;
+  const a = (s * Math.min(l, 1 - l)) / 100;
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color)
+      .toString(16)
+      .padStart(2, "0"); // convert to Hex and prefix "0" if needed
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
 }
