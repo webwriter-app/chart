@@ -17,8 +17,6 @@ This thesis is focused on developing a intuitive widget for the WebWriter tool t
 The widget will include the following features:
 
 - Static visualization of data
-- Interactive diagrams for exploratory exploration
-- Linked diagrams for dynamic exploration
 - WYSIWYG principle for ease of use
 
 ## Getting Started

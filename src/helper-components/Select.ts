@@ -23,6 +23,9 @@ export class Select extends LitElement {
   @property({ type: Number })
   selectedIndex = 0;
 
+  @property({ type: "boolean", converter })
+  disabled = false;
+
   changeSelected(e: any) {
     this.selectedIndex = this.options.findIndex(
       (v) => e.target.value === convertFriendlyNameToId(v)
@@ -39,6 +42,7 @@ export class Select extends LitElement {
   render() {
     this.selectedIndex = this.value ? this.options.indexOf(this.value) : 0;
     return html`<sl-select
+      ?disabled="${this.disabled}"
       placeholder="${this.placeholder}"
       label="${this.label}"
       @sl-change="${this.changeSelected}"

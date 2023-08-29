@@ -24,19 +24,14 @@ export type ChartType =
   | "radar"
   | "scatter";
 
-export interface Dataset {
-  label: string;
-  labels: string[];
+export interface ChartDataSet {
+  name: string;
+  color: string;
   data: number[];
   colors: string[];
 }
 
-export interface ChartOptions {
-  borderRadius?: number;
-  borderWidth?: number;
-  horizontal?: boolean;
-  filled?: boolean;
-  dynamicSize?: boolean;
-  scaleMin?: number;
-  scaleMax?: number;
+export interface ChartDataSets {
+  labels: string[];
+  sets: ChartDataSet[];
 }

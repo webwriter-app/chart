@@ -1,14 +1,15 @@
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import { converter } from "../functions";
-
 import "@shoelace-style/shoelace/dist/components/switch/switch";
 
 @customElement("wwci-switch")
 export class Select extends LitElement {
-  @property({ type: Boolean, converter })
+  @property({ type: Boolean })
   checked: boolean = false;
+
+  @property({ type: Boolean })
+  disabled: boolean = false;
 
   change(e: any) {
     this.checked = e.target.checked;
@@ -22,14 +23,12 @@ export class Select extends LitElement {
   }
 
   render() {
-    if (this.checked)
-      return html` <sl-switch checked @sl-change=${this.change}
-        ><slot></slot
-      ></sl-switch>`;
-    else
-      return html` <sl-switch @sl-change=${this.change}
-        ><slot></slot
-      ></sl-switch>`;
+    return html` <sl-switch
+      ?checked=${this.checked}
+      ?disabled=${this.disabled}
+      @sl-change=${this.change}
+      ><slot></slot
+    ></sl-switch>`;
   }
 }
 

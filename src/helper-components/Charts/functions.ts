@@ -1,6 +1,6 @@
 import { LitElement } from "lit";
 import { CompleteChartData } from "../../interfaces";
-import { addAlphaToRGB } from "../../functions";
+import { Chart, ChartType } from "chart.js";
 
 export function getContext<T extends LitElement>(
   this_: T,
@@ -11,6 +11,7 @@ export function getContext<T extends LitElement>(
   if (!canvas) throw new Error("No canvas found");
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("No context found");
+
   return ctx;
 }
 
@@ -20,11 +21,101 @@ export const getLabels = (data: CompleteChartData): string[] =>
 export const getData = (data: CompleteChartData): number[] =>
   Object.values(data).map((val) => val.value);
 
-export const getBackgroundColor = (
-  data: CompleteChartData,
-  filled: boolean
-): string[] =>
-  Object.values(data).map((val) => addAlphaToRGB(val.color, filled ? 1 : 0.2));
+export function updateData(
+  sources: Record<string, any>[],
+  targets: Record<string, any>[]
+) {
+  if (sources.length < targets.length) {
+    targets.splice(sources.length, targets.length - sources.length);
+  }
+  if (sources.length > targets.length) {
+    for (let i = targets.length; i < sources.length; i++) {
+      targets.push(sources[i]);
+    }
+  }
 
-export const getBorderColor = (data: CompleteChartData): string[] =>
-  Object.values(data).map((val) => addAlphaToRGB(val.color, 1));
+  targets.forEach((target: any, i: number) => {
+    Object.keys(sources[i]).forEach((key) => (target[key] = sources[i][key]));
+  });
+}
+//TODO: fix ChartTypeRegistry
+export class ChartHelper<T extends Chart<any, number[], string>> {
+  public chart: T;
+  private chartType: ChartType;
+
+  constructor(type: ChartType, chart: T) {
+    this.chart = chart;
+    this.chartType = type;
+    console.log(this.chartType);
+  }
+
+  public setTitle(title: string) {
+    if (!this.chart.options.plugins) this.chart.options.plugins = {};
+    if (!this.chart.options.plugins.title)
+      this.chart.options.plugins.title = {};
+    this.chart.options.plugins.title.text = title;
+    this.chart.options.plugins.title.display = title !== "";
+  }
+
+  public setYScales(
+    dynamicSize: boolean,
+    scaleMin: number,
+    scaleMax: number,
+    stepSize: number
+  ) {
+    if (!this.chart.options.scales) this.chart.options.scales = {};
+    if (!this.chart.options.scales.y) this.chart.options.scales.y = {};
+
+    this.chart.options.scales.y = {
+      min: undefined,
+      max: undefined,
+    };
+
+    if (!dynamicSize)
+      this.chart.options.scales.y = {
+        min: scaleMin,
+        max: scaleMax,
+        ticks: {
+          stepSize: stepSize,
+        },
+      };
+
+    // @ts-ignore
+    if (this.chart.options.scales.y.beginAtZero)
+      // @ts-ignore
+      this.chart.options.scales.y.beginAtZero = dynamicSize;
+  }
+
+  public setIndexAxis(indexAxis: "x" | "y") {
+    this.chart.options.indexAxis = indexAxis;
+  }
+
+  public setXLabels(labels: string[]) {
+    this.chart.data.labels = labels;
+  }
+
+  public setHideExactValues(val: boolean) {
+    console.log({ t: "hideExactValues", v: val });
+    if (!val)
+      this.chart.options.events = [
+        "mousemove",
+        "mouseout",
+        "click",
+        "touchstart",
+        "touchmove",
+      ];
+    else this.chart.options.events = [];
+  }
+
+  public setLineSmooth(isLineSmooth: boolean) {
+    if (!this.chart.options.elements) this.chart.options.elements = {};
+    if (!this.chart.options.elements.line)
+      this.chart.options.elements.line = {};
+
+    this.chart.options.elements.line.tension = isLineSmooth ? 0.4 : 0;
+  }
+
+  public update() {
+    this.chart.update();
+  }
+}

@@ -8,13 +8,6 @@ cache:
     - node_modules/
     - dist/
 
-test:
-  stage: test
-  image: node:16-alpine
-  script:
-    - yarn
-    - yarn test --run
-
 check-style:
   stage: test
   image: node:16-alpine

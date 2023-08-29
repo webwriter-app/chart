@@ -37,3 +37,9 @@ body {
     background-color: #ffffff;
   }
 }
+
+ww-chart {
+  display: block;
+  /* width: 100vw; */
+  height: 100vh;
+}

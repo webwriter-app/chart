@@ -1,95 +1,182 @@
-import { LitElement, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { LitElement, TemplateResult, css, html } from "lit";
+import { customElement } from "lit/decorators.js";
 
-import { converter } from "../functions";
-import { ChartOptions } from "../interfaces";
+import "./LimitedNumberInput";
+import "./Select";
+
+import { attribute } from "../functions";
+import { availableCharts } from "./Charts/imports";
+import { SharedTestStateMixin } from "../state";
+
+interface TOptionInput {
+  name: string;
+  template: TemplateResult;
+  locked: boolean;
+  key: string;
+}
 
 @customElement("wwci-chart-options")
-export class Select extends LitElement {
-  @property({ type: Object, converter })
-  options: ChartOptions = {};
+export class Select extends SharedTestStateMixin(LitElement) {
+  static styles = css`
+    .lock-button-locked {
+      color: red;
+    }
 
-  dispatchUpdateEvent() {
-    this.dispatchEvent(
-      new CustomEvent("wwci-chart-options", {
-        detail: { value: this.options },
-        composed: true,
-      })
-    );
-  }
+    .lock-button-unlocked {
+      color: green;
+    }
+
+    .lock-button-locked::part(base):hover {
+      color: red;
+    }
+
+    .lock-button-unlocked::part(base):hover {
+      color: green;
+    }
+  `;
 
   render() {
-    return html`
-      <div class="options">
-        <sl-input
-          label="Border Radius"
-          type="number"
-          value=${this.options.borderRadius}
-          @sl-input=${(e: any) => {
-            this.options.borderRadius = Number(e.target.value);
-            this.dispatchUpdateEvent();
-            this.requestUpdate();
-          }}
-        ></sl-input>
-        <sl-input
-          label="Border Width"
-          type="number"
-          value=${this.options.borderWidth}
-          @sl-input=${(e: any) => {
-            this.options.borderWidth = Number(e.target.value);
-            this.dispatchUpdateEvent();
-            this.requestUpdate();
-          }}
-        ></sl-input>
-        <wwci-switch
-          checked=${this.options.horizontal}
-          @wwci-change=${(e: any) => {
-            this.options.horizontal = e.detail.value;
-            this.dispatchUpdateEvent();
-            this.requestUpdate();
-          }}
-          >Horizontal</wwci-switch
-        >
-        <wwci-switch
-          checked=${this.options.filled}
-          @wwci-change=${(e: any) => {
-            this.options.filled = e.target.checked;
-            this.dispatchUpdateEvent();
-            this.requestUpdate();
-          }}
-          >Filled</wwci-switch
-        >
-        <wwci-switch
-          checked=${this.options.dynamicSize}
-          @wwci-change=${(e: any) => {
-            this.options.dynamicSize = e.target.checked;
-            this.dispatchUpdateEvent();
-            this.requestUpdate();
-          }}
-          >Dynamic Size</wwci-switch
-        >
+    const { optionDefinition } = this.sharedState.chart;
 
-        <sl-input
-          label="Scale Min"
-          type="number"
-          value=${this.options.scaleMin}
-          @sl-input=${(e: any) => {
-            this.options.scaleMin = Number(e.target.value);
-            this.dispatchUpdateEvent();
-            this.requestUpdate();
-          }}
-        ></sl-input>
-        <sl-input
-          label="Scale Max"
-          type="number"
-          value=${this.options.scaleMax}
-          @sl-input=${(e: any) => {
-            this.options.scaleMax = Number(e.target.value);
-            this.dispatchUpdateEvent();
-            this.requestUpdate();
-          }}
-        ></sl-input>
-      </div>
+    const optionInputs: TOptionInput[] = Object.keys(optionDefinition).map(
+      (key) => {
+        const { max, min, type } = optionDefinition[key];
+        const value = this.sharedState.chart.options[key];
+        const isDisabled = !(
+          this.sharedState.editable ||
+          (this.sharedState.teacherOptions.changeOptions &&
+            !this.sharedState.chart.optionsLocked[key])
+        );
+
+        const option = {
+          key,
+          name: optionDefinition[key].name,
+          locked: this.sharedState.chart.optionsLocked[key],
+          template: html``,
+        };
+
+        switch (type) {
+          case "number":
+            option.template = html`
+              <wwci-limited-number-input
+                ?disabled=${isDisabled}
+                max=${max}
+                min=${min}
+                value=${value}
+                @sl-input=${(e: any) =>
+                  (this.sharedState.chart.options[key] = e.target.value)}
+              ></wwci-limited-number-input>
+            `;
+            break;
+
+          case "boolean":
+            option.template = html`<wwci-switch
+              ?disabled=${isDisabled}
+              ?checked=${value}
+              @wwci-change=${(e: any) =>
+                (this.sharedState.chart.options[key] = e.detail.value)}
+            ></wwci-switch>`;
+            break;
+          default:
+            option.template = html`<p>Unknown type: ${type}</p>`;
+        }
+        return option;
+      }
+    );
+
+    const optionInputsToShow = optionInputs.filter(
+      (input) =>
+        this.sharedState.editable ||
+        this.sharedState.teacherOptions.showLockedOptions ||
+        !input.locked
+    );
+
+    return html`
+      <p>Chart</p>
+      <wwci-select
+        value="${this.sharedState.chart.selectedType}"
+        ?disabled=${!(
+          this.sharedState.editable ||
+          (this.sharedState.teacherOptions.changeOptions &&
+            !this.sharedState.chart.optionsLocked["chartType"])
+        )}
+        options="${attribute(availableCharts)}"
+        @wwci-change="${(e: any) => {
+          this.sharedState.chart.selectedType = e.target.value;
+        }}"
+      >
+      </wwci-select>
+      ${this.sharedState.editable
+        ? html`<sl-icon-button
+            class="lock-button ${this.sharedState.chart.optionsLocked[
+              "chartType"
+            ]
+              ? "lock-button-locked"
+              : "lock-button-unlocked"}"
+            name=${this.sharedState.chart.optionsLocked["chartType"]
+              ? "lock"
+              : "unlock"}
+            label="Lock this option"
+            @click=${() => {
+              this.sharedState.chart.optionsLocked["chartType"] =
+                !this.sharedState.chart.optionsLocked["chartType"];
+            }}
+          ></sl-icon-button>`
+        : html`<div></div>`}
+      <p>Title</p>
+      <sl-input
+        ?disabled=${!(
+          this.sharedState.editable ||
+          (this.sharedState.teacherOptions.changeOptions &&
+            !this.sharedState.chart.optionsLocked["title"])
+        )}
+        value=${this.sharedState.chart.title}
+        @sl-input=${(e: any) => {
+          this.sharedState.chart.title = e.target.value;
+        }}
+      ></sl-input>
+      ${this.sharedState.editable
+        ? html`<sl-icon-button
+            class="lock-button ${this.sharedState.chart.optionsLocked["title"]
+              ? "lock-button-locked"
+              : "lock-button-unlocked"}"
+            name=${this.sharedState.chart.optionsLocked["title"]
+              ? "lock"
+              : "unlock"}
+            label="Lock this option"
+            @click=${() => {
+              this.sharedState.chart.optionsLocked["title"] =
+                !this.sharedState.chart.optionsLocked["title"];
+
+              console.log({
+                optionsLocked: this.sharedState.chart.optionsLocked,
+              });
+            }}
+          ></sl-icon-button>`
+        : html`<div></div>`}
+      ${optionInputsToShow.map((input) => {
+        return html`
+          <p>${input.name}</p>
+          ${input.template}
+          ${this.sharedState.editable
+            ? html`<sl-icon-button
+                class="lock-button ${input.locked
+                  ? "lock-button-locked"
+                  : "lock-button-unlocked"}"
+                name=${input.locked ? "lock" : "unlock"}
+                label="Lock this option"
+                @click=${() => {
+                  this.sharedState.chart.optionsLocked[input.key] =
+                    !this.sharedState.chart.optionsLocked[input.key];
+
+                  console.log({
+                    optionsLocked: this.sharedState.chart.optionsLocked,
+                  });
+                }}
+              ></sl-icon-button>`
+            : html`<div></div>`}
+        `;
+      })}
     `;
   }
 }

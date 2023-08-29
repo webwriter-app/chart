@@ -80,9 +80,3 @@ export class BarChart extends LitElement {
 
   static styles = unsafeCSS(style);
 }
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "bar-chart": BarChart;
-  }
-}

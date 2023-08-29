@@ -1,4 +1,4 @@
-import { ChartData } from "./interfaces";
+import { ChartData, ChartDataSet, ChartDataSets } from "./interfaces";
 import randomWords from "random-words";
 
 export const converter = {
@@ -83,6 +83,8 @@ export function isColorHex(color: string): boolean {
 }
 
 export function convertHexToRGB(color: string): string {
+  if (!color) return "rgb(0,0,0)";
+  if (!isColorHex(color)) return color;
   const r = parseInt(color.substring(1, 3), 16),
     g = parseInt(color.substring(3, 5), 16),
     b = parseInt(color.substring(5, 7), 16);
@@ -90,6 +92,8 @@ export function convertHexToRGB(color: string): string {
 }
 
 export function convertRGBToHex(color: string): string {
+  if (!color) return "#000000";
+  if (!color.startsWith("rgb")) return color;
   const rgb = color
     .replace(/^rgb\(|\s+|\)$/g, "")
     .split(",")
@@ -106,10 +110,13 @@ export function convertRGBToHex(color: string): string {
 }
 
 export function addAlphaToRGB(color: string, alpha: number): string {
+  if (!color) return "rgba(0,0,0,0)";
+  if (!color.startsWith("rgb")) color = convertHexToRGB(color);
   return color.replace("rgb", "rgba").replace(")", `, ${alpha})`);
 }
 
 export function removeAlphaFromRGB(color: string): string {
+  if (!color) return "rgb(0,0,0)";
   return color.replace(/,.*\)/, ")");
 }
 
@@ -140,4 +147,130 @@ function hslToHex(h: number, s: number, l: number) {
       .padStart(2, "0"); // convert to Hex and prefix "0" if needed
   };
   return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+export function chartOption<T extends keyof TypeMapping>(
+  type: T,
+  defaultValue: TypeMapping[T],
+  name: string
+): OptionDefWithoutNumber<T>;
+export function chartOption(
+  type: "number",
+  defaultValue: number,
+  name: string,
+  min?: number,
+  max?: number
+): OptionNumberDef;
+export function chartOption<T extends keyof TypeMapping>(
+  type: T | "number",
+  defaultValue: TypeMapping[T] | number,
+  name: string,
+  min?: number,
+  max?: number
+): OptionDefWithoutNumber<T> | OptionNumberDef {
+  if (type === "number")
+    //@ts-ignore
+    return {
+      type: "number",
+      default: defaultValue,
+      name,
+      //@ts-ignore
+      min: min ?? Number.MIN_SAFE_INTEGER,
+      //@ts-ignore
+      max: max ?? Number.MAX_SAFE_INTEGER,
+    };
+  else
+    return {
+      type,
+      default: defaultValue,
+      name,
+    } as any;
+}
+
+export function fillArray<T>(length: number, value: T): T[] {
+  return Array(length).fill(value);
+}
+
+export async function readFileInput(e: any): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let fileContent = "";
+
+    const file = e.target.files[0];
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      if (!event.target) return;
+      fileContent += event.target.result + "\n";
+    };
+    reader.readAsText(file);
+    reader.onloadend = () => resolve(fileContent);
+    reader.onerror = () => reject();
+  });
+}
+
+export function csvToDataset(fileContent: string): {
+  datasets: ChartDataSets;
+  title: string | undefined;
+} {
+  const sets: ChartDataSet[] = [];
+  const lines = fileContent.replace(/\r\n/g, "\n").split("\n");
+
+  const wwcFormat = lines[0].startsWith("#wwc#");
+
+  let numberOfDataColumns = lines[0].split(",").indexOf("#");
+  let title = undefined;
+  let firstElementIsNumber = true;
+
+  lines.slice(1).forEach((line) => {
+    if (!line) return;
+    const values = line.trim().split(",");
+    let color = values[numberOfDataColumns + 1];
+    let colors = values.slice(numberOfDataColumns + 2);
+    if (values.length < numberOfDataColumns) return;
+
+    if (!wwcFormat) {
+      color = randomColor();
+      colors = values.map(() => randomColor());
+    }
+
+    const data =
+      numberOfDataColumns === -1
+        ? values.map((x) => Number(x))
+        : values.slice(0, numberOfDataColumns).map((x) => Number(x));
+
+    let set = {
+      name: randomString(),
+      data,
+      color,
+      colors,
+    };
+    if (Number.isNaN(Number(values[0]))) {
+      firstElementIsNumber = false;
+      set.name = values[0];
+      set.data = set.data.slice(1);
+    }
+
+    sets.push(set);
+  });
+
+  let labels =
+    numberOfDataColumns === -1
+      ? lines[0].split(",")
+      : lines[0].split(",").slice(0, numberOfDataColumns);
+
+  if (wwcFormat) labels[0] = labels[0].slice(5);
+
+  if (!firstElementIsNumber) {
+    title = labels[0];
+    labels = labels.slice(1);
+    debugger;
+  }
+
+  return {
+    datasets: {
+      labels: labels,
+      sets: sets,
+    },
+    title,
+  };
 }

@@ -1,12 +1,11 @@
-import { LitElement, html, unsafeCSS } from "lit";
-import { customElement, property } from "lit/decorators.js";
-
-import "./helper-components/Charts/Bar";
+import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 
 import "./helper-components/Select";
-import "./helper-components/DatasetInput";
+import "./helper-components/DatasetInput/DatasetInput";
 import "./helper-components/Switch";
 import "./helper-components/ChartOptions";
+import "./helper-components/TeacherOptions";
 
 import "@shoelace-style/shoelace/dist/themes/light.css";
 import "@shoelace-style/shoelace/dist/components/switch/switch";
@@ -14,115 +13,174 @@ import "@shoelace-style/shoelace/dist/components/input/input";
 
 import { setBasePath } from "@shoelace-style/shoelace/dist/utilities/base-path.js";
 
-// Set the base path to the folder you copied Shoelace's assets to
 setBasePath(
   "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.4.0/dist/"
 );
 
 import style from "./widget.css?inline";
 import "./index.css";
-import { attribute } from "./functions";
-import { ChartOptions, Dataset } from "./interfaces";
 
-const avaliableCharts: string[] = ["Bar", "Doughnut"];
+import {
+  ChartType,
+  getChart,
+  getOptionsDefinition,
+} from "./helper-components/Charts/imports";
+
+import { SharedTestStateMixin } from "./state";
 
 @customElement("ww-chart")
-export class WwChart extends LitElement {
-  @property({ type: Boolean }) filled = false;
+export class WwChart extends SharedTestStateMixin(LitElement) {
+  /**WebWriter API: If true, render the component such that easy printing is possible. */
+  @property({ type: Boolean, attribute: true, reflect: true })
+  printable: boolean;
+
+  /**WebWriter API: If true, allow user interaction to change the component. */
+  @property({ type: Boolean, attribute: true, reflect: true })
+  editable: boolean;
+
+  /**WebWriter API: If true, emit DOM events enriched with xAPI statements. */
+  @property({ type: Boolean, attribute: true, reflect: true })
+  analyzable: boolean;
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.getAttributeNames().forEach((n) =>
+      this.setAttribute(n, this.getAttribute(n))
+    );
+  }
 
   @property()
-  selectedChart = "Bar";
+  options: any = {};
 
-  @property()
-  datasets: Dataset[] = [
-    {
-      label: "My First Dataset",
-      labels: ["Red", "Blue", "Free", "Green", "Purple", "Orange"],
-      data: [12, 19, 8, 5, 20, 13],
-      colors: [
-        "#FF6384",
-        "#36A2EB",
-        "#FFCE56",
-        "#4BC0C0",
-        "#9966FF",
-        "rgb(255, 159, 64)",
-      ],
-    },
-  ];
+  @state()
+  lastChartType: ChartType = this.sharedState.chart.selectedType;
 
-  @property()
-  title = "My fancy chart";
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ): void {
+    this.initializeDefaultOptions();
+  }
 
-  @property()
-  options: ChartOptions = {
-    borderRadius: 0,
-    borderWidth: 1,
-    horizontal: false,
-    filled: false,
-    dynamicSize: true,
-    scaleMin: 0,
-    scaleMax: 100,
-  };
+  initializeDefaultOptions() {
+    this.sharedState.chart.options = Object.entries(
+      this.sharedState.chart.optionDefinition
+    ).reduce((acc, [key, value]) => {
+      if (acc[key] === undefined || acc[key] === null) acc[key] = value.default;
+      return acc;
+    }, {} as any);
+    this.sharedState.chart.optionsLocked = Object.keys(
+      this.sharedState.chart.optionDefinition
+    ).reduce(
+      (acc, key) => {
+        if (acc[key] === undefined || acc[key] === null) acc[key] = false;
+        return acc;
+      },
+      { chartType: false, title: false } as any
+    );
+  }
 
   render() {
+    //TODO: move to the correct method
+    this.sharedState.editable = this.editable;
+
+    //TODO: move to the correct method
+    this.sharedState.chart.optionDefinition = getOptionsDefinition(
+      this.sharedState.chart.selectedType
+    );
+
     return html`<div id="main">
-      <div id="preview-area">
-        <bar-chart
-          datasets="${attribute(this.datasets)}"
-          style="display: flex; widht: 100%; height: 100%;"
-          label=${this.title}
-          options="${attribute(this.options)}"
-        />
+      <div id="preview-panel" style="grid-area: preview; position: relative;">
+        ${getChart(
+          this.sharedState.chart.selectedType,
+          this.sharedState.chart.datasets,
+          this.sharedState.chart.title,
+          this.sharedState.chart.options,
+          this.sharedState.teacherOptions
+        )}
       </div>
       <aside id="options-panel">
-        <div>
-          <h2>OPTIONS</h2>
-          <wwci-select
-            value="${this.selectedChart}"
-            label="Chart"
-            options="${attribute(avaliableCharts)}"
-            @wwci-change="${this.updateSelectedChart}"
-          >
-          </wwci-select>
-          <sl-input
-            label="Title"
-            value=${this.title}
-            @sl-input=${(e: any) => {
-              this.title = e.target.value;
+        <h2 style="grid-column: 1/span 3;">
+          OPTIONS:
+          <wwci-switch
+            label="Editable"
+            ?checked=${this.editable}
+            @wwci-change=${(e: any) => {
+              this.editable = e.detail.value;
             }}
-          ></sl-input>
-          <wwci-chart-options
-            options=${attribute(this.options)}
-            @wwci-chart-options=${(e: CustomEvent) => {
-              this.options = e.detail.value;
+          ></wwci-switch>
+          <wwci-switch
+            label="printable"
+            ?checked=${this.printable}
+            @wwci-change=${(e: any) => {
+              this.printable = e.detail.value;
             }}
-          ></wwci-chart-options>
-        </div>
-      </aside>
+          ></wwci-switch>
 
-      <div id="data-panel">
-        <wwci-dataset-input
-          dimensions_fixed="${attribute(false)}"
-          add_datasets="${attribute(true)}"
-          datasets=${attribute(this.datasets)}
-          @wwci-change="${this.updateData}"
-        >
-        </wwci-dataset-input>
-      </div>
+          ${this.editable ? "edit" : ""} ${this.printable ? "print" : ""}
+        </h2>
+
+        ${this.editable || this.sharedState.teacherOptions.showOptions
+          ? html` <wwci-chart-options
+                style="display: contents;"
+              ></wwci-chart-options>
+
+              <div
+                style="grid-column: 1/span 3; display: grid; grid-template-columns: 1fr 1fr;  grid-column-gap: 1rem;"
+              >
+                <sl-button
+                  @click=${() => {
+                    const mainDiv = this.shadowRoot?.getElementById("main");
+                    if (!mainDiv) return;
+                    mainDiv.innerHTML =
+                      "<img src=" +
+                      this.shadowRoot
+                        ?.getElementById("chart")
+                        //@ts-ignore
+                        ?.exportCanvasContent() +
+                      ">";
+                  }}
+                  >convert to image</sl-button
+                >
+                <sl-button
+                  @click=${() => {
+                    const link = document.createElement("a");
+                    link.href = this.shadowRoot
+                      ?.getElementById("chart")
+                      //@ts-ignore
+                      ?.exportCanvasContent();
+                    link.download = "canvas_image.png";
+                    link.click();
+                  }}
+                  >download image</sl-button
+                >
+              </div>`
+          : ""}
+      </aside>
+      ${this.editable
+        ? html`<aside id="teacher-options-panel">
+            <wwci-teacher-options
+              style="display: contents;"
+            ></wwci-teacher-options>
+          </aside>`
+        : html``}
+      ${this.editable || this.sharedState.teacherOptions.showData
+        ? html`<div id="data-panel" style="grid-area: data;">
+            <wwci-dataset-input> </wwci-dataset-input>
+          </div>`
+        : ""}
     </div>`;
   }
 
   updateData(e: CustomEvent) {
-    this.datasets = e.detail.value;
-    console.log({ datasets: this.datasets });
+    this.sharedState.chart.datasets = e.detail.value;
   }
 
   updateSelectedChart(e: CustomEvent) {
-    this.selectedChart = e.detail.value;
+    this.sharedState.chart.selectedType = e.detail.value;
   }
 
   changeFill() {
-    this.filled = !this.filled;
+    this.sharedState.chart.filled = !this.sharedState.chart.filled;
   }
 
   static styles = unsafeCSS(style);
