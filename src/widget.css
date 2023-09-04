@@ -91,6 +91,12 @@ div {
   box-sizing: border-box;
 }
 
+#main.print {
+  grid-template-areas: "preview options" "data teacher-options";
+  grid-template-columns: 1fr 0;
+  grid-template-rows: 2fr 1fr;
+}
+
 #main > * {
   padding: 10px;
   box-sizing: border-box;
@@ -131,19 +137,4 @@ div {
 #data-panel {
   padding: 0;
   background-color: #d6d4d4;
-}
-
-@media screen and (max-width: 1000px) {
-  #main {
-    grid-template-areas: "options" "data" "teacher-options" "preview";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    overflow-y: auto;
-  }
-  #options-panel {
-    overflow: unset;
-  }
-  #teacher-options-panel {
-    overflow: unset;
-  }
 }

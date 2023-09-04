@@ -80,15 +80,17 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
   }
 
   render() {
-    //TODO: move to the correct method
     this.sharedState.editable = this.editable;
+    this.sharedState.printable = this.printable;
 
-    //TODO: move to the correct method
     this.sharedState.chart.optionDefinition = getOptionsDefinition(
       this.sharedState.chart.selectedType
     );
 
-    return html`<div id="main">
+    return html`<div
+      id="main"
+      class=${this.sharedState.printable ? "print" : ""}
+    >
       <div id="preview-panel" style="grid-area: preview; position: relative;">
         ${getChart(
           this.sharedState.chart.selectedType,
@@ -119,7 +121,8 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
           ${this.editable ? "edit" : ""} ${this.printable ? "print" : ""}
         </h2>
 
-        ${this.editable || this.sharedState.teacherOptions.showOptions
+        ${this.editable ||
+        (this.sharedState.teacherOptions.showOptions && !this.printable)
           ? html` <wwci-chart-options
                 style="display: contents;"
               ></wwci-chart-options>

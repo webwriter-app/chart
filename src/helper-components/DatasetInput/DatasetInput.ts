@@ -83,15 +83,17 @@ export class Select extends SharedTestStateMixin(LitElement) {
                               e.target.value)}
                         ></sl-input>
                       </div>
-                      <sl-icon-button
-                        ?disabled=${!(
-                          this.sharedState.editable ||
-                          this.sharedState.teacherOptions.addRemoveData
-                        )}
-                        name="trash"
-                        label="Settings"
-                        @click=${() => this.deleteColumn(i)}
-                      ></sl-icon-button>
+                      ${!this.sharedState.printable
+                        ? html`<sl-icon-button
+                            ?disabled=${!(
+                              this.sharedState.editable ||
+                              this.sharedState.teacherOptions.addRemoveData
+                            )}
+                            name="trash"
+                            label="Settings"
+                            @click=${() => this.deleteColumn(i)}
+                          ></sl-icon-button>`
+                        : html``}
                     </div>
                   </th>`
                 )}
@@ -106,15 +108,17 @@ export class Select extends SharedTestStateMixin(LitElement) {
                       <div
                         style="display: flex; flex-direction: row; align-items: center"
                       >
-                        <sl-icon-button
-                          ?disabled=${!(
-                            this.sharedState.editable ||
-                            this.sharedState.teacherOptions.addRemoveData
-                          )}
-                          name="trash"
-                          label="Settings"
-                          @click=${() => this.deleteDataset(i)}
-                        ></sl-icon-button>
+                        ${!this.sharedState.printable
+                          ? html` <sl-icon-button
+                              ?disabled=${!(
+                                this.sharedState.editable ||
+                                this.sharedState.teacherOptions.addRemoveData
+                              )}
+                              name="trash"
+                              label="Settings"
+                              @click=${() => this.deleteDataset(i)}
+                            ></sl-icon-button>`
+                          : html``}
                         <div class="input-wrapper">
                           <sl-input
                             ?disabled=${!(
@@ -131,17 +135,22 @@ export class Select extends SharedTestStateMixin(LitElement) {
                           ></sl-input>
                         </div>
 
-                        <sl-color-picker
-                          ?disabled=${!(
-                            this.sharedState.editable ||
-                            this.sharedState.teacherOptions.changeData
-                          )}
-                          value="${this.sharedState.chart.datasets.sets[i]
-                            .color}"
-                          @sl-input=${(e: any) =>
-                            (this.sharedState.chart.datasets.sets[i].color =
-                              e.target.value)}
-                        ></sl-color-picker>
+                        ${!this.sharedState.printable
+                          ? html`
+                              <sl-color-picker
+                                ?disabled=${!(
+                                  this.sharedState.editable ||
+                                  this.sharedState.teacherOptions.changeData
+                                )}
+                                value="${this.sharedState.chart.datasets.sets[i]
+                                  .color}"
+                                @sl-input=${(e: any) =>
+                                  (this.sharedState.chart.datasets.sets[
+                                    i
+                                  ].color = e.target.value)}
+                              ></sl-color-picker>
+                            `
+                          : html``}
                       </div>
                     </td>
                     ${dataset.data.map(
@@ -166,18 +175,20 @@ export class Select extends SharedTestStateMixin(LitElement) {
                             ></sl-input>
                           </div>
 
-                          <sl-color-picker
-                            ?disabled=${!(
-                              this.sharedState.editable ||
-                              this.sharedState.teacherOptions.changeData
-                            )}
-                            value="${this.sharedState.chart.datasets.sets[i]
-                              .colors[j]}"
-                            @sl-input=${(e: any) =>
-                              (this.sharedState.chart.datasets.sets[i].colors[
-                                j
-                              ] = e.target.value)}
-                          ></sl-color-picker>
+                          ${!this.sharedState.printable
+                            ? html`<sl-color-picker
+                                ?disabled=${!(
+                                  this.sharedState.editable ||
+                                  this.sharedState.teacherOptions.changeData
+                                )}
+                                value="${this.sharedState.chart.datasets.sets[i]
+                                  .colors[j]}"
+                                @sl-input=${(e: any) =>
+                                  (this.sharedState.chart.datasets.sets[
+                                    i
+                                  ].colors[j] = e.target.value)}
+                              ></sl-color-picker>`
+                            : html``}
                         </div>
                       </td>`
                     )}
@@ -188,7 +199,8 @@ export class Select extends SharedTestStateMixin(LitElement) {
           </table>
 
           ${this.sharedState.editable ||
-          this.sharedState.teacherOptions.addRemoveData
+          (this.sharedState.teacherOptions.addRemoveData &&
+            !this.sharedState.printable)
             ? html`
                 <sl-icon-button
                   @click=${this.addColumn}

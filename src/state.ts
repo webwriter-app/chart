@@ -12,6 +12,7 @@ interface sharedState {
     addRemoveData: boolean;
   };
   editable: boolean;
+  printable: boolean;
   chart: {
     title: string;
     filled: boolean;
@@ -43,12 +44,12 @@ interface sharedState {
 
 const initialState: sharedState = {
   teacherOptions: {
-    showOptions: false,
+    showOptions: true,
     showData: true,
-    showLockedOptions: false,
-    changeData: false,
-    changeOptions: false,
-    addRemoveData: false,
+    showLockedOptions: true,
+    changeData: true,
+    changeOptions: true,
+    addRemoveData: true,
   },
   chart: {
     selectedType: "Bar",
@@ -77,6 +78,7 @@ const initialState: sharedState = {
     optionDefinition: {},
   },
   editable: true,
+  printable: true,
 };
 
 export const SharedTestStateMixin = createSharedStateMixin(initialState);
