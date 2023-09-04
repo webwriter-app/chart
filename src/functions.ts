@@ -153,30 +153,28 @@ export function chartOption<T extends keyof TypeMapping>(
   type: T,
   defaultValue: TypeMapping[T],
   name: string
-): OptionDefWithoutNumber<T>;
+): OptionDef<T>;
 export function chartOption(
   type: "number",
   defaultValue: number,
   name: string,
   min?: number,
   max?: number
-): OptionNumberDef;
+): OptionDef<"number">;
 export function chartOption<T extends keyof TypeMapping>(
   type: T | "number",
   defaultValue: TypeMapping[T] | number,
   name: string,
   min?: number,
   max?: number
-): OptionDefWithoutNumber<T> | OptionNumberDef {
+): OptionDef<T> {
   if (type === "number")
-    //@ts-ignore
     return {
+      //@ts-ignore
       type: "number",
       default: defaultValue,
       name,
-      //@ts-ignore
       min: min ?? Number.MIN_SAFE_INTEGER,
-      //@ts-ignore
       max: max ?? Number.MAX_SAFE_INTEGER,
     };
   else

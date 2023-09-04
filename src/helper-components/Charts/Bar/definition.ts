@@ -9,7 +9,7 @@ export const OptionDefinition = {
   dynamicSize: chartOption("boolean", true, "Dynamic Size"),
   scaleMin: chartOption("number", 0, "Scale Min", undefined, undefined),
   scaleMax: chartOption("number", 100, "Scale Max", undefined, undefined),
-  scaleStepSize: chartOption("number", 5, "Step Size", undefined, undefined),
+  scaleStepSize: chartOption("number", 5, "Step Size", 1, undefined),
 };
 
 export const Name = "Bar";

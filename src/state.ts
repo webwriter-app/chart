@@ -21,12 +21,7 @@ interface sharedState {
     // options: {
     //   [key: string]: any;
     // };
-    options: ChartOptions<
-      Record<
-        string,
-        OptionDefWithoutNumber<keyof TypeMapping> | OptionNumberDef
-      >
-    >;
+    options: ChartOptions<Record<string, OptionDef<keyof TypeMapping>>>;
     optionsLocked: {
       [key: string]: boolean;
     };
@@ -44,12 +39,12 @@ interface sharedState {
 
 const initialState: sharedState = {
   teacherOptions: {
-    showOptions: true,
-    showData: true,
-    showLockedOptions: true,
-    changeData: true,
-    changeOptions: true,
-    addRemoveData: true,
+    showOptions: false,
+    showData: false,
+    showLockedOptions: false,
+    changeData: false,
+    changeOptions: false,
+    addRemoveData: false,
   },
   chart: {
     selectedType: "Bar",

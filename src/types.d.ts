@@ -1,12 +1,8 @@
 type TypeMapping = {
   boolean: boolean;
-  string: string;
   color: string;
-};
-
-type TypeMappingWithNumber = {
   number: number;
-} & TypeMapping;
+};
 
 type OptionDefinition = {
   [key: string]: {
@@ -16,32 +12,14 @@ type OptionDefinition = {
   };
 };
 
-/* 
 type OptionDef<T extends keyof TypeMapping> = {
   type: T;
   default: TypeMapping[T];
   name: string;
 };
-*/
 
-type OptionDefWithoutNumber<T extends keyof Omit<TypeMapping, "number">> = {
-  type: T;
-  default: TypeMapping[T];
-  name: string;
-};
-
-type OptionNumberDef = {
-  type: "number";
-  default: number;
-  name: string;
-  min: number;
-  max: number;
-};
-
-type ChartOptions<
-  T extends Record<string, OptionDef<keyof TypeMappingWithNumber>>
-> = {
-  [K in keyof T]: TypeMappingWithNumber[T[K]["type"]];
+type ChartOptions<T extends Record<string, OptionDef<keyof TypeMapping>>> = {
+  [K in keyof T]: TypeMapping[T[K]["type"]];
 };
 
 type ChartAlignment = "left" | "right" | "center";

@@ -89,7 +89,11 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
 
     return html`<div
       id="main"
-      class=${this.sharedState.printable ? "print" : ""}
+      class=${this.sharedState.printable ||
+      (!this.sharedState.editable &&
+        !this.sharedState.teacherOptions.showOptions)
+        ? "print"
+        : ""}
     >
       <div id="preview-panel" style="grid-area: preview; position: relative;">
         ${getChart(
@@ -100,30 +104,12 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
           this.sharedState.teacherOptions
         )}
       </div>
+
       <aside id="options-panel">
-        <h2 style="grid-column: 1/span 3;">
-          OPTIONS:
-          <wwci-switch
-            label="Editable"
-            ?checked=${this.editable}
-            @wwci-change=${(e: any) => {
-              this.editable = e.detail.value;
-            }}
-          ></wwci-switch>
-          <wwci-switch
-            label="printable"
-            ?checked=${this.printable}
-            @wwci-change=${(e: any) => {
-              this.printable = e.detail.value;
-            }}
-          ></wwci-switch>
-
-          ${this.editable ? "edit" : ""} ${this.printable ? "print" : ""}
-        </h2>
-
         ${this.editable ||
         (this.sharedState.teacherOptions.showOptions && !this.printable)
-          ? html` <wwci-chart-options
+          ? html`<h2 style="grid-column: 1/span 3;">OPTIONS:</h2>
+              <wwci-chart-options
                 style="display: contents;"
               ></wwci-chart-options>
 
