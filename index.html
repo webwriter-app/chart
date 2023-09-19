@@ -9,24 +9,58 @@
     <script type="module" src="/src/widget.ts"></script>
   </head>
   <body>
-    <ww-chart id="ww-chart" />
+    <div>
+      <ww-chart id="ww-chart" />
+    </div>
+
+    <div class="checkbox-container">
+      <div style="display: inline-block; margin-right: 10px">
+        <input type="checkbox" id="editing" name="editing" value="editing" />
+        <label for="editing">Editing</label>
+      </div>
+      <div style="display: inline-block; margin-right: 0">
+        <input type="checkbox" id="printing" name="printing" value="printing" />
+        <label for="printing">Printing</label>
+      </div>
+    </div>
   </body>
+  <style>
+    .checkbox-container {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background-color: rgba(255, 255, 255, 0.7);
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 5px;
+    }
+  </style>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // Get the current URL
-      const elmt = document.getElementById("ww-chart");
-      if (!elmt) console.log("ww-chart not found");
-      const currentURL = window.location.href;
-
-      if (currentURL.endsWith("edit")) {
-        elmt.setAttribute("editable", "true");
-        elmt.editable = true;
-      } else if (currentURL.endsWith("print")) {
-        elmt.printable = true;
-      } else {
-        elmt.editable = false;
-        elmt.printable = false;
-      }
+      document.getElementById("editing").addEventListener("change", (event) => {
+        const elmt = document.getElementById("ww-chart");
+        if (!elmt) console.log("ww-chart not found");
+        if (event.target.checked) {
+          elmt.setAttribute("editable", "true");
+          elmt.editable = true;
+        } else {
+          elmt.setAttribute("editable", "false");
+          elmt.editable = false;
+        }
+      });
+      document
+        .getElementById("printing")
+        .addEventListener("change", (event) => {
+          const elmt = document.getElementById("ww-chart");
+          if (!elmt) console.log("ww-chart not found");
+          if (event.target.checked) {
+            elmt.setAttribute("printable", "true");
+            elmt.printable = true;
+          } else {
+            elmt.setAttribute("printable", "false");
+            elmt.printable = false;
+          }
+        });
     });
   </script>
 </html>
