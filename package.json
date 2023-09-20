@@ -1,6 +1,6 @@
 {
   "name": "@luiskugel/ww-chart",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.",
   "author": "Luis Kugel",
   "license": "UNLICENSED",
@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@git.rwth-aachen.de:learntech-lufgi9/bama/webwriter/ww-chart.git"
+    "url": "https://git.rwth-aachen.de/learntech-lufgi9/bama/webwriter/ww-chart"
   },
   "publishConfig": {
     "access": "public"
