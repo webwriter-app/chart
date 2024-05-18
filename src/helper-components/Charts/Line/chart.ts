@@ -28,7 +28,7 @@ export class LineChart extends GenericChart<typeof OptionDefinition> {
       this.options.dynamicSize,
       this.options.scaleMin,
       this.options.scaleMax,
-      this.options.scaleStepSize,
+      this.options.scaleStepSize
     );
     this.chartHelper.setXLabels(this.datasets.labels);
     updateData(datasets, this.chartHelper.chart.data.datasets);
@@ -55,7 +55,7 @@ export class LineChart extends GenericChart<typeof OptionDefinition> {
       this.options.dynamicSize,
       this.options.scaleMin,
       this.options.scaleMax,
-      this.options.scaleStepSize,
+      this.options.scaleStepSize
     );
 
     this.chartHelper.update();

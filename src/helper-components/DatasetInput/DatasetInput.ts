@@ -96,7 +96,7 @@ export class Select extends SharedTestStateMixin(LitElement) {
                             ></sl-icon-button>`
                           : html``}
                       </div>
-                    </th>`,
+                    </th>`
                 )}
               </tr>
             </thead>
@@ -193,10 +193,10 @@ export class Select extends SharedTestStateMixin(LitElement) {
                                 ></sl-color-picker>`
                               : html``}
                           </div>
-                        </td>`,
+                        </td>`
                     )}
                   </tr>
-                `,
+                `
               )}
             </tbody>
           </table>
@@ -240,7 +240,7 @@ export class Select extends SharedTestStateMixin(LitElement) {
         },
         bubbles: false,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -252,7 +252,7 @@ export class Select extends SharedTestStateMixin(LitElement) {
         },
         bubbles: false,
         composed: true,
-      }),
+      })
     );
   }
 

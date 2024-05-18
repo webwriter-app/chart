@@ -18,7 +18,7 @@ export class Select extends LitElement {
       new CustomEvent("wwci-change", {
         detail: { value: this.checked },
         composed: true,
-      }),
+      })
     );
   }
 

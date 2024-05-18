@@ -4,7 +4,7 @@ import { Chart, ChartType } from "chart.js";
 
 export function getContext<T extends LitElement>(
   this_: T,
-  canvasId = "chart-canvas",
+  canvasId = "chart-canvas"
 ): CanvasRenderingContext2D {
   const canvas = (this_.shadowRoot?.getElementById(canvasId) ||
     null) as HTMLCanvasElement | null;
@@ -23,7 +23,7 @@ export const getData = (data: CompleteChartData): number[] =>
 
 export function updateData(
   sources: Record<string, any>[],
-  targets: Record<string, any>[],
+  targets: Record<string, any>[]
 ) {
   if (sources.length < targets.length) {
     targets.splice(sources.length, targets.length - sources.length);
@@ -61,7 +61,7 @@ export class ChartHelper<T extends Chart<any, number[], string>> {
     dynamicSize: boolean,
     scaleMin: number,
     scaleMax: number,
-    stepSize: number,
+    stepSize: number
   ) {
     if (!this.chart.options.scales) this.chart.options.scales = {};
     if (!this.chart.options.scales.y) this.chart.options.scales.y = {};

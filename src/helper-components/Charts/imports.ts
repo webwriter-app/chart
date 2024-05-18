@@ -43,7 +43,7 @@ export function getChart(
   datasets: ChartDataSets,
   title: string,
   options: any,
-  teacherOptions: TeacherOptions,
+  teacherOptions: TeacherOptions
 ) {
   const chart = charts.find((chart) => chartType === chart.Name);
   if (!chart) return html`<div>Chart not found!</div>`;

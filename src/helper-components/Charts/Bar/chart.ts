@@ -27,7 +27,7 @@ export class BarChart extends GenericChart<typeof OptionDefinition> {
       this.options.dynamicSize,
       this.options.scaleMin,
       this.options.scaleMax,
-      this.options.scaleStepSize,
+      this.options.scaleStepSize
     );
 
     this.chartHelper.setHideExactValues(this.hide_excat_values);
@@ -57,7 +57,7 @@ export class BarChart extends GenericChart<typeof OptionDefinition> {
       this.options.dynamicSize,
       this.options.scaleMin,
       this.options.scaleMax,
-      this.options.scaleStepSize,
+      this.options.scaleStepSize
     );
     this.chartHelper.setHideExactValues(this.hide_excat_values);
 
@@ -81,10 +81,10 @@ export class BarChart extends GenericChart<typeof OptionDefinition> {
         data: dataset.data,
         backgroundColor: this.options.individualColors
           ? dataset.colors.map((color) =>
-              addAlphaToRGB(color, this.options.filled ? 1 : 0.2),
+              addAlphaToRGB(color, this.options.filled ? 1 : 0.2)
             )
           : dataset.colors.map(() =>
-              addAlphaToRGB(dataset.color, this.options.filled ? 1 : 0.2),
+              addAlphaToRGB(dataset.color, this.options.filled ? 1 : 0.2)
             ),
         borderColor: this.options.individualColors
           ? dataset.colors.map((color) => color)

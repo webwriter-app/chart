@@ -44,7 +44,7 @@ export class FileUploadButton extends LitElement {
       new CustomEvent("wwcifileinput", {
         detail: { value: e },
         composed: true,
-      }),
+      })
     );
   }
 }
