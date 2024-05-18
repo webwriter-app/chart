@@ -81,14 +81,14 @@ export class Select extends SharedTestStateMixin(LitElement) {
             option.template = html`<p>Unknown type: ${type}</p>`;
         }
         return option;
-      }
+      },
     );
 
     const optionInputsToShow = optionInputs.filter(
       (input) =>
         this.sharedState.editable ||
         this.sharedState.teacherOptions.showLockedOptions ||
-        !input.locked
+        !input.locked,
     );
 
     return html`

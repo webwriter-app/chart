@@ -29,10 +29,10 @@ export class BarChart extends LitElement {
   firstUpdated() {
     const values = Object.values(this.data).map((val) => val.value);
     const backgroundColor = Object.values(this.data).map((val) =>
-      addAlphaToRGB(val.color, this.filled ? 1 : 0.2)
+      addAlphaToRGB(val.color, this.filled ? 1 : 0.2),
     );
     const borderColor = Object.values(this.data).map((val) =>
-      addAlphaToRGB(val.color, 1)
+      addAlphaToRGB(val.color, 1),
     );
 
     if (this.type === "line") {

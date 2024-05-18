@@ -28,14 +28,14 @@ export class Select extends LitElement {
 
   changeSelected(e: any) {
     this.selectedIndex = this.options.findIndex(
-      (v) => e.target.value === convertFriendlyNameToId(v)
+      (v) => e.target.value === convertFriendlyNameToId(v),
     );
     this.value = this.options[this.selectedIndex];
     this.dispatchEvent(
       new CustomEvent("wwci-change", {
         detail: { value: this.value },
         composed: true,
-      })
+      }),
     );
   }
 
@@ -52,7 +52,7 @@ export class Select extends LitElement {
         (option) =>
           html`<sl-option value="${convertFriendlyNameToId(option)}"
             >${option}</sl-option
-          >`
+          >`,
       )}
     </sl-select>`;
   }

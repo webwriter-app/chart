@@ -59,7 +59,7 @@ export class DoughnutChart extends GenericChart<typeof OptionDefinition> {
         label: dataset.name,
         data: dataset.data,
         backgroundColor: dataset.colors.map((color) =>
-          addAlphaToRGB(color, this.options.filled ? 1 : 0.2)
+          addAlphaToRGB(color, this.options.filled ? 1 : 0.2),
         ),
         borderColor: dataset.colors,
         borderWidth: this.options.borderWidth ?? 1,

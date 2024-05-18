@@ -14,7 +14,7 @@ import "@shoelace-style/shoelace/dist/components/input/input.js";
 import { setBasePath } from "@shoelace-style/shoelace/dist/utilities/base-path.js";
 
 setBasePath(
-  "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.4.0/dist/"
+  "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.4.0/dist/",
 );
 
 import style from "./widget.css?inline";
@@ -45,7 +45,7 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
   connectedCallback() {
     super.connectedCallback();
     this.getAttributeNames().forEach((n) =>
-      this.setAttribute(n, this.getAttribute(n))
+      this.setAttribute(n, this.getAttribute(n)),
     );
   }
 
@@ -56,26 +56,26 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
   lastChartType: ChartType = this.sharedState.chart.selectedType;
 
   protected firstUpdated(
-    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
   ): void {
     this.initializeDefaultOptions();
   }
 
   initializeDefaultOptions() {
     this.sharedState.chart.options = Object.entries(
-      this.sharedState.chart.optionDefinition
+      this.sharedState.chart.optionDefinition,
     ).reduce((acc, [key, value]) => {
       if (acc[key] === undefined || acc[key] === null) acc[key] = value.default;
       return acc;
     }, {} as any);
     this.sharedState.chart.optionsLocked = Object.keys(
-      this.sharedState.chart.optionDefinition
+      this.sharedState.chart.optionDefinition,
     ).reduce(
       (acc, key) => {
         if (acc[key] === undefined || acc[key] === null) acc[key] = false;
         return acc;
       },
-      { chartType: false, title: false } as any
+      { chartType: false, title: false } as any,
     );
   }
 
@@ -84,7 +84,7 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
     this.sharedState.printable = this.printable;
 
     this.sharedState.chart.optionDefinition = getOptionsDefinition(
-      this.sharedState.chart.selectedType
+      this.sharedState.chart.selectedType,
     );
 
     return html`<div
@@ -101,7 +101,7 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
           this.sharedState.chart.datasets,
           this.sharedState.chart.title,
           this.sharedState.chart.options,
-          this.sharedState.teacherOptions
+          this.sharedState.teacherOptions,
         )}
       </div>
 

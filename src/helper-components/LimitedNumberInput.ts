@@ -32,7 +32,7 @@ export class NumberInput extends LitElement {
       new CustomEvent("wwci-limited-number-input", {
         detail: { value: this.value },
         composed: true,
-      })
+      }),
     );
   }
 

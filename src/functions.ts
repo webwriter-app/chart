@@ -69,7 +69,7 @@ export function attribute(value: boolean): string;
 export function attribute(value: object): string;
 export function attribute(value: Array<unknown>): string;
 export function attribute(
-  value: string | number | boolean | object | Array<unknown>
+  value: string | number | boolean | object | Array<unknown>,
 ): string {
   if (Array.isArray(value)) return JSON.stringify(value);
   if (typeof value === "number") return value.toString();
@@ -152,21 +152,21 @@ function hslToHex(h: number, s: number, l: number) {
 export function chartOption<T extends keyof TypeMapping>(
   type: T,
   defaultValue: TypeMapping[T],
-  name: string
+  name: string,
 ): OptionDef<T>;
 export function chartOption(
   type: "number",
   defaultValue: number,
   name: string,
   min?: number,
-  max?: number
+  max?: number,
 ): OptionDef<"number">;
 export function chartOption<T extends keyof TypeMapping>(
   type: T | "number",
   defaultValue: TypeMapping[T] | number,
   name: string,
   min?: number,
-  max?: number
+  max?: number,
 ): OptionDef<T> {
   if (type === "number")
     return {

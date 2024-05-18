@@ -6,7 +6,7 @@ import { ChartDataSets } from "../../interfaces";
 
 /**WebWriter API: Minimal base class for a widget implemented in Lit. Implements the core properties required by WebWriter, initializes the component when loaded and provides a Scoped Custom Element Registry (@open-wc/scoped-elements) to help with namespace conflicts when using other components in this widget. */
 export class GenericChart<
-  T extends Record<string, OptionDef<keyof TypeMapping>>
+  T extends Record<string, OptionDef<keyof TypeMapping>>,
 > extends SharedTestStateMixin(LitElement) {
   @property({ type: Array, converter })
   datasets: ChartDataSets = {} as any;
@@ -44,7 +44,7 @@ export class GenericChart<
         acc[key] = value.default;
         return acc;
       },
-      {} as any
+      {} as any,
     ) as ChartOptions<T>;
   }
 }
