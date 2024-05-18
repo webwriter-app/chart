@@ -8,8 +8,8 @@ import "./helper-components/ChartOptions";
 import "./helper-components/TeacherOptions";
 
 import "@shoelace-style/shoelace/dist/themes/light.css";
-import "@shoelace-style/shoelace/dist/components/switch/switch";
-import "@shoelace-style/shoelace/dist/components/input/input";
+import "@shoelace-style/shoelace/dist/components/switch/switch.js";
+import "@shoelace-style/shoelace/dist/components/input/input.js";
 
 import { setBasePath } from "@shoelace-style/shoelace/dist/utilities/base-path.js";
 

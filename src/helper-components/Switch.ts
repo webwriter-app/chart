@@ -1,7 +1,7 @@
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import "@shoelace-style/shoelace/dist/components/switch/switch";
+import "@shoelace-style/shoelace/dist/components/switch/switch.js";
 
 @customElement("wwci-switch")
 export class Select extends LitElement {
