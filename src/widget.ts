@@ -28,7 +28,7 @@ import {
 
 import { SharedTestStateMixin } from "./state";
 
-@customElement("ww-chart")
+@customElement("webwriter-chart")
 export class WwChart extends SharedTestStateMixin(LitElement) {
   /**WebWriter API: If true, render the component such that easy printing is possible. */
   @property({ type: Boolean, attribute: true, reflect: true })
@@ -60,6 +60,10 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
   ): void {
     this.initializeDefaultOptions();
   }
+  static shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
 
   initializeDefaultOptions() {
     this.sharedState.chart.options = Object.entries(
@@ -87,77 +91,80 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
       this.sharedState.chart.selectedType
     );
 
-    return html`<div
-      id="main"
-      class=${this.sharedState.printable ||
-      (!this.sharedState.editable &&
-        !this.sharedState.teacherOptions.showOptions)
-        ? "print"
-        : ""}
-    >
-      <div id="preview-panel" style="grid-area: preview; position: relative;">
-        ${getChart(
-          this.sharedState.chart.selectedType,
-          this.sharedState.chart.datasets,
-          this.sharedState.chart.title,
-          this.sharedState.chart.options,
-          this.sharedState.teacherOptions
-        )}
+    return html`<div id="settings" part="options">
+        <h2>Setting</h2>
       </div>
+      <div
+        id="main"
+        class=${this.sharedState.printable ||
+        (!this.sharedState.editable &&
+          !this.sharedState.teacherOptions.showOptions)
+          ? "print"
+          : ""}
+      >
+        <div id="preview-panel" style="grid-area: preview; position: relative;">
+          ${getChart(
+            this.sharedState.chart.selectedType,
+            this.sharedState.chart.datasets,
+            this.sharedState.chart.title,
+            this.sharedState.chart.options,
+            this.sharedState.teacherOptions
+          )}
+        </div>
 
-      <aside id="options-panel">
-        ${this.editable ||
-        (this.sharedState.teacherOptions.showOptions && !this.printable)
-          ? html`<h2 style="grid-column: 1/span 3;">OPTIONS:</h2>
-              <wwci-chart-options
-                style="display: contents;"
-              ></wwci-chart-options>
+        <aside id="options-panel">
+          ${this.editable ||
+          (this.sharedState.teacherOptions.showOptions && !this.printable)
+            ? html`<h2 style="grid-column: 1/span 3;">OPTIONS:</h2>
+                <wwci-chart-options
+                  style="display: contents;"
+                ></wwci-chart-options>
 
-              <div
-                style="grid-column: 1/span 3; display: grid; grid-template-columns: 1fr 1fr;  grid-column-gap: 1rem;"
-              >
-                <sl-button
-                  @click=${() => {
-                    const mainDiv = this.shadowRoot?.getElementById("main");
-                    if (!mainDiv) return;
-                    mainDiv.innerHTML =
-                      "<img src=" +
-                      this.shadowRoot
+                <div
+                  style="grid-column: 1/span 3; display: grid; grid-template-columns: 1fr 1fr;  grid-column-gap: 1rem;"
+                >
+                  <sl-button
+                    @click=${() => {
+                      const mainDiv = this.shadowRoot?.getElementById("main");
+                      if (!mainDiv) return;
+                      mainDiv.innerHTML =
+                        "<img src=" +
+                        this.shadowRoot
+                          ?.getElementById("chart")
+                          //@ts-ignore
+                          ?.exportCanvasContent() +
+                        ">";
+                    }}
+                    >convert to image</sl-button
+                  >
+                  <sl-button
+                    @click=${() => {
+                      const link = document.createElement("a");
+                      link.href = this.shadowRoot
                         ?.getElementById("chart")
                         //@ts-ignore
-                        ?.exportCanvasContent() +
-                      ">";
-                  }}
-                  >convert to image</sl-button
-                >
-                <sl-button
-                  @click=${() => {
-                    const link = document.createElement("a");
-                    link.href = this.shadowRoot
-                      ?.getElementById("chart")
-                      //@ts-ignore
-                      ?.exportCanvasContent();
-                    link.download = "canvas_image.png";
-                    link.click();
-                  }}
-                  >download image</sl-button
-                >
-              </div>`
+                        ?.exportCanvasContent();
+                      link.download = "canvas_image.png";
+                      link.click();
+                    }}
+                    >download image</sl-button
+                  >
+                </div>`
+            : ""}
+        </aside>
+        ${this.editable
+          ? html`<aside id="teacher-options-panel">
+              <wwci-teacher-options
+                style="display: contents;"
+              ></wwci-teacher-options>
+            </aside>`
+          : html``}
+        ${this.editable || this.sharedState.teacherOptions.showData
+          ? html`<div id="data-panel" style="grid-area: data;">
+              <wwci-dataset-input> </wwci-dataset-input>
+            </div>`
           : ""}
-      </aside>
-      ${this.editable
-        ? html`<aside id="teacher-options-panel">
-            <wwci-teacher-options
-              style="display: contents;"
-            ></wwci-teacher-options>
-          </aside>`
-        : html``}
-      ${this.editable || this.sharedState.teacherOptions.showData
-        ? html`<div id="data-panel" style="grid-area: data;">
-            <wwci-dataset-input> </wwci-dataset-input>
-          </div>`
-        : ""}
-    </div>`;
+      </div>`;
   }
 
   updateData(e: CustomEvent) {
@@ -177,6 +184,6 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ww-chart": WwChart;
+    "webwriter-chart": WwChart;
   }
 }
