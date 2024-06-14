@@ -11,6 +11,7 @@ import * as Bar from "./Bar/definition";
 import * as Line from "./Line/definition";
 import * as PolarArea from "./PolarArea/definition";
 import * as Radar from "./Radar/definition";
+import * as Scatterplot from "./Scatterplot/definition";
 
 import "./Bar/chart";
 import "./Doughnut/chart";
@@ -18,11 +19,22 @@ import "./Pie/chart";
 import "./Line/chart";
 import "./PolarArea/chart";
 import "./Radar/chart";
-
-const charts = [Pie, Doughnut, Bar, Line, PolarArea, Radar];
+import "./Scatterplot/scatterplot";
+const charts = [Pie, Doughnut, Bar, Line, PolarArea, Radar, Scatterplot];
 //@end-auto-generated
 
 export const availableCharts = charts.map((chart) => chart.Name);
+export const availableRegressions = [
+  "none",
+  "linear",
+  "quadratic",
+  "exponential",
+  "polynomial",
+  "logarithmic",
+  "power",
+  "loess",
+];
+export type RegressionType = (typeof availableRegressions)[number];
 
 export type ChartType = (typeof availableCharts)[number];
 
@@ -50,7 +62,7 @@ export function getChart(
   //@ts-ignore
   const chartName = unsafeStatic(chart.TagName);
 
-  return html`<div style="position: absolute; inset: 0px; padding: 10px; box-sizing: border-box; display: flex; height: 100%; width: 100%; justify-content: center; flex-direction: row; ${
+  return html`<div style="inset: 0px; padding: 10px; box-sizing: border-box; display: flex; height: 80%; width: 100%; justify-content: center; flex-direction: row; align-items: end; ${
     chart.Align === "center" ? "aspect-ratio: 1;" : ""
   }">
 
@@ -59,7 +71,7 @@ export function getChart(
       hide_excat_values="${attribute(!teacherOptions.showData)}"
       datasets="${attribute(datasets)}"
       label=${title}
-      style="display: flex; flex-grow: 1; max-height: 100%; max-width: 100%; justify-content: center;"
+      style="display: flex; flex-grow: 1; max-height: 100%; max-width: 100%; justify-content: center; align-items: center;"
       options="${attribute(options)}
 
       ">

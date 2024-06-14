@@ -1,9 +1,8 @@
-import { LitElement, html, unsafeCSS } from "lit";
+import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-
+import style from "./barchart.style";
 import Chart from "chart.js/auto";
 
-import style from "./barchart.css?inline";
 import { addAlphaToRGB, converter } from "../functions";
 import { ChartType, CompleteChartData } from "../interfaces";
 
@@ -77,6 +76,5 @@ export class BarChart extends LitElement {
       options,
     });
   }
-
-  static styles = unsafeCSS(style);
+  static styles = style;
 }

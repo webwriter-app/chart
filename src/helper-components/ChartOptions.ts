@@ -4,9 +4,10 @@ import { customElement } from "lit/decorators.js";
 import "./LimitedNumberInput";
 import "./Select";
 
-import { attribute } from "../functions";
-import { availableCharts } from "./Charts/imports";
+//import { attribute } from "../functions";
+//import { availableCharts } from "./Charts/imports";
 import { SharedTestStateMixin } from "../state";
+import { availableRegressions } from "./Charts/imports";
 
 interface TOptionInput {
   name: string;
@@ -14,7 +15,7 @@ interface TOptionInput {
   locked: boolean;
   key: string;
 }
-
+//TODO: fix options in scatterplot not saved when switching between (Scatterplot and other charts)
 @customElement("wwci-chart-options")
 export class Select extends SharedTestStateMixin(LitElement) {
   static styles = css`
@@ -32,6 +33,12 @@ export class Select extends SharedTestStateMixin(LitElement) {
 
     .lock-button-unlocked::part(base):hover {
       color: green;
+    }
+    .text {
+      margin: 0;
+      align-self: center;
+      box-sizing: border-box;
+      color: #1a1a1a;
     }
   `;
 
@@ -77,6 +84,22 @@ export class Select extends SharedTestStateMixin(LitElement) {
                 (this.sharedState.chart.options[key] = e.detail.value)}
             ></wwci-switch>`;
             break;
+          case "array":
+            option.template = html`<wwci-select
+              .value="${this.sharedState.regressionType}"
+              ?disabled=${!(
+                this.sharedState.editable ||
+                (this.sharedState.teacherOptions.changeOptions &&
+                  !this.sharedState.chart.optionsLocked["chartType"])
+              )}
+              .options="${availableRegressions}"
+              @wwci-change="${(e: any) => {
+                this.sharedState.regressionType = e.target.value;
+              }}"
+            >
+            </wwci-select>`;
+
+            break;
           default:
             option.template = html`<p>Unknown type: ${type}</p>`;
         }
@@ -92,71 +115,9 @@ export class Select extends SharedTestStateMixin(LitElement) {
     );
 
     return html`
-      <p>Chart</p>
-      <wwci-select
-        value="${this.sharedState.chart.selectedType}"
-        ?disabled=${!(
-          this.sharedState.editable ||
-          (this.sharedState.teacherOptions.changeOptions &&
-            !this.sharedState.chart.optionsLocked["chartType"])
-        )}
-        options="${attribute(availableCharts)}"
-        @wwci-change="${(e: any) => {
-          this.sharedState.chart.selectedType = e.target.value;
-        }}"
-      >
-      </wwci-select>
-      ${this.sharedState.editable
-        ? html`<sl-icon-button
-            class="lock-button ${this.sharedState.chart.optionsLocked[
-              "chartType"
-            ]
-              ? "lock-button-locked"
-              : "lock-button-unlocked"}"
-            name=${this.sharedState.chart.optionsLocked["chartType"]
-              ? "lock"
-              : "unlock"}
-            label="Lock this option"
-            @click=${() => {
-              this.sharedState.chart.optionsLocked["chartType"] =
-                !this.sharedState.chart.optionsLocked["chartType"];
-            }}
-          ></sl-icon-button>`
-        : html`<div></div>`}
-      <p>Title</p>
-      <sl-input
-        ?disabled=${!(
-          this.sharedState.editable ||
-          (this.sharedState.teacherOptions.changeOptions &&
-            !this.sharedState.chart.optionsLocked["title"])
-        )}
-        value=${this.sharedState.chart.title}
-        @sl-input=${(e: any) => {
-          this.sharedState.chart.title = e.target.value;
-        }}
-      ></sl-input>
-      ${this.sharedState.editable
-        ? html`<sl-icon-button
-            class="lock-button ${this.sharedState.chart.optionsLocked["title"]
-              ? "lock-button-locked"
-              : "lock-button-unlocked"}"
-            name=${this.sharedState.chart.optionsLocked["title"]
-              ? "lock"
-              : "unlock"}
-            label="Lock this option"
-            @click=${() => {
-              this.sharedState.chart.optionsLocked["title"] =
-                !this.sharedState.chart.optionsLocked["title"];
-
-              console.log({
-                optionsLocked: this.sharedState.chart.optionsLocked,
-              });
-            }}
-          ></sl-icon-button>`
-        : html`<div></div>`}
       ${optionInputsToShow.map((input) => {
         return html`
-          <p>${input.name}</p>
+          <p class="text">${input.name}</p>
           ${input.template}
           ${this.sharedState.editable
             ? html`<sl-icon-button
@@ -175,8 +136,10 @@ export class Select extends SharedTestStateMixin(LitElement) {
                 }}
               ></sl-icon-button>`
             : html`<div></div>`}
+          <div></div>
         `;
       })}
+      <div></div>
     `;
   }
 }

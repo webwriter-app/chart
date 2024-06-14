@@ -41,20 +41,22 @@ export class Select extends LitElement {
 
   render() {
     this.selectedIndex = this.value ? this.options.indexOf(this.value) : 0;
-    return html`<sl-select
-      ?disabled="${this.disabled}"
-      placeholder="${this.placeholder}"
-      label="${this.label}"
-      @sl-change="${this.changeSelected}"
-      value=${convertFriendlyNameToId(this.options[this.selectedIndex])}
-    >
-      ${this.options.map(
-        (option) =>
-          html`<sl-option value="${convertFriendlyNameToId(option)}"
-            >${option}</sl-option
-          >`
-      )}
-    </sl-select>`;
+    return html`
+      <sl-select
+        ?disabled="${this.disabled}"
+        placeholder="${this.placeholder}"
+        label="${this.label}"
+        @sl-change="${this.changeSelected}"
+        value=${convertFriendlyNameToId(this.options[this.selectedIndex])}
+      >
+        ${this.options.map(
+          (option) =>
+            html`<sl-option value="${convertFriendlyNameToId(option)}"
+              >${option}</sl-option
+            >`
+        )}
+      </sl-select>
+    `;
   }
 }
 

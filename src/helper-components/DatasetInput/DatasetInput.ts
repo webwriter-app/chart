@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS } from "lit";
+import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
 
 import {
@@ -9,7 +9,7 @@ import {
   readFileInput,
 } from "../../functions";
 
-import style from "./DatasetInput.css?inline";
+import style from "./DatasetInput.style";
 
 import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
@@ -256,7 +256,7 @@ export class Select extends SharedTestStateMixin(LitElement) {
     );
   }
 
-  static styles = unsafeCSS(style);
+  static styles = style;
 }
 
 declare global {

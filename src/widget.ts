@@ -1,4 +1,4 @@
-import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
+import { LitElement, PropertyValueMap, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 import "./helper-components/Select";
@@ -6,18 +6,20 @@ import "./helper-components/DatasetInput/DatasetInput";
 import "./helper-components/Switch";
 import "./helper-components/ChartOptions";
 import "./helper-components/TeacherOptions";
+import "./helper-components/ChartSettings";
+import "./helper-components/ScatterplotDatasetInput/ScatterplotDatasetInput";
 
 import "@shoelace-style/shoelace/dist/themes/light.css";
 import "@shoelace-style/shoelace/dist/components/switch/switch.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
-
+import "@shoelace-style/shoelace/dist/components/button/button.js";
 import { setBasePath } from "@shoelace-style/shoelace/dist/utilities/base-path.js";
 
 setBasePath(
   "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.4.0/dist/"
 );
 
-import style from "./widget.css?inline";
+import style from "./widget.style";
 import "./index.css";
 
 import {
@@ -36,11 +38,28 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
 
   /**WebWriter API: If true, allow user interaction to change the component. */
   @property({ type: Boolean, attribute: true, reflect: true })
-  editable: boolean;
+  editable: boolean = true;
 
   /**WebWriter API: If true, emit DOM events enriched with xAPI statements. */
   @property({ type: Boolean, attribute: true, reflect: true })
   analyzable: boolean;
+
+  @property({ type: Boolean, attribute: true, reflect: true })
+  showChart: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  showData: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  showOptions: boolean;
+
+  //TODO: Add editable and printable option teacheroptions, ...
+  // TODO: Focus on the chart element when it is clicked
+  //TODO: Button show Data and show Chart wechseln when clicked
+  /*@click=${() => {
+    this.requestUpdate();
+    this.chartElement.focus();
+  }}*/
+  //@query("wwci-dataset-input") private datasetInput!: Select;
+  //@query("#chart") private chartElement!: HTMLElement;
 
   connectedCallback() {
     super.connectedCallback();
@@ -60,12 +79,11 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
   ): void {
     this.initializeDefaultOptions();
   }
-  static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
 
   initializeDefaultOptions() {
+    this.showChart = true;
+    this.showData = false;
+    this.showOptions = false;
     this.sharedState.chart.options = Object.entries(
       this.sharedState.chart.optionDefinition
     ).reduce((acc, [key, value]) => {
@@ -82,6 +100,17 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
       { chartType: false, title: false } as any
     );
   }
+  static shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+  changeShowData() {
+    this.showData = !this.showData;
+  }
+  changeShowOption() {
+    this.showOptions = !this.showOptions;
+  }
+  //TODO: Place for teacher options?
 
   render() {
     this.sharedState.editable = this.editable;
@@ -93,6 +122,9 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
 
     return html`<div id="settings" part="options">
         <h2>Setting</h2>
+        <div id="settings-panel">
+          <wwci-chart-settings style="display: contents;"></wwci-chart-settings>
+        </div>
       </div>
       <div
         id="main"
@@ -102,26 +134,49 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
           ? "print"
           : ""}
       >
-        <div id="preview-panel" style="grid-area: preview; position: relative;">
-          ${getChart(
-            this.sharedState.chart.selectedType,
-            this.sharedState.chart.datasets,
-            this.sharedState.chart.title,
-            this.sharedState.chart.options,
-            this.sharedState.teacherOptions
-          )}
+        <div id="button-group">
+          <sl-button
+            @click=${() => {
+              this.showChart = true;
+              this.showData = false;
+              this.showOptions = false;
+            }}
+            >Show Chart</sl-button
+          >
+          <sl-button
+            @click=${() => {
+              this.changeShowOption();
+              this.showData = false;
+            }}
+            >Chart Options</sl-button
+          >
+          <sl-button
+            @click=${() => {
+              this.changeShowData();
+              this.showOptions = false;
+            }}
+            >Show Data</sl-button
+          >
         </div>
-
-        <aside id="options-panel">
-          ${this.editable ||
-          (this.sharedState.teacherOptions.showOptions && !this.printable)
-            ? html`<h2 style="grid-column: 1/span 3;">OPTIONS:</h2>
+        ${this.showData &&
+        (this.editable || this.sharedState.teacherOptions.showData)
+          ? html` <div id="data-panel">
+              ${this.sharedState.chart.selectedType === "Scatterplot"
+                ? html`<wwci-datasetscatterplot-input></wwci-datasetscatterplot-input>`
+                : html`<wwci-dataset-input></wwci-dataset-input>`}
+            </div>`
+          : this.showOptions &&
+            (this.editable ||
+              (this.sharedState.teacherOptions.showOptions && !this.printable))
+          ? html`
+              <div id="options-panel">
+                <h2 style="grid-column: 1/ span 4;">OPTIONS:</h2>
                 <wwci-chart-options
                   style="display: contents;"
                 ></wwci-chart-options>
 
                 <div
-                  style="grid-column: 1/span 3; display: grid; grid-template-columns: 1fr 1fr;  grid-column-gap: 1rem;"
+                  style="grid-column: 1/span 4; display: grid; grid-template-columns: 1fr 1fr;  grid-column-gap: 1rem;"
                 >
                   <sl-button
                     @click=${() => {
@@ -149,21 +204,18 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
                     }}
                     >download image</sl-button
                   >
-                </div>`
-            : ""}
-        </aside>
-        ${this.editable
-          ? html`<aside id="teacher-options-panel">
-              <wwci-teacher-options
-                style="display: contents;"
-              ></wwci-teacher-options>
-            </aside>`
-          : html``}
-        ${this.editable || this.sharedState.teacherOptions.showData
-          ? html`<div id="data-panel" style="grid-area: data;">
-              <wwci-dataset-input> </wwci-dataset-input>
-            </div>`
-          : ""}
+                </div>
+              </div>
+            `
+          : html` <div id="display-chart">
+              ${getChart(
+                this.sharedState.chart.selectedType,
+                this.sharedState.chart.datasets,
+                this.sharedState.chart.title,
+                this.sharedState.chart.options,
+                this.sharedState.teacherOptions
+              )}
+            </div>`}
       </div>`;
   }
 
@@ -179,7 +231,7 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
     this.sharedState.chart.filled = !this.sharedState.chart.filled;
   }
 
-  static styles = unsafeCSS(style);
+  static styles = style;
 }
 
 declare global {

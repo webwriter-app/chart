@@ -35,3 +35,13 @@ export interface ChartDataSets {
   labels: string[];
   sets: ChartDataSet[];
 }
+export interface ScatterplotDataSets {
+  axisLabels: { x: string; y: string };
+  sets: ScatterplotDataSet[];
+}
+export interface ScatterplotDataSet {
+  scatter_color: string;
+  scatter_titel: string;
+  labels: string[];
+  dimensional_data?: { x: number; y: number }[];
+}

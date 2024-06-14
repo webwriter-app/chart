@@ -150,7 +150,7 @@ function hslToHex(h: number, s: number, l: number) {
 }
 
 export function chartOption<T extends keyof TypeMapping>(
-  type: T,
+  type: T | "array",
   defaultValue: TypeMapping[T],
   name: string
 ): OptionDef<T>;
