@@ -17,13 +17,26 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
       width: 100%;
     }
     .scatterplot-wrapper {
-      width: 100%;
       height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .descriptions {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .regression-formula, .correlations {
+      display: flex;
+      flex-direction: column;
+      font-size: 12px;
     }
 
     svg {
       border: 1px solid black;
-      height: 100%;
+      flex: 1 0 0
       width: 100%;
     }
 
@@ -43,7 +56,9 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
   `;
   @property({ type: Object })
   options = OptionDefinition;
+  @property({ type: Object })
   definition = Definition;
+
   constructor(optionsDefinition = OptionDefinition) {
     super();
     this.options = optionsDefinition;
@@ -58,7 +73,12 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
   // TODO: Add Name for chart
   render() {
     return html`<div class="scatterplot-root">
-      <div class="scatterplot-wrapper"></div>
+      <div class="scatterplot-wrapper">
+        <div class="descriptions">
+          <div class="regression-formula"></div>
+          <div class="correlations"></div>
+        </div>
+      </div>
       ${this.options.animation
         ? html`<sl-range
             id="animationRange"
@@ -154,20 +174,22 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
     maxY = Math.ceil(maxY / roundingFactorY) * roundingFactorY;
 
     // set the dimensions and margins of the graph
-    const margin = { top: 20, right: 30, bottom: 50, left: 70 },
-      width = 520 - margin.left - margin.right,
-      height = 500 - margin.top - margin.bottom;
+    const margin = { top: 10, right: 30, bottom: 50, left: 70 },
+      width = 550 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
 
-    // Calculate the correlation coefficient r Person correlation coefficient
-    //TODO: Check if r should be calculated for each dataset or for all datasets
-    const n = datasets.flat().length;
-    const x_mean = d3.mean(datasets.flat().map((d) => d.x));
-    const y_mean = d3.mean(datasets.flat().map((d) => d.y));
-    const x_std = d3.deviation(datasets.flat().map((d) => d.x));
-    const y_std = d3.deviation(datasets.flat().map((d) => d.y));
-    const r =
-      d3.sum(datasets.flat().map((d) => (d.x - x_mean) * (d.y - y_mean))) /
-      (n * x_std * y_std);
+    // calculate the correlation coefficient for each dataset
+    const correlations = datasets.map((dataset) => {
+      const n = dataset.length;
+      const x_mean = d3.mean(dataset.map((d) => d.x));
+      const y_mean = d3.mean(dataset.map((d) => d.y));
+      const x_std = d3.deviation(dataset.map((d) => d.x));
+      const y_std = d3.deviation(dataset.map((d) => d.y));
+      return (
+        d3.sum(dataset.map((d) => (d.x - x_mean) * (d.y - y_mean))) /
+        (n * x_std * y_std)
+      );
+    });
 
     const root = this.shadowRoot.querySelector(".scatterplot-wrapper");
 
@@ -247,16 +269,21 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
 
     // Add the correlation coefficient
     if (this.options.showCorrelation) {
-      svg
-        .append("text")
-        .attr("x", width - 110)
-        .attr("y", 20)
-        .text("Correlation r = " + r.toFixed(2))
-        .style("font-size", "15px")
-        .style("fill", "#ee0808");
+      const root = this.shadowRoot.querySelector(".correlations");
+      [...root.children].forEach((child) => child.remove());
+      correlations.forEach((correlation, index) => {
+        const span = document.createElement("span");
+        span.innerText = `Correlation: ${correlation.toFixed(2)}`;
+        span.style.color = datasets[index][0]?.color ?? "#69b3a2";
+        root.appendChild(span);
+      });
     }
 
     // For scatter plot with regression
+    const regressionFormulaRoot = this.shadowRoot.querySelector(
+      ".regression-formula"
+    );
+    [...regressionFormulaRoot.children].forEach((child) => child.remove());
     if (this.sharedState.regressionType !== "none") {
       datasets.forEach((dataset) => {
         let regression;
@@ -368,15 +395,13 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
           }
         }
         //  show the formula of the regression line on the top left corner
-        //TODO: Fix pos. when more than one regression line
         if (regressionFormula !== "") {
-          svg
-            .append("text")
-            .attr("x", 10)
-            .attr("y", 10)
-            .text(regressionFormula)
-            .style("font-size", "15px")
-            .style("fill", dataset[0]?.color ?? "#69b3a2");
+          const span = document.createElement("span");
+          span.innerText = `${
+            dataset[0]?.scatter_titel ?? "Regression"
+          }: ${regressionFormula}`;
+          span.style.color = dataset[0]?.color ?? "#69b3a2";
+          regressionFormulaRoot.appendChild(span);
         }
       });
     }
@@ -454,18 +479,6 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
     //TODO: Fix the position of the tooltip
     //TODO: Fix the regression line?
     if (this.options.animation) {
-      const tooltip_animation = d3
-        .select(root)
-        .append("div")
-        .style("opacity", 0)
-        .attr("class", "tooltip")
-        .style("position", "absolute")
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "1px")
-        .style("border-radius", "5px")
-        .style("padding", "10px")
-        .style("pointer-events", "none");
       scatter
         .style("opacity", 0)
         .attr("cx", (d) => x(d.x))
@@ -474,17 +487,32 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
         .delay((d, i) => i * animationTime) // Important: d can be deleted
         .duration(300)
         .style("opacity", this.options.filled ? 1 : 0.5)
-        .on("start", function (event) {
+        .on("start", (event) => {
           setTimeout(() => {
-            tooltip_animation
-              //FIXME: Fix the position of the tooltip_animation (d.x and d.y do not work here properly)
-              //.style("left", event.pageX + 10 + "px")
-              //.style("top", event.pageY + 10 + "px")
+            const coords = {
+              x: 0,
+              y: 0,
+            };
+
+            const circle = this.shadowRoot.querySelector(
+              `svg circle[cx="${x(event.x)}"][cy="${y(event.y)}"]`
+            ) as SVGCircleElement;
+
+            if (circle) {
+              // get the position of the circle on the page
+              const rect = circle.getBoundingClientRect();
+              coords.x = rect.x + rect.width / 2;
+              coords.y = rect.y + rect.height / 2;
+            }
+
+            tooltip
               .style("opacity", 1)
-              .html(xlabel + ": " + event.x + " " + ylabel + ": " + event.y);
+              .html(xlabel + ": " + event.x + " " + ylabel + ": " + event.y)
+              .style("left", coords.x + 10 + "px")
+              .style("top", coords.y + 10 + "px");
 
             setTimeout(() => {
-              tooltip_animation.style("opacity", 0);
+              tooltip.style("opacity", 0);
             }, animationTime / 2); // Show the tooltip for 1000ms
           }, event.i * animationTime); // This ensures the tooltip appears after the transition delay
         });
