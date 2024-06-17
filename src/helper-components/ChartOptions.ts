@@ -87,11 +87,7 @@ export class Select extends SharedTestStateMixin(LitElement) {
           case "array":
             option.template = html`<wwci-select
               .value="${this.sharedState.regressionType}"
-              ?disabled=${!(
-                this.sharedState.editable ||
-                (this.sharedState.teacherOptions.changeOptions &&
-                  !this.sharedState.chart.optionsLocked["chartType"])
-              )}
+              ?disabled=${isDisabled}
               .options="${availableRegressions}"
               @wwci-change="${(e: any) => {
                 this.sharedState.regressionType = e.target.value;

@@ -40,7 +40,8 @@ export class Select extends SharedTestStateMixin(LitElement) {
       align-items: left;
     }
   `;
-  // TODO: Fix when change ChartName (kein |)
+  // TODO: Fix when change ChartName (no |)
+  //TODO: Fix the locks options
   render() {
     return html`
       <div class="container">

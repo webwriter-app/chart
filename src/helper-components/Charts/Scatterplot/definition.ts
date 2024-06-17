@@ -9,7 +9,9 @@ export const OptionDefinition = {
   //zoom: chartOption("boolean", false, "Zoom"),
   showGrid: chartOption("boolean", true, "Show Grid"),
   animation: chartOption("boolean", true, "Animation"),
+  showCorrelation: chartOption("boolean", true, "Show Correlation"),
   showOutliers: chartOption("boolean", false, "Show Outlier"),
+  filled: chartOption("boolean", true, "Filled"),
   /*xMin: chartOption("number", 0, "x Min", undefined, undefined),
     xMax: chartOption("number", 100, "x Max", undefined, undefined),
     yMin: chartOption("number", 0, "y Min", undefined, undefined),
@@ -18,7 +20,11 @@ export const OptionDefinition = {
     showGrid: chartOption("boolean", true, "Show Grid"),
     */
 };
+export const Definition = {
+  animationTime: 2000,
+};
 
 export const Name = "Scatterplot";
 export const TagName = "scatterplot-chart";
 export const Align: ChartAlignment = "center";
+export const Description = `d3.js Scatterplot Chart`;

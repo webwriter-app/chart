@@ -1,18 +1,32 @@
-import { html, css } from "lit";
+import { html, css, LitElement } from "lit";
 import * as d3 from "d3";
 import * as d3regression from "d3-regression";
 import { customElement, property } from "lit/decorators.js";
 import { SharedTestStateMixin } from "../../../state";
-import { OptionDefinition } from "./definition";
-import { LitElementWw } from "@webwriter/lit";
+import { OptionDefinition, Definition } from "./definition";
+import "@shoelace-style/shoelace/dist/components/range/range.js";
 
 @customElement("scatterplot-chart")
 // TODO: fix type mismatch between lit-sm and @webwriter/lit
-class ScatterPlot extends SharedTestStateMixin(LitElementWw as any) {
+class ScatterPlot extends SharedTestStateMixin(LitElement) {
   static styles = css`
+    :host {
+      width: 100%;
+    }
+    .scatterplot-root {
+      width: 100%;
+    }
+    .scatterplot-wrapper {
+      width: 100%;
+      height: 100%;
+    }
+
     svg {
       border: 1px solid black;
+      height: 100%;
+      width: 100%;
     }
+
     text {
       font-family: Helvetica;
       font-size: 12px;
@@ -29,13 +43,56 @@ class ScatterPlot extends SharedTestStateMixin(LitElementWw as any) {
   `;
   @property({ type: Object })
   options = OptionDefinition;
-
+  definition = Definition;
+  constructor(optionsDefinition = OptionDefinition) {
+    super();
+    this.options = optionsDefinition;
+    this.sharedState.chart.options = Object.entries(optionsDefinition).reduce(
+      (acc, [key, value]) => {
+        acc[key] = this.sharedState.chart.options[key] ?? value.default;
+        return acc;
+      },
+      {} as any
+    ) as ChartOptions<OptionDefinition>;
+  }
+  // TODO: Add Name for chart
   render() {
-    return html`<div class="scatterplot-root"></div>`;
+    return html`<div class="scatterplot-root">
+      <div class="scatterplot-wrapper"></div>
+      ${this.options.animation
+        ? html`<sl-range
+            id="animationRange"
+            .value=${this.definition.animationTime}
+            @sl-change=${(e: any) => {
+              this.definition.animationTime = e.target.value;
+              this.updatePlot();
+            }}
+            min="1000"
+            max="5000"
+            step="500"
+            label="Animation Time"
+          ></sl-range>`
+        : html``}
+    </div>`;
   }
 
   firstUpdated() {
     this.createScatterPlot();
+  }
+  //updatePlot for new animation time
+  //TODO: Fix the focus problem
+
+  updatePlot() {
+    const animationRange = this.shadowRoot.querySelector(
+      "#animationRange"
+    ) as HTMLInputElement;
+    this.definition.animationTime = Number(animationRange.value);
+    // delete the old scatter plot
+    const root = this.shadowRoot.querySelector(".scatterplot-root");
+    d3.select(root).selectAll("svg").remove();
+    // delete the left over tooltip
+    d3.select(root).selectAll(".tooltip").remove();
+    this.createScatterPlot(); // Redraw the scatter plot with the new animation time
   }
 
   createScatterPlot() {
@@ -88,6 +145,8 @@ class ScatterPlot extends SharedTestStateMixin(LitElementWw as any) {
     });
     let xlabel = String(this.sharedState.scatterplotdatasets.axisLabels.x);
     let ylabel = String(this.sharedState.scatterplotdatasets.axisLabels.y);
+    let animationTime = Number(this.definition.animationTime);
+
     const roundingFactorX = 10 ** Math.floor(Math.log10(maxX));
     maxX = Math.ceil(maxX / roundingFactorX) * roundingFactorX;
 
@@ -99,12 +158,30 @@ class ScatterPlot extends SharedTestStateMixin(LitElementWw as any) {
       width = 520 - margin.left - margin.right,
       height = 500 - margin.top - margin.bottom;
 
-    const root = this.shadowRoot.querySelector(".scatterplot-root");
+    // Calculate the correlation coefficient r Person correlation coefficient
+    //TODO: Check if r should be calculated for each dataset or for all datasets
+    const n = datasets.flat().length;
+    const x_mean = d3.mean(datasets.flat().map((d) => d.x));
+    const y_mean = d3.mean(datasets.flat().map((d) => d.y));
+    const x_std = d3.deviation(datasets.flat().map((d) => d.x));
+    const y_std = d3.deviation(datasets.flat().map((d) => d.y));
+    const r =
+      d3.sum(datasets.flat().map((d) => (d.x - x_mean) * (d.y - y_mean))) /
+      (n * x_std * y_std);
+
+    const root = this.shadowRoot.querySelector(".scatterplot-wrapper");
 
     // append the svg object to the body of the page
     const svg = d3
       .select(root)
       .append("svg")
+      .attr(
+        "viewBox",
+        `0 0 ${width + margin.left + margin.right} ${
+          height + margin.top + margin.bottom
+        }`
+      )
+      .attr("preserveAspectRatio", "xMidYMid meet")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
@@ -134,12 +211,9 @@ class ScatterPlot extends SharedTestStateMixin(LitElementWw as any) {
       .append("text")
       .attr("class", "y label")
       .attr("text-anchor", "middle")
-      .attr("x", -((height + margin.bottom) / 2)) // to my y axis
-      .attr("y", -50) // to my x axis
-      .attr(
-        "style",
-        "transform: rotate(-90deg); transform-origin: center center; text-align: center;"
-      )
+      .attr("x", -((height + margin.bottom) / 2)) // to my x axis
+      .attr("y", -40) // to my y axis
+      .attr("transform", "rotate(-90)")
       .text(ylabel);
 
     // For normal scatter plot
@@ -155,7 +229,7 @@ class ScatterPlot extends SharedTestStateMixin(LitElementWw as any) {
       .attr("r", 7)
       .style("fill", (d) => d.color ?? "#417ca1")
       .style("stroke", "white")
-      .style("opacity", 0.5);
+      .style("opacity", this.options.filled ? 1 : 0.5);
 
     let outliers_scatter = svg.append("g");
     // Add tooltip for data points
@@ -171,6 +245,141 @@ class ScatterPlot extends SharedTestStateMixin(LitElementWw as any) {
       .style("border-radius", "5px")
       .style("padding", "10px");
 
+    // Add the correlation coefficient
+    if (this.options.showCorrelation) {
+      svg
+        .append("text")
+        .attr("x", width - 110)
+        .attr("y", 20)
+        .text("Correlation r = " + r.toFixed(2))
+        .style("font-size", "15px")
+        .style("fill", "#ee0808");
+    }
+
+    // For scatter plot with regression
+    if (this.sharedState.regressionType !== "none") {
+      datasets.forEach((dataset) => {
+        let regression;
+        let regressionFormula = "";
+        switch (this.sharedState.regressionType) {
+          case "none":
+            break;
+          case "linear":
+            regression = d3regression.regressionLinear();
+            break;
+          case "quadratic":
+            regression = d3regression.regressionQuad();
+            break;
+          case "exponential":
+            regression = d3regression.regressionExp();
+            break;
+          case "polynomial":
+            regression = d3regression.regressionPoly().order(3);
+            break;
+          case "logarithmic":
+            regression = d3regression.regressionLog();
+            break;
+          case "power":
+            regression = d3regression.regressionPow();
+            break;
+          case "loess":
+            regression = d3regression.regressionLoess().bandwidth(0.2);
+            break;
+        }
+        regression = regression.x((d) => d.x).y((d) => d.y);
+        const line = d3
+          .line()
+          .x((d) => x(d[0]))
+          .y((d) => y(d[1]));
+        svg
+          .append("path")
+          .datum(regression(dataset))
+          .attr("fill", "none")
+          .attr("stroke", dataset[0]?.color ?? "#69b3a2")
+          .attr("stroke-width", 1.5)
+          .attr("d", line);
+
+        const regressionData = regression(dataset);
+        if (regressionData) {
+          switch (this.sharedState.regressionType) {
+            case "none":
+              break;
+            case "linear":
+              dataset.length < 2
+                ? (regressionFormula =
+                    "Cannot perform linear regression: Insufficient data points.")
+                : (regressionFormula = `y = ${regressionData.a.toFixed(
+                    2
+                  )}x + ${regressionData.b.toFixed(2)}`);
+              break;
+            case "quadratic":
+              dataset.length < 3
+                ? (regressionFormula =
+                    "Cannot perform quadratic regression: Insufficient data points.")
+                : (regressionFormula = `y = ${regressionData.a.toFixed(
+                    2
+                  )}x^2 + ${regressionData.b.toFixed(
+                    2
+                  )}x + ${regressionData.c.toFixed(2)}`);
+              break;
+            case "exponential":
+              dataset.length < 2
+                ? (regressionFormula =
+                    "Cannot perform exponential regression: Insufficient data points.")
+                : (regressionFormula = `y = ${regressionData.a.toFixed(
+                    2
+                  )}e^(${regressionData.b.toFixed(2)}x)`);
+              break;
+            case "polynomial":
+              if (dataset.length < 4) {
+                regressionFormula =
+                  "Cannot perform polynomial regression: Insufficient data points.";
+                break;
+              }
+              let coeffients = regressionData.coefficients;
+              let formula = "y = ";
+              for (let i = 0; i < coeffients.length; i++) {
+                formula += coeffients[i].toFixed(2) + "x^" + (3 - i) + " + ";
+              }
+              regressionFormula = formula.slice(0, -2);
+              break;
+            case "logarithmic":
+              dataset.length < 2
+                ? (regressionFormula =
+                    "Cannot perform logarithmic regression: Insufficient data points.")
+                : (regressionFormula = `y = ${regressionData.a.toFixed(
+                    2
+                  )}ln(x) + ${regressionData.b.toFixed(2)}`);
+              break;
+            case "power":
+              dataset.length < 2
+                ? (regressionFormula =
+                    "Cannot perform power regression: Insufficient data points.")
+                : (regressionFormula = `y = ${regressionData.a.toFixed(
+                    2
+                  )}x^${regressionData.b.toFixed(2)}`);
+              break;
+            case "loess":
+              dataset.length < 2
+                ? (regressionFormula =
+                    "Cannot perform loess regression: Insufficient data points.")
+                : (regressionFormula = `LOESS curve`);
+              break;
+          }
+        }
+        //  show the formula of the regression line on the top left corner
+        //TODO: Fix pos. when more than one regression line
+        if (regressionFormula !== "") {
+          svg
+            .append("text")
+            .attr("x", 10)
+            .attr("y", 10)
+            .text(regressionFormula)
+            .style("font-size", "15px")
+            .style("fill", dataset[0]?.color ?? "#69b3a2");
+        }
+      });
+    }
     // Add outliers
     if (this.options.showOutliers) {
       datasets.map((dataset, i) => {
@@ -218,8 +427,9 @@ class ScatterPlot extends SharedTestStateMixin(LitElementWw as any) {
             tooltip
               .style("opacity", 1)
               .html(
-                "Outlier of " +
-                  labelofDataset +
+                (labelofDataset !== ""
+                  ? "Outlier of " + labelofDataset
+                  : "Outlier") +
                   "<br>" +
                   xlabel +
                   ": " +
@@ -240,6 +450,7 @@ class ScatterPlot extends SharedTestStateMixin(LitElementWw as any) {
 
     // Animate the scatter plot
     // For each point appears with a tooltip
+    //TODO: See the papers about teaching scatterplot for the animation
     //TODO: Fix the position of the tooltip
     //TODO: Fix the regression line?
     if (this.options.animation) {
@@ -255,15 +466,14 @@ class ScatterPlot extends SharedTestStateMixin(LitElementWw as any) {
         .style("border-radius", "5px")
         .style("padding", "10px")
         .style("pointer-events", "none");
-
       scatter
         .style("opacity", 0)
         .attr("cx", (d) => x(d.x))
         .attr("cy", (d) => y(d.y))
         .transition()
-        .delay((d, i) => i * 2000) // Important: d can be deleted
+        .delay((d, i) => i * animationTime) // Important: d can be deleted
         .duration(300)
-        .style("opacity", 0.5)
+        .style("opacity", this.options.filled ? 1 : 0.5)
         .on("start", function (event) {
           setTimeout(() => {
             tooltip_animation
@@ -275,58 +485,11 @@ class ScatterPlot extends SharedTestStateMixin(LitElementWw as any) {
 
             setTimeout(() => {
               tooltip_animation.style("opacity", 0);
-            }, 1000); // Show the tooltip for 1000ms
-          }, event.i * 2000); // This ensures the tooltip appears after the transition delay
+            }, animationTime / 2); // Show the tooltip for 1000ms
+          }, event.i * animationTime); // This ensures the tooltip appears after the transition delay
         });
     }
 
-    if (this.sharedState.regressionType !== "none") {
-      // For scatter plot with regression
-      datasets.forEach((dataset) => {
-        let regression;
-        switch (this.sharedState.regressionType) {
-          case "none":
-            break;
-          case "linear":
-            regression = d3regression
-              .regressionLinear()
-              .x((d) => d.x)
-              .y((d) => d.y);
-            //.domain([0, maxX]);
-            break;
-          case "quadratic":
-            regression = d3regression.regressionQuad();
-            break;
-          case "exponential":
-            regression = d3regression.regressionExp();
-            break;
-          case "polynomial":
-            regression = d3regression.regressionPoly();
-            break;
-          case "logarithmic":
-            regression = d3regression.regressionLog();
-            break;
-          case "power":
-            regression = d3regression.regressionPow();
-            break;
-          case "loess":
-            regression = d3regression.regressionLoess();
-            break;
-        }
-        regression = regression.x((d) => d.x).y((d) => d.y);
-        const line = d3
-          .line()
-          .x((d) => x(d[0]))
-          .y((d) => y(d[1]));
-        svg
-          .append("path")
-          .datum(regression(dataset))
-          .attr("fill", "none")
-          .attr("stroke", dataset[0]?.color ?? "#69b3a2")
-          .attr("stroke-width", 1.5)
-          .attr("d", line);
-      });
-    }
     if (this.options.hoverTooltip) {
       // Three function that change the tooltip when user hover / move / leave a cell
       const mouseover = function (e: MouseEvent, d) {

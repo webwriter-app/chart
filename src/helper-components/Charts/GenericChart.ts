@@ -36,12 +36,12 @@ export class GenericChart<
   render() {
     return html`<canvas id="chart-canvas"></canvas>`;
   }
-
+  //TODO: see fix This ChartTypeRegistry
   constructor(optionsDefinition: T) {
     super();
     this.sharedState.chart.options = Object.entries(optionsDefinition).reduce(
       (acc, [key, value]) => {
-        acc[key] = value.default;
+        acc[key] = this.sharedState.chart.options[key] ?? value.default;
         return acc;
       },
       {} as any

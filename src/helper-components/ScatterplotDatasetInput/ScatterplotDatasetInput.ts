@@ -16,7 +16,7 @@ import SlColorPicker from "@shoelace-style/shoelace/dist/components/color-picker
 import "../FileUploadButton";
 import { SharedTestStateMixin } from "../../state";
 import { LitElementWw } from "@webwriter/lit";
-
+//TODO: Add teacher options,
 //TODO:, file upload, dispatch event, change style for plus button
 @customElement("wwci-datasetscatterplot-input")
 export class Select extends SharedTestStateMixin(LitElementWw as any) {
@@ -82,9 +82,13 @@ export class Select extends SharedTestStateMixin(LitElementWw as any) {
         >Add Dataset</sl-button
       >`;
     return html`
-      <sl-button class="add-dataset-button" @click=${() => this.addDataset()}
-        >Add Dataset</sl-button
-      >
+      ${this.sharedState.teacherOptions.addRemoveData
+        ? html`<sl-button
+            class="add-dataset-button"
+            @click=${() => this.addDataset()}
+            >Add Dataset</sl-button
+          >`
+        : html``}
       ${this.sharedState.scatterplotdatasets.sets.map(
         (each_dataset, index_inset) => html` <div class="table-wrapper">
           <table>

@@ -43,12 +43,12 @@ interface sharedState {
 
 const initialState: sharedState = {
   teacherOptions: {
-    showOptions: false,
-    showData: false,
-    showLockedOptions: false,
-    changeData: false,
-    changeOptions: false,
-    addRemoveData: false,
+    showOptions: true,
+    showData: true,
+    showLockedOptions: true,
+    changeData: true,
+    changeOptions: true,
+    addRemoveData: true,
   },
   scatterplotdatasets: {
     axisLabels: { x: "x", y: "y" },

@@ -23,8 +23,8 @@ export class Select extends LitElement {
   @property({ type: Number })
   selectedIndex = 0;
 
-  @property({ type: "boolean", converter })
-  disabled = false;
+  @property({ type: Boolean })
+  disabled: boolean = false;
 
   changeSelected(e: any) {
     this.selectedIndex = this.options.findIndex(

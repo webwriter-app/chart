@@ -97,7 +97,7 @@ export default css`
   #main {
     height: 65%;
     width: 100%;
-    outline: 2px solid darkblue;
+    outline: 2px solid black;
     display: flex;
     flex-direction: column;
   }
@@ -130,6 +130,15 @@ export default css`
     grid-template-columns: repeat(4, 1fr);
     grid-gap: 10px;
     box-sizing: border-box;
+  }
+  #teacher-options-panel {
+    background-color: white;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    padding-bottom: 2px;
   }
 
   #settings {
