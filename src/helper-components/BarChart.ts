@@ -1,13 +1,14 @@
-import { LitElement, html } from "lit";
+import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import style from "./barchart.style";
 import Chart from "chart.js/auto";
 
 import { addAlphaToRGB, converter } from "../functions";
 import { ChartType, CompleteChartData } from "../interfaces";
+import { LitElementWw } from "@webwriter/lit";
 
 @customElement("bar-chart")
-export class BarChart extends LitElement {
+export class BarChart extends LitElementWw {
   @property({ type: "ChartData", converter })
   data: CompleteChartData = {};
 
@@ -15,7 +16,7 @@ export class BarChart extends LitElement {
   type: ChartType = "bar";
 
   @property({ type: String })
-  lable = "";
+  label = "";
 
   @property({ type: Boolean, converter })
   filled = false;
@@ -65,7 +66,7 @@ export class BarChart extends LitElement {
         labels: Object.values(this.data).map((val) => val.label),
         datasets: [
           {
-            label: this.lable,
+            label: this.label,
             data: values,
             backgroundColor,
             borderColor,

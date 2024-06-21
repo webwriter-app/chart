@@ -1,8 +1,9 @@
-import { LitElement, html, css } from "lit";
+import { LitElementWw } from "@webwriter/lit";
+import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 @customElement("wwci-file-upload-button")
-export class FileUploadButton extends LitElement {
+export class FileUploadButton extends LitElementWw {
   static styles = css`
     .file-upload-button {
       display: inline-block;

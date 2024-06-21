@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { html } from "lit";
 import { customElement } from "lit/decorators.js";
 
 import {
@@ -11,14 +11,18 @@ import {
 
 import style from "./DatasetInput.style";
 
-import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
-import "@shoelace-style/shoelace/dist/components/input/input.js";
-import "@shoelace-style/shoelace/dist/components/color-picker/color-picker.js";
+import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
+import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js";
+import SlColorPicker from "@shoelace-style/shoelace/dist/components/color-picker/color-picker.js";
 import { SharedTestStateMixin } from "../../state";
-import "../FileUploadButton";
+import { FileUploadButton } from "../FileUploadButton";
+import { LitElementWw } from "@webwriter/lit";
 
 @customElement("wwci-dataset-input")
-export class Select extends SharedTestStateMixin(LitElement) {
+export class DatasetInput extends SharedTestStateMixin(
+  LitElementWw as unknown as LitElementWw &
+    Parameters<typeof SharedTestStateMixin>[0]
+) {
   addDataset() {
     this.sharedState.chart.datasets.sets.push({
       name: randomString(),
@@ -257,10 +261,18 @@ export class Select extends SharedTestStateMixin(LitElement) {
   }
 
   static styles = style;
+  public static get scopedElements() {
+    return {
+      "sl-icon-button": SlIconButton,
+      "sl-input": SlInput,
+      "sl-color-picker": SlColorPicker,
+      "wwci-file-upload-button": FileUploadButton,
+    };
+  }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "wwci-dataset-input": Select;
+    "wwci-dataset-input": DatasetInput;
   }
 }

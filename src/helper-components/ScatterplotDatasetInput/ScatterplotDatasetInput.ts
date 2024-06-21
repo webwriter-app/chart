@@ -19,7 +19,10 @@ import { LitElementWw } from "@webwriter/lit";
 //TODO: Add teacher options,
 //TODO:, file upload, dispatch event, change style for plus button
 @customElement("wwci-datasetscatterplot-input")
-export class Select extends SharedTestStateMixin(LitElementWw as any) {
+export class ScatterplotDatasetInput extends SharedTestStateMixin(
+  LitElementWw as unknown as LitElementWw &
+    Parameters<typeof SharedTestStateMixin>[0]
+) {
   addFirstDataset() {
     this.sharedState.scatterplotdatasets.axisLabels = {
       x: "X-axis",
@@ -327,6 +330,6 @@ export class Select extends SharedTestStateMixin(LitElementWw as any) {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "wwci-datasetscatterplot-input": Select;
+    "wwci-datasetscatterplot-input": ScatterplotDatasetInput;
   }
 }

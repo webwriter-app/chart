@@ -1,4 +1,4 @@
-import { LitElement, css, html } from "lit";
+import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 
 import "./LimitedNumberInput";
@@ -7,9 +7,16 @@ import "./Select";
 import { attribute } from "../functions";
 import { availableCharts } from "./Charts/imports";
 import { SharedTestStateMixin } from "../state";
+import { LitElementWw } from "@webwriter/lit";
+import { Select } from "./Select";
+import SlButton from "@shoelace-style/shoelace/dist/components/button/button.component.js";
+import SlInput from "@shoelace-style/shoelace/dist/components/input/input.component.js";
 
 @customElement("wwci-chart-settings")
-export class Select extends SharedTestStateMixin(LitElement) {
+export class ChartSettings extends SharedTestStateMixin(
+  LitElementWw as unknown as LitElementWw &
+    Parameters<typeof SharedTestStateMixin>[0]
+) {
   static styles = css`
     .lock-button-locked {
       color: red;
@@ -53,7 +60,7 @@ export class Select extends SharedTestStateMixin(LitElement) {
             (this.sharedState.teacherOptions.changeOptions &&
               !this.sharedState.chart.optionsLocked["chartType"])
           )}
-          options="${attribute(availableCharts)}"
+          selectOptions="${attribute(availableCharts)}"
           @wwci-change="${(e: any) => {
             this.sharedState.chart.selectedType = e.target.value;
           }}"
@@ -112,10 +119,18 @@ export class Select extends SharedTestStateMixin(LitElement) {
       </div>
     `;
   }
+
+  public static get scopedElements() {
+    return {
+      "wwci-select": Select,
+      "sl-icon-button": SlButton,
+      "sl-input": SlInput,
+    };
+  }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "wwci-chart-settings": Select;
+    "wwci-chart-settings": ChartSettings;
   }
 }

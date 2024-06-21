@@ -1,8 +1,8 @@
-import { LitElement } from "lit";
 import { CompleteChartData } from "../../interfaces";
 import { Chart, ChartType } from "chart.js";
+import { GenericChart } from "./GenericChart";
 
-export function getContext<T extends LitElement>(
+export function getContext<T extends GenericChart<{}>>(
   this_: T,
   canvasId = "chart-canvas"
 ): CanvasRenderingContext2D {

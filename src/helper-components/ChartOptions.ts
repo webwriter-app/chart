@@ -1,4 +1,4 @@
-import { LitElement, TemplateResult, css, html } from "lit";
+import { TemplateResult, css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 
 import "./LimitedNumberInput";
@@ -8,6 +8,11 @@ import "./Select";
 //import { availableCharts } from "./Charts/imports";
 import { SharedTestStateMixin } from "../state";
 import { availableRegressions } from "./Charts/imports";
+import { LitElementWw } from "@webwriter/lit";
+import { NumberInput } from "./LimitedNumberInput";
+import { Select } from "./Select";
+import SlInput from "@shoelace-style/shoelace/dist/components/input/input.component.js";
+import { Switch } from "./Switch";
 
 interface TOptionInput {
   name: string;
@@ -17,7 +22,10 @@ interface TOptionInput {
 }
 //TODO: fix options in scatterplot not saved when switching between (Scatterplot and other charts)
 @customElement("wwci-chart-options")
-export class Select extends SharedTestStateMixin(LitElement) {
+export class ChartOptions extends SharedTestStateMixin(
+  LitElementWw as unknown as LitElementWw &
+    Parameters<typeof SharedTestStateMixin>[0]
+) {
   static styles = css`
     .lock-button-locked {
       color: red;
@@ -88,7 +96,7 @@ export class Select extends SharedTestStateMixin(LitElement) {
             option.template = html`<wwci-select
               .value="${this.sharedState.regressionType}"
               ?disabled=${isDisabled}
-              .options="${availableRegressions}"
+              .selectOptions="${availableRegressions}"
               @wwci-change="${(e: any) => {
                 this.sharedState.regressionType = e.target.value;
               }}"
@@ -138,10 +146,19 @@ export class Select extends SharedTestStateMixin(LitElement) {
       <div></div>
     `;
   }
+
+  public static get scopedElements() {
+    return {
+      "wwci-limited-number-input": NumberInput,
+      "wwci-select": Select,
+      "sl-input": SlInput,
+      "wwci-switch": Switch,
+    };
+  }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "wwci-chart-options": Select;
+    "wwci-chart-options": ChartOptions;
   }
 }

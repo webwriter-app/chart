@@ -1,13 +1,11 @@
 import { LitElement, PropertyValueMap, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
-import "./helper-components/Select";
-import "./helper-components/DatasetInput/DatasetInput";
-import "./helper-components/Switch";
-import "./helper-components/ChartOptions";
-import "./helper-components/TeacherOptions";
-import "./helper-components/ChartSettings";
-import "./helper-components/ScatterplotDatasetInput/ScatterplotDatasetInput";
+import { DatasetInput } from "./helper-components/DatasetInput/DatasetInput";
+import { ChartOptions } from "./helper-components/ChartOptions";
+import { TeacherOptions } from "./helper-components/TeacherOptions";
+import { ChartSettings } from "./helper-components/ChartSettings";
+import { ScatterplotDatasetInput } from "./helper-components/ScatterplotDatasetInput/ScatterplotDatasetInput";
 
 import "@shoelace-style/shoelace/dist/themes/light.css";
 import SlSwitch from "@shoelace-style/shoelace/dist/components/switch/switch.js";
@@ -30,9 +28,20 @@ import {
 } from "./helper-components/Charts/imports";
 
 import { SharedTestStateMixin } from "./state";
+import { LitElementWw } from "@webwriter/lit";
+import { BarChart } from "./helper-components/Charts/Bar/chart";
+import { DoughnutChart } from "./helper-components/Charts/Doughnut/chart";
+import { LineChart } from "./helper-components/Charts/Line/chart";
+import { PieChart } from "./helper-components/Charts/Pie/chart";
+import { PolarChart } from "./helper-components/Charts/PolarArea/chart";
+import { RadarChart } from "./helper-components/Charts/Radar/chart";
+import { ScatterplotChart } from "./helper-components/Charts/Scatterplot/scatterplot";
 
 @customElement("webwriter-chart")
-export class WwChart extends SharedTestStateMixin(LitElement) {
+export class WwChart extends SharedTestStateMixin(
+  LitElementWw as unknown as LitElementWw &
+    Parameters<typeof SharedTestStateMixin>[0]
+) {
   //TODO: extends (SharedTestStateMixin(LitElementWw) as unknown as LitElementWw & ReturnType<SharedTestStateMixin>)
   /**WebWriter API: If true, render the component such that easy printing is possible. */
   @property({ type: Boolean, attribute: true, reflect: true })
@@ -280,6 +289,18 @@ export class WwChart extends SharedTestStateMixin(LitElement) {
       "sl-switch": SlSwitch,
       "sl-input": SlInput,
       "sl-checkbox": SlCheckbox,
+      "wwci-teacher-options": TeacherOptions,
+      "wwci-dataset-input": DatasetInput,
+      "wwci-chart-options": ChartOptions,
+      "wwci-chart-settings": ChartSettings,
+      "wwci-datasetscatterplot-input": ScatterplotDatasetInput,
+      "bar-chart": BarChart,
+      "doughnut-chart": DoughnutChart,
+      "line-chart": LineChart,
+      "pie-chart": PieChart,
+      "polar-chart": PolarChart,
+      "radar-chart": RadarChart,
+      "scatterplot-chart": ScatterplotChart,
     };
   }
 }

@@ -1,15 +1,18 @@
-import { LitElement, html } from "lit";
+import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import { converter } from "../functions";
 
 import "@shoelace-style/shoelace/dist/components/select/select.js";
 import "@shoelace-style/shoelace/dist/components/option/option.js";
+import { LitElementWw } from "@webwriter/lit";
+import SlSelect from "@shoelace-style/shoelace/dist/components/select/select.component.js";
+import SlOption from "@shoelace-style/shoelace/dist/components/option/option.component.js";
 
 @customElement("wwci-select")
-export class Select extends LitElement {
+export class Select extends LitElementWw {
   @property({ type: Array<string>, converter })
-  options: Array<string> = [];
+  selectOptions: Array<string> = [];
 
   @property()
   label: string = "";
@@ -27,10 +30,10 @@ export class Select extends LitElement {
   disabled: boolean = false;
 
   changeSelected(e: any) {
-    this.selectedIndex = this.options.findIndex(
+    this.selectedIndex = this.selectOptions.findIndex(
       (v) => e.target.value === convertFriendlyNameToId(v)
     );
-    this.value = this.options[this.selectedIndex];
+    this.value = this.selectOptions[this.selectedIndex];
     this.dispatchEvent(
       new CustomEvent("wwci-change", {
         detail: { value: this.value },
@@ -40,16 +43,18 @@ export class Select extends LitElement {
   }
 
   render() {
-    this.selectedIndex = this.value ? this.options.indexOf(this.value) : 0;
+    this.selectedIndex = this.value
+      ? this.selectOptions.indexOf(this.value)
+      : 0;
     return html`
       <sl-select
         ?disabled="${this.disabled}"
         placeholder="${this.placeholder}"
         label="${this.label}"
         @sl-change="${this.changeSelected}"
-        value=${convertFriendlyNameToId(this.options[this.selectedIndex])}
+        value=${convertFriendlyNameToId(this.selectOptions[this.selectedIndex])}
       >
-        ${this.options.map(
+        ${this.selectOptions.map(
           (option) =>
             html`<sl-option value="${convertFriendlyNameToId(option)}"
               >${option}</sl-option
@@ -57,6 +62,13 @@ export class Select extends LitElement {
         )}
       </sl-select>
     `;
+  }
+
+  public static get scopedElements() {
+    return {
+      "sl-select": SlSelect,
+      "sl-option": SlOption,
+    };
   }
 }
 

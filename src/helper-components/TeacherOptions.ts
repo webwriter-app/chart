@@ -1,12 +1,18 @@
-import { LitElement, html } from "lit";
+import { html } from "lit";
 import { customElement } from "lit/decorators.js";
 
 import "./LimitedNumberInput";
 
 import { SharedTestStateMixin } from "../state";
+import { LitElementWw } from "@webwriter/lit";
+import { Switch } from "./Switch";
+import { NumberInput } from "./LimitedNumberInput";
 
 @customElement("wwci-teacher-options")
-export class TeacherOptions extends SharedTestStateMixin(LitElement) {
+export class TeacherOptions extends SharedTestStateMixin(
+  LitElementWw as unknown as LitElementWw &
+    Parameters<typeof SharedTestStateMixin>[0]
+) {
   render() {
     return html`
       <h2 style="grid-column: 1/span 4;">TEACHER OPTIONS</h2>
@@ -53,6 +59,13 @@ export class TeacherOptions extends SharedTestStateMixin(LitElement) {
         }}
       ></wwci-switch>
     `;
+  }
+
+  public static get scopedElements() {
+    return {
+      "wwci-switch": Switch,
+      "wwci-limited-number-input": NumberInput,
+    };
   }
 }
 

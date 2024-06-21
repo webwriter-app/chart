@@ -1,8 +1,10 @@
-import { LitElement, html } from "lit";
+import SlInput from "@shoelace-style/shoelace/dist/components/input/input.component.js";
+import { LitElementWw } from "@webwriter/lit";
+import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 @customElement("wwci-limited-number-input")
-export class NumberInput extends LitElement {
+export class NumberInput extends LitElementWw {
   @property({ type: Number })
   value = 0;
 
@@ -45,6 +47,12 @@ export class NumberInput extends LitElement {
       @sl-input=${this.inputEvent}
       sl-change=${this.inputEvent}
     ></sl-input>`;
+  }
+
+  public static get scopedElements() {
+    return {
+      "sl-input": SlInput,
+    };
   }
 }
 

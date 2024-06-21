@@ -1,10 +1,12 @@
-import { LitElement, html } from "lit";
+import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import "@shoelace-style/shoelace/dist/components/switch/switch.js";
+import { LitElementWw } from "@webwriter/lit";
+import SlSwitch from "@shoelace-style/shoelace/dist/components/switch/switch.js";
 
 @customElement("wwci-switch")
-export class Select extends LitElement {
+export class Switch extends LitElementWw {
   @property({ type: Boolean })
   checked: boolean = false;
 
@@ -30,10 +32,16 @@ export class Select extends LitElement {
       ><slot></slot
     ></sl-switch>`;
   }
+
+  public static get scopedElements() {
+    return {
+      "sl-switch": SlSwitch,
+    };
+  }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "wwci-switch": Select;
+    "wwci-switch": Switch;
   }
 }

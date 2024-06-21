@@ -1,14 +1,18 @@
-import { html, css, LitElement } from "lit";
+import { html, css } from "lit";
 import * as d3 from "d3";
 import * as d3regression from "d3-regression";
 import { customElement, property } from "lit/decorators.js";
 import { SharedTestStateMixin } from "../../../state";
 import { OptionDefinition, Definition } from "./definition";
-import "@shoelace-style/shoelace/dist/components/range/range.js";
+import SlRange from "@shoelace-style/shoelace/dist/components/range/range.js";
+import { LitElementWw } from "@webwriter/lit";
 
 @customElement("scatterplot-chart")
 // TODO: fix type mismatch between lit-sm and @webwriter/lit
-class ScatterPlot extends SharedTestStateMixin(LitElement) {
+export class ScatterplotChart extends SharedTestStateMixin(
+  LitElementWw as unknown as LitElementWw &
+    Parameters<typeof SharedTestStateMixin>[0]
+) {
   static styles = css`
     :host {
       width: 100%;
@@ -54,6 +58,7 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
       stroke-width: 1px !important;
     }
   `;
+
   @property({ type: Object })
   options = OptionDefinition;
   @property({ type: Object })
@@ -70,7 +75,7 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
       {} as any
     ) as ChartOptions<OptionDefinition>;
   }
-  // TODO: Add Name for chart
+
   render() {
     return html`<div class="scatterplot-root">
       <div class="scatterplot-wrapper">
@@ -101,7 +106,13 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
   }
   //updatePlot for new animation time
   //TODO: Fix the focus problem
-
+  // TODO: Add name for scatterplot, maybe use the text feld?
+  // TODO: Name for each dataset unter the scatterplot
+  //TODO: Table for statistics: r, regression folrmula, mean, etc.
+  //TODO: Fix buttons convert and download image
+  //TODO: Given x and calculate y (geogbra)
+  //TODO: Temporary delete some dataset
+  // TODO: Delete outliers to study the rest
   updatePlot() {
     const animationRange = this.shadowRoot.querySelector(
       "#animationRange"
@@ -130,6 +141,8 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
     // get the max value of the dataset
     let maxX = 0;
     let maxY = 0;
+    let minX = 0;
+    let minY = 0;
     datasets.forEach((dataset) => {
       Math.max(...dataset.map((d) => d.x)) > maxX
         ? (maxX = Math.max(...dataset.map((d) => d.x)))
@@ -137,6 +150,12 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
       Math.max(...dataset.map((d) => d.y)) > maxY
         ? (maxY = Math.max(...dataset.map((d) => d.y)))
         : maxY;
+      Math.min(...dataset.map((d) => d.x)) < minX
+        ? (minX = Math.min(...dataset.map((d) => d.x)))
+        : minX;
+      Math.min(...dataset.map((d) => d.y)) < minY
+        ? (minY = Math.min(...dataset.map((d) => d.y)))
+        : minY;
     });
     datasets.map((dataset, index) => {
       dataset.map(
@@ -145,14 +164,11 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
             this.sharedState.scatterplotdatasets.sets[index].scatter_color)
       );
     });
-    // TODO: Add labels
+    // Add labels
     datasets.map((dataset, index) => {
       dataset.map(
-        (d) =>
-          (d.label =
-            this.sharedState.scatterplotdatasets.sets[index].labels[
-              dataset.indexOf(d)
-            ])
+        (d, i) =>
+          (d.label = this.sharedState.scatterplotdatasets.sets[index].labels[i])
       );
     });
     // Add scatterplot title
@@ -210,7 +226,7 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // Add X axis
-    const x = d3.scaleLinear().domain([0, maxX]).range([0, width]);
+    const x = d3.scaleLinear().domain([minX, maxX]).range([0, width]);
     svg
       .append("g")
       .attr("transform", "translate(0," + height + ")")
@@ -226,7 +242,7 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
       .text(xlabel);
     //TODO: Fix position of y label with long text eg: Y LabelX LabelX LabelX LabelX Label
     // Add Y axis
-    const y = d3.scaleLinear().domain([0, maxY]).range([height, 0]);
+    const y = d3.scaleLinear().domain([minY, maxY]).range([height, 0]);
     svg.append("g").call(d3.axisLeft(y));
 
     svg
@@ -484,7 +500,7 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
         .attr("cx", (d) => x(d.x))
         .attr("cy", (d) => y(d.y))
         .transition()
-        .delay((d, i) => i * animationTime) // Important: d can be deleted
+        .delay((_, i: number) => i * animationTime) // Important: d can be deleted
         .duration(300)
         .style("opacity", this.options.filled ? 1 : 0.5)
         .on("start", (event) => {
@@ -520,11 +536,16 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
 
     if (this.options.hoverTooltip) {
       // Three function that change the tooltip when user hover / move / leave a cell
-      const mouseover = function (e: MouseEvent, d) {
+      const mouseover = function (
+        _e: MouseEvent,
+        d: { x: number; y: number; label: string }
+      ) {
         // TODO: get point data of point that we are currently hovering
         tooltip
           .style("opacity", 1)
-          .html(xlabel + ": " + d.x + " " + ylabel + ": " + d.y);
+          .html(
+            d.label + "<br/>" + xlabel + ": " + d.x + " " + ylabel + ": " + d.y
+          );
       };
       const mousemove = function (e: MouseEvent) {
         tooltip
@@ -559,10 +580,15 @@ class ScatterPlot extends SharedTestStateMixin(LitElement) {
       // add color light dark for grid
     }
   }
+  public static get scopedElements() {
+    return {
+      "sl-range": SlRange,
+    };
+  }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "scatterplot-chart": ScatterPlot;
+    "scatterplot-chart": ScatterplotChart;
   }
 }
