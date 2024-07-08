@@ -12,6 +12,7 @@ import * as Line from "./Line/definition";
 import * as PolarArea from "./PolarArea/definition";
 import * as Radar from "./Radar/definition";
 import * as Scatterplot from "./Scatterplot/definition";
+import * as ScatterplotAdvanced from "./ScatterplotAdvanced/definition";
 
 import "./Bar/chart";
 import "./Doughnut/chart";
@@ -20,7 +21,18 @@ import "./Line/chart";
 import "./PolarArea/chart";
 import "./Radar/chart";
 import "./Scatterplot/scatterplot";
-const charts = [Pie, Doughnut, Bar, Line, PolarArea, Radar, Scatterplot];
+import "./ScatterplotAdvanced/scatterplotAdvanced";
+
+const charts = [
+  Pie,
+  Doughnut,
+  Bar,
+  Line,
+  PolarArea,
+  Radar,
+  Scatterplot,
+  ScatterplotAdvanced,
+];
 //@end-auto-generated
 
 export const availableCharts = charts.map((chart) => chart.Name);

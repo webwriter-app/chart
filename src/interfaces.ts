@@ -43,5 +43,21 @@ export interface ScatterplotDataSet {
   scatter_color: string;
   scatter_titel: string;
   labels: string[];
-  dimensional_data?: { x: number; y: number }[];
+  dimensional_data?: { x: number; y: number; selected: boolean }[];
+}
+// For Advanced Scatterplot with multiple columns for y and x axis
+export interface ScatterplotDataSetsAdvanced {
+  labels: string[];
+  color: string;
+  sets: ScatterplotDataSetAdvanced[];
+}
+export interface ScatterplotDataSetAdvanced {
+  id: number;
+  data: (number | string)[];
+}
+export interface LineDataSet {
+  data: { x: number; y: number }[];
+}
+export interface LineDataSets {
+  sets: LineDataSet[];
 }

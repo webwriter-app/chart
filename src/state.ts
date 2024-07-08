@@ -1,5 +1,9 @@
 import { ChartType, RegressionType } from "./helper-components/Charts/imports";
-import { ChartDataSets } from "./interfaces";
+import {
+  ChartDataSets,
+  LineDataSets,
+  ScatterplotDataSetsAdvanced,
+} from "./interfaces";
 import { createSharedStateMixin } from "lit-sm";
 import { ScatterplotDataSets } from "./interfaces";
 interface sharedState {
@@ -15,6 +19,13 @@ interface sharedState {
   editable: boolean;
   printable: boolean;
   scatterplotdatasets: ScatterplotDataSets;
+  lineDatasets: LineDataSets;
+
+  scatterplotAdvanced: {
+    scatterplotdatasetsAdvanced: ScatterplotDataSetsAdvanced;
+    selectedX: string;
+    selectedY: string;
+  };
   regressionType: RegressionType;
   chart: {
     title: string;
@@ -58,10 +69,10 @@ const initialState: sharedState = {
         scatter_titel: "Data1",
         labels: ["a", "b", "c", "d"],
         dimensional_data: [
-          { x: 1, y: 2 },
-          { x: 2, y: 4 },
-          { x: 3, y: 6 },
-          { x: 4, y: 200 },
+          { x: 1, y: 2, selected: false },
+          { x: 2, y: 4, selected: false },
+          { x: 3, y: 6, selected: false },
+          //{ x: 4, y: 200, selected: false },
           /*
           { x: 4, y: 33 },
           { x: 5, y: 31.37 },
@@ -94,6 +105,75 @@ const initialState: sharedState = {
       },*/
     ],
   },
+  scatterplotAdvanced: {
+    scatterplotdatasetsAdvanced: {
+      labels: ["a", "b", "c", "d"],
+      color: "#9966FF",
+      sets: [
+        {
+          id: 1,
+          data: [1, "two", 3, "two"],
+        },
+        {
+          id: 2,
+          data: [1, "three", 3, "four"],
+        },
+        {
+          id: 3,
+          data: [1, "four", 3, "four"],
+        },
+        {
+          id: 4,
+          data: [1, "five", 3, "four"],
+        },
+        {
+          id: 4,
+          data: [2, "five", 3, "four"],
+        },
+        {
+          id: 5,
+          data: [1, "four", 3, "four"],
+        },
+        {
+          id: 6,
+          data: [1, "four", 3, "four"],
+        },
+        {
+          id: 7,
+          data: [4, "four", 3, "four"],
+        },
+        {
+          id: 8,
+          data: [4, "four", 3, "four"],
+        },
+        {
+          id: 8,
+          data: [4, "four", 3, "four"],
+        },
+        {
+          id: 8,
+          data: [4, "four", 3, "four"],
+        },
+        {
+          id: 8,
+          data: [4, "four", 3, "four"],
+        },
+      ],
+    },
+    selectedX: "b",
+    selectedY: "none",
+  },
+  lineDatasets: {
+    sets: [
+      {
+        data: [
+          { x: 0, y: 2 },
+          { x: 2, y: 4 },
+        ],
+      },
+    ],
+  },
+
   regressionType: "none",
   chart: {
     selectedType: "Bar",

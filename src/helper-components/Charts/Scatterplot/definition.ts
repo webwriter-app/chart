@@ -11,7 +11,6 @@ export const OptionDefinition = {
   animation: chartOption("boolean", false, "Animation"),
   showCorrelation: chartOption("boolean", false, "Show Correlation"),
   showOutliers: chartOption("boolean", false, "Show Outliers"),
-  filled: chartOption("boolean", true, "Filled"),
   /*xMin: chartOption("number", 0, "x Min", undefined, undefined),
     xMax: chartOption("number", 100, "x Max", undefined, undefined),
     yMin: chartOption("number", 0, "y Min", undefined, undefined),

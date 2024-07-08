@@ -6,7 +6,7 @@ import { ChartOptions } from "./helper-components/ChartOptions";
 import { TeacherOptions } from "./helper-components/TeacherOptions";
 import { ChartSettings } from "./helper-components/ChartSettings";
 import { ScatterplotDatasetInput } from "./helper-components/ScatterplotDatasetInput/ScatterplotDatasetInput";
-
+import { AdvancedInput } from "./helper-components/AdvancedInput/AdvancedInput";
 import "@shoelace-style/shoelace/dist/themes/light.css";
 import SlSwitch from "@shoelace-style/shoelace/dist/components/switch/switch.js";
 import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js";
@@ -36,6 +36,7 @@ import { PieChart } from "./helper-components/Charts/Pie/chart";
 import { PolarChart } from "./helper-components/Charts/PolarArea/chart";
 import { RadarChart } from "./helper-components/Charts/Radar/chart";
 import { ScatterplotChart } from "./helper-components/Charts/Scatterplot/scatterplot";
+import { ScatterplotAdvancedChart } from "./helper-components/Charts/ScatterplotAdvanced/scatterplotAdvanced";
 
 @customElement("webwriter-chart")
 export class WwChart extends SharedTestStateMixin(
@@ -207,6 +208,8 @@ export class WwChart extends SharedTestStateMixin(
           ? html` <div id="data-panel">
               ${this.sharedState.chart.selectedType === "Scatterplot"
                 ? html`<wwci-datasetscatterplot-input></wwci-datasetscatterplot-input>`
+                : this.sharedState.chart.selectedType === "ScatterplotAdvanced"
+                ? html`<wwci-advanced-input></wwci-advanced-input>`
                 : html`<wwci-dataset-input></wwci-dataset-input>`}
             </div>`
           : this.showOptions &&
@@ -301,6 +304,8 @@ export class WwChart extends SharedTestStateMixin(
       "polar-chart": PolarChart,
       "radar-chart": RadarChart,
       "scatterplot-chart": ScatterplotChart,
+      "wwci-advanced-input": AdvancedInput,
+      "scatterplot-advanced-chart": ScatterplotAdvancedChart,
     };
   }
 }

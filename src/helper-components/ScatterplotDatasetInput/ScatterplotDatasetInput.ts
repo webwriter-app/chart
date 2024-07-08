@@ -32,7 +32,9 @@ export class ScatterplotDatasetInput extends SharedTestStateMixin(
       scatter_color: randomColor(),
       scatter_titel: randomString(),
       labels: [randomString()],
-      dimensional_data: [{ x: randomNumber(), y: randomNumber() }],
+      dimensional_data: [
+        { x: randomNumber(), y: randomNumber(), selected: false },
+      ],
     });
     console.log("ADD DATASET");
     console.log(this.sharedState.scatterplotdatasets.sets);
@@ -42,7 +44,9 @@ export class ScatterplotDatasetInput extends SharedTestStateMixin(
       scatter_color: randomColor(),
       scatter_titel: randomString(),
       labels: [randomString()],
-      dimensional_data: [{ x: randomNumber(), y: randomNumber() }],
+      dimensional_data: [
+        { x: randomNumber(), y: randomNumber(), selected: false },
+      ],
     });
     console.log("ADD DATASET");
     console.log(this.sharedState.scatterplotdatasets.sets);
@@ -55,6 +59,7 @@ export class ScatterplotDatasetInput extends SharedTestStateMixin(
           ? dataset.dimensional_data.push({
               x: randomNumber(),
               y: randomNumber(),
+              selected: false,
             }) && dataset.labels.push(randomString())
           : dataset;
         return dataset;
