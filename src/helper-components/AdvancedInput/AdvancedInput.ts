@@ -20,7 +20,7 @@ import { SharedTestStateMixin } from "../../state";
 import { FileUploadButton } from "../FileUploadButton";
 import { LitElementWw } from "@webwriter/lit";
 import { Select } from "../Select";
-
+//TODO: Add the color for columns to distinguish number or string
 @customElement("wwci-advanced-input")
 export class AdvancedInput extends SharedTestStateMixin(
   LitElementWw as unknown as LitElementWw &
@@ -28,25 +28,39 @@ export class AdvancedInput extends SharedTestStateMixin(
 ) {
   @property({ type: Array }) list_labels: string[];
   @property({ type: Boolean }) disabled: boolean;
-
+  //TODO: Check if this is good
+  @property({ type: Array }) remeberedStringOrNumber: (number | string)[] = [];
   @state() addColumnPopupOpen = false;
-
   addDataset() {
     let dataset: (number | string)[] = [];
-    this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets[0].data.forEach(
-      (element) => {
+    if (
+      this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets
+        .length > 0
+    ) {
+      this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets[0].data.forEach(
+        (element) => {
+          typeof element === "number"
+            ? dataset.push(randomNumber())
+            : dataset.push(element);
+        }
+      );
+    } else {
+      this.remeberedStringOrNumber.forEach((element) => {
         typeof element === "number"
           ? dataset.push(randomNumber())
           : dataset.push(element);
-      }
-    );
+      });
+    }
     this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets.push({
-      id: this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets
-        ? this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets[
-            this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced
-              .sets.length - 1
-          ].id + 1
-        : 0,
+      id:
+        this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets
+          .length > 0
+          ? this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced
+              .sets[
+              this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced
+                .sets.length - 1
+            ].id + 1
+          : 1,
       data: dataset,
     });
   }
@@ -63,31 +77,43 @@ export class AdvancedInput extends SharedTestStateMixin(
         .fill("")
         .map(() => randomNumber()),
     });
+    this.sharedState.scatterplotAdvanced.selectedX = "none";
+    this.sharedState.scatterplotAdvanced.selectedY = "none";
   }
 
   addNumberColumn() {
     this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.labels.push(
       randomString()
     );
-    this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets =
-      this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets.map(
-        (dataset) => {
-          dataset.data.push(randomNumber());
-          return dataset;
-        }
-      );
+    if (
+      this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets
+        .length > 0
+    ) {
+      this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets =
+        this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets.map(
+          (dataset) => {
+            dataset.data.push(randomNumber());
+            return dataset;
+          }
+        );
+    }
   }
   addStringColumn() {
     this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.labels.push(
       randomString()
     );
-    this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets =
-      this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets.map(
-        (dataset) => {
-          dataset.data.push(randomString());
-          return dataset;
-        }
-      );
+    if (
+      this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets
+        .length > 0
+    ) {
+      this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets =
+        this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets.map(
+          (dataset) => {
+            dataset.data.push(randomString());
+            return dataset;
+          }
+        );
+    }
   }
 
   deleteColumn(i: number) {
@@ -109,6 +135,13 @@ export class AdvancedInput extends SharedTestStateMixin(
   }
 
   deleteDataset(i: number) {
+    if (
+      this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets
+        .length === 1
+    ) {
+      this.remeberedStringOrNumber =
+        this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets[0].data;
+    }
     this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets.splice(
       i,
       1
@@ -123,13 +156,15 @@ export class AdvancedInput extends SharedTestStateMixin(
     this.disabled = this.list_labels.length === 0 ? true : false;
     if (
       this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.sets
+        .length === 0 &&
+      this.sharedState.scatterplotAdvanced.scatterplotdatasetsAdvanced.labels
         .length === 0
     )
       return html`<sl-button
         class="add-dataset-button"
-        @click=${() => this.addFirstDataset}
+        @click=${() => this.addFirstDataset()}
         >Add Dataset</sl-button
-      >`;
+      > `;
     return html`
       <div class="wrapper">
         <div class="container">

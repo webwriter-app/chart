@@ -1,6 +1,6 @@
 import { html, css } from "lit";
 import * as d3 from "d3";
-import { customElement, state } from "lit/decorators.js";
+import { customElement } from "lit/decorators.js";
 import { SharedTestStateMixin } from "../../../state";
 import { LitElementWw } from "@webwriter/lit";
 
@@ -10,52 +10,93 @@ export class ScatterplotAdvancedChart extends SharedTestStateMixin(
     Parameters<typeof SharedTestStateMixin>[0]
 ) {
   static styles = css`
-    :host {
-      width: 100%;
-    }
-    .scatterplot-root {
-      width: 100%;
-    }
-    .scatterplot-wrapper {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .descriptions {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .regression-formula, .correlations {
-      display: flex;
-      flex-direction: column;
-      font-size: 12px;
-    }
-
-    svg {
-      border: 1px solid black;
-      flex: 1 0 0
-      width: 100%;
-    }
-
-    text {
-      font-family: Helvetica;
-      font-size: 12px;
-      color: #333;
-    }
-    g {
-      font-size: 12px;
-    }
-    .selected {
-      opacity: 1 !important;
-      stroke: black !important;
-      stroke-width: 1px !important;
-    }
+  :host {
+    width: 100%;
+  }
+  .scatterplot-root {
+    width: 100%;
+  }
+  .scatterplot-wrapper {
+    display: flex;
+    flex-direction: row; /* Align items in a row */
+    align-items: flex-start; 
+    align-items: flex-start; /* Align items to the top */
+    height: 100%;
+  }
+  .scatterplot-svg {
+    flex-grow: 1; /* Allow the SVG to take available space */
+  }
+  .button-container {
+    margin-left: 10px; /* Optional: Add some space between the SVG and the button */
+  }
+  table,
+  th,
+  tr,
+  td {
+    border: 0.5px solid black;
+    border-collapse: collapse;
+  
+  }
+  .th_regression {
+    min-width: 10rem;
+  }
+  .th_correlation {
+    min-width: 2.5rem;
+  }
+  .table-wrapper {
+    margin-top: 20px;
+  }
+  table {
+    display: inline-table;
+    background: white;
+  }
+  .regression-formulas td {
+    font-size: 12px;
+  }
+  svg {
+    border: 1px solid black;
+    flex: 1 0 0
+    width: 100%;
+  }
+  
+  text {
+    font-family: Helvetica;
+    font-size: 12px;
+    color: #333;
+  }
+  g {
+    font-size: 12px;
+  }
+  .selected {
+    opacity: 1 !important;
+    stroke: black !important;
+    stroke-width: 1px !important;
+  }
+  .selected-rect{
+    opacity: 1 !important;
+    stroke: red !important;
+    stroke-width: 1.5px !important;
+  }
+  .popup-content {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    background: white;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    z-index: 10;
+  }
+  svg *, sl-icon {
+    user-select: none;
+  }
   `;
   render() {
-    return html` <div id="scatterplot"></div> `;
+    return html`
+      <div class="scatterplot-root">
+        <div class="scatterplot-wrapper">
+          <div class="scatterplot-svg"></div>
+        </div>
+      </div>
+    `;
   }
 
   firstUpdated() {
@@ -66,6 +107,7 @@ export class ScatterplotAdvancedChart extends SharedTestStateMixin(
     const datasets: {
       x: number | string;
       y: number | string;
+      selected?: boolean;
       offset?: number;
       color?: string;
       label?: string;
@@ -77,6 +119,7 @@ export class ScatterplotAdvancedChart extends SharedTestStateMixin(
     }[] = [];
     const singeledatasets: {
       p: number | string;
+      selected?: boolean;
       offset?: number;
       color?: string;
       label?: string;
@@ -123,7 +166,7 @@ export class ScatterplotAdvancedChart extends SharedTestStateMixin(
     let xlabel = this.sharedState.scatterplotAdvanced.selectedX;
     let ylabel = this.sharedState.scatterplotAdvanced.selectedY;
 
-    const root = this.shadowRoot.querySelector("#scatterplot");
+    const root = this.shadowRoot.querySelector(".scatterplot-svg");
 
     // append the svg object to the body of the page
     const svg = d3
@@ -168,13 +211,16 @@ export class ScatterplotAdvancedChart extends SharedTestStateMixin(
         })));
     //TODO: max for number values
     // Add X axis
-    let x = d3;
-    if (!(xlabel === "none")) {
+    let x;
+    if (!(xlabel === "none") && data_for_x_axis_copy.length > 0) {
       x =
         typeof data_for_x_axis_copy[0].x === "number"
           ? d3
               .scaleLinear()
-              .domain([0, d3.max(data_for_x_axis_copy, (d) => d.x) as number])
+              .domain([
+                0,
+                d3.max(data_for_x_axis_copy, (d) => Number(d.x)) as number,
+              ])
               .range([0, width])
           : d3
               .scaleBand()
@@ -235,13 +281,16 @@ export class ScatterplotAdvancedChart extends SharedTestStateMixin(
         })));
 
     // Add Y axis
-    let y = d3;
-    if (!(ylabel === "none")) {
+    let y;
+    if (!(ylabel === "none") && data_for_y_axis_copy.length > 0) {
       y =
         typeof data_for_y_axis_copy[0].y === "number"
           ? d3
               .scaleLinear()
-              .domain([0, d3.max(data_for_y_axis_copy, (d) => d.y) as number])
+              .domain([
+                0,
+                d3.max(data_for_y_axis_copy, (d) => Number(d.y)) as number,
+              ])
               .range([height, 0])
           : d3
               .scaleBand()
@@ -432,10 +481,11 @@ export class ScatterplotAdvancedChart extends SharedTestStateMixin(
 
       return distance;
     }
+    const scatter = svg;
     // if one of the axis is string and there are multiple value of the other axis, those values are the same, then the circles will be on top of each other
     if (!(xlabel === "none") && !(ylabel === "none")) {
       datasets.forEach((d) => {
-        svg
+        scatter
           .append("circle")
           .attr(
             "cx",
@@ -458,7 +508,7 @@ export class ScatterplotAdvancedChart extends SharedTestStateMixin(
     }
     if (xlabel === "none" && !(ylabel === "none")) {
       singeledatasets.forEach((d) => {
-        svg
+        scatter
           .append("circle")
           .attr("cx", 5 + d.offset)
           .attr(
@@ -474,7 +524,7 @@ export class ScatterplotAdvancedChart extends SharedTestStateMixin(
     }
     if (!(xlabel === "none") && ylabel === "none") {
       singeledatasets.forEach((d) => {
-        svg
+        scatter
           .append("circle")
           .attr(
             "cx",
@@ -489,9 +539,6 @@ export class ScatterplotAdvancedChart extends SharedTestStateMixin(
       });
     }
   }
-
-  @state()
-  selected: { x: number; y: number }[] = [];
 
   public static get scopedElements() {
     return {};

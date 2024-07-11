@@ -36,8 +36,6 @@ export class ScatterplotDatasetInput extends SharedTestStateMixin(
         { x: randomNumber(), y: randomNumber(), selected: false },
       ],
     });
-    console.log("ADD DATASET");
-    console.log(this.sharedState.scatterplotdatasets.sets);
   }
   addDataset() {
     this.sharedState.scatterplotdatasets.sets.push({
@@ -48,8 +46,6 @@ export class ScatterplotDatasetInput extends SharedTestStateMixin(
         { x: randomNumber(), y: randomNumber(), selected: false },
       ],
     });
-    console.log("ADD DATASET");
-    console.log(this.sharedState.scatterplotdatasets.sets);
   }
 
   addRow(index_inset: number) {
