@@ -1,11 +1,6 @@
 import { ChartType, RegressionType } from "./helper-components/Charts/imports";
-import {
-  ChartDataSets,
-  LineDataSets,
-  ScatterplotDataSetsAdvanced,
-} from "./interfaces";
+import { ChartDataSets, LineDataSets, ScatterDatasets } from "./interfaces";
 import { createSharedStateMixin } from "lit-sm";
-import { ScatterplotDataSets } from "./interfaces";
 interface sharedState {
   teacherOptions: {
     showOptions: boolean;
@@ -18,14 +13,8 @@ interface sharedState {
 
   editable: boolean;
   printable: boolean;
-  scatterplotdatasets: ScatterplotDataSets;
   lineDatasets: LineDataSets;
-
-  scatterplotAdvanced: {
-    scatterplotdatasetsAdvanced: ScatterplotDataSetsAdvanced;
-    selectedX: string;
-    selectedY: string;
-  };
+  scatterDatasets: ScatterDatasets;
   regressionType: RegressionType;
   chart: {
     title: string;
@@ -61,108 +50,6 @@ const initialState: sharedState = {
     changeOptions: true,
     addRemoveData: true,
   },
-  scatterplotdatasets: {
-    axisLabels: { x: "x", y: "y" },
-    sets: [
-      {
-        scatter_color: "#9966FF",
-        scatter_titel: "Data1",
-        labels: ["a", "b", "c", "d"],
-        dimensional_data: [
-          { x: 1, y: 2, selected: false },
-          { x: 2, y: 4, selected: false },
-          { x: 3, y: 6, selected: false },
-          //{ x: 4, y: 200, selected: false },
-          /*
-          { x: 4, y: 33 },
-          { x: 5, y: 31.37 },
-          { x: 6, y: 30.26 },
-          { x: 7, y: 30.01 },
-          { x: 8, y: 29.02 },
-          { x: 9, y: 28.62 },
-          { x: 10, y: 28.31 },
-          { x: 20, y: 20.22 },
-          { x: 30, y: 14.76 },
-          { x: 40, y: 13.04 },
-          { x: 50, y: 11.33 },
-          { x: 60, y: 10.42 },
-          { x: 70, y: 9.49 },
-          { x: 80, y: 8.49 },
-          { x: 90, y: 7.81 },
-          { x: 100, y: 7.34 },
-          { x: 200, y: 5.08 },*/
-        ],
-      },
-      /*{
-        scatter_color: "#ff00d0",
-        scatter_titel: "Data2",
-        labels: ["a", "b", "c"],
-        dimensional_data: [
-          { x: 6, y: 8 },
-          { x: 5, y: 3 },
-          { x: 7, y: 4 },
-        ],
-      },*/
-    ],
-  },
-  scatterplotAdvanced: {
-    scatterplotdatasetsAdvanced: {
-      labels: ["a", "b", "c", "d"],
-      color: "#9966FF",
-      sets: [
-        {
-          id: 1,
-          data: [1, "two", 3, "two"],
-        },
-        {
-          id: 2,
-          data: [1, "three", 3, "four"],
-        },
-        {
-          id: 3,
-          data: [1, "four", 3, "four"],
-        },
-        {
-          id: 4,
-          data: [1, "five", 3, "four"],
-        },
-        {
-          id: 4,
-          data: [2, "five", 3, "four"],
-        },
-        {
-          id: 5,
-          data: [1, "four", 3, "four"],
-        },
-        {
-          id: 6,
-          data: [1, "four", 3, "four"],
-        },
-        {
-          id: 7,
-          data: [4, "four", 3, "four"],
-        },
-        {
-          id: 8,
-          data: [4, "four", 3, "four"],
-        },
-        {
-          id: 8,
-          data: [4, "four", 3, "four"],
-        },
-        {
-          id: 8,
-          data: [4, "four", 3, "four"],
-        },
-        {
-          id: 8,
-          data: [4, "four", 3, "four"],
-        },
-      ],
-    },
-    selectedX: "b",
-    selectedY: "none",
-  },
   lineDatasets: {
     sets: [
       {
@@ -172,6 +59,105 @@ const initialState: sharedState = {
         ],
       },
     ],
+  },
+  scatterDatasets: {
+    sets: [
+      {
+        color: "#9966FF",
+        name: "My First Dataset",
+        ids: [
+          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+          21,
+        ],
+        labels: ["a-label", "b-label", "c-label"],
+        typeOfEachData: ["number", "number", "string"],
+        dimensional_data: [
+          { data: [1, 2, "one"], selected: false },
+          { data: [2, 4, "two"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [4, 6, "three"], selected: false },
+          { data: [5, 6, "three"], selected: false },
+          /*{ data: [2, 2, "one"], selected: false },
+          { data: [5, 4, "two"], selected: false },
+          { data: [6, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [6, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },*/
+
+          /*
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },*/
+        ],
+        filter: { label: "", type: "none", index_in_labels: -1 },
+      },
+      {
+        color: "#ff00d0",
+        name: "My Second Dataset",
+        ids: [1, 2, 3],
+        labels: ["a-label", "b-label", "c-label"],
+        typeOfEachData: ["number", "string", "string"],
+        dimensional_data: [
+          { data: [6, 8, "six"], selected: false },
+          { data: [5, 3, "five"], selected: false },
+          { data: [7, 4, "seven"], selected: false },
+        ],
+        filter: { label: "", type: "none", index_in_labels: -1 },
+      },
+      {
+        color: "#1900ff",
+        name: "My Third Dataset",
+        ids: [1, 2, 3],
+        labels: ["a-label", "b-label", "c-label"],
+        typeOfEachData: ["number", "string", "string"],
+        dimensional_data: [
+          { data: [6, 8, "six"], selected: false },
+          { data: [5, 3, "five"], selected: false },
+          { data: [7, 4, "seven"], selected: false },
+        ],
+        filter: { label: "", type: "none", index_in_labels: -1 },
+      },
+    ],
+    selected: {
+      axis: {
+        x: undefined,
+        y: undefined,
+      },
+      dataset_indexes: [],
+    },
   },
 
   regressionType: "none",

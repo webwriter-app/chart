@@ -1,7 +1,13 @@
 import * as d3 from "d3";
 import * as d3regression from "d3-regression";
-import { Point } from "./scatterplot";
-import { LineDataSets, ScatterplotDataSets } from "../../../interfaces";
+import { PointOnlyNumbers } from "./scatterplot";
+import {
+  LineDataSets,
+  ScatterplotDataSets,
+  ScatterDatasets,
+  ScatterDataset,
+} from "../../../interfaces";
+import { randomColor } from "../../../functions";
 
 interface Dimensions {
   height: number;
@@ -20,8 +26,38 @@ interface Scales {
   x: d3.ScaleLinear<number, number>;
   y: d3.ScaleLinear<number, number>;
 }
+function getScatterplotDataSets(scatterdatasets: ScatterDatasets) {
+  const scatterplotdatasets: ScatterplotDataSets = {
+    axisLabels: {
+      x: scatterdatasets.selected.axis.x,
+      y: scatterdatasets.selected.axis.y,
+    },
+    sets: scatterdatasets.selected.dataset_indexes.map((index) => {
+      const set = scatterdatasets.sets[index];
+      const index_x = set.labels.indexOf(scatterdatasets.selected.axis.x);
+      const index_y = set.labels.indexOf(scatterdatasets.selected.axis.y);
 
-function calculateSVGDimensions(data: Point[][]): Dimensions {
+      const dimensional_data = set.dimensional_data.map((dimensional_data) => {
+        return {
+          x: dimensional_data.data[index_x] as number,
+          y: dimensional_data.data[index_y] as number,
+          selected: dimensional_data.selected,
+          original_data: dimensional_data, // Keep reference to original data
+        };
+      });
+
+      return {
+        scatter_color: set.color,
+        scatter_titel: set.name,
+        ids: set.ids,
+        dimensional_data: dimensional_data,
+      };
+    }),
+  };
+  return scatterplotdatasets;
+}
+
+function calculateSVGDimensions(data: PointOnlyNumbers[][]): Dimensions {
   // get the max value of the dataset
   let maxX = 0;
   let maxY = 0;
@@ -146,7 +182,7 @@ function createTooltip(parent: Element) {
 
 function drawScatterplot(
   root: Element,
-  datasets: Point[][],
+  datasets: PointOnlyNumbers[][],
   axisLabels: { x: string; y: string },
   options: {
     hoverTooltip: boolean;
@@ -220,7 +256,7 @@ function drawScatterplot(
       const outliers = outliers_x.concat(outliers_y);
       scatter
         .selectAll(`circle.dataset-${i}`)
-        .data(outliers, (d: Point) => `${d.x}-${d.y}`) // Assuming x and y uniquely identify each circle
+        .data(outliers, (d: PointOnlyNumbers) => `${d.x}-${d.y}`) // Assuming x and y uniquely identify each circle
         .style("fill", "#f9080c")
         .style("opacity", 1)
         .on("mouseover", (event, d) => {
@@ -242,10 +278,47 @@ function drawScatterplot(
 
   return { svg, scales, scatter, dimensions, tooltip };
 }
+function findIndexForPoint(
+  d: PointOnlyNumbers,
+  scatterdatasets: ScatterDatasets,
+  compareSelected: boolean
+) {
+  // Iterate over scatterdatasets.sets in reverse order
+  for (let i = scatterdatasets.sets.length - 1; i >= 0; i--) {
+    if (scatterdatasets.selected.dataset_indexes.includes(i)) {
+      const set = scatterdatasets.sets[i];
+      const index_x = set.labels.indexOf(scatterdatasets.selected.axis.x);
+      const index_y = set.labels.indexOf(scatterdatasets.selected.axis.y);
+
+      // Iterate over set.dimensional_data in reverse order
+      for (let j = set.dimensional_data.length - 1; j >= 0; j--) {
+        let dimensional_data = set.dimensional_data[j];
+        if (
+          dimensional_data.data[index_x] === d.x &&
+          dimensional_data.data[index_y] === d.y &&
+          (compareSelected ? dimensional_data.selected === d.selected : true)
+        ) {
+          return {
+            index_in_set: i,
+            index_in_dimensional_data: j,
+            index_in_data_x: index_x,
+            index_in_data_y: index_y,
+          };
+        }
+      }
+    }
+  }
+  return {
+    index_in_set: -1,
+    index_in_dimensional_data: -1,
+    index_in_data_x: -1,
+    index_in_data_y: -1,
+  }; // Return -1 if no match is found
+}
 
 function drawPoints(
   parent: d3.Selection<SVGGElement, unknown, null, undefined>,
-  dataset: Point[],
+  dataset: PointOnlyNumbers[],
   index: number,
   axisLabels: { x: string; y: string },
   tooltip: d3.Selection<HTMLDivElement, unknown, null, undefined>,
@@ -272,7 +345,7 @@ function drawPoints(
       tooltip
         .style("opacity", 1)
         .html(
-          d.label +
+          d.id +
             "<br/>" +
             axisLabels.x +
             ": " +
@@ -363,6 +436,7 @@ function addBrushingListeners(
   scatter: d3.Selection<SVGGElement, unknown, null, undefined>,
   dimensions: Dimensions,
   scales: Scales,
+  scatterdatasets: ScatterDatasets,
   onFinish: () => void,
   type: "select" | "deselect"
 ) {
@@ -377,7 +451,7 @@ function addBrushingListeners(
     ])
     .on("start brush", updateChartForSelection)
     .on("end", (event) => {
-      finalizeSelection(event);
+      finalizeSelection(event, scatterdatasets);
       onFinish();
     });
 
@@ -386,7 +460,7 @@ function addBrushingListeners(
   function updateChartForSelection(event) {
     if (!brushingEnabled) return; // Exit if brushing is disabled
     const extent = event.selection;
-    scatter.selectAll("circle").each(function (d: Point) {
+    scatter.selectAll("circle").each(function (d: PointOnlyNumbers) {
       // Reset to current selected state during brushing
       d3.select(this).classed("selected", d.selected);
       if (extent) {
@@ -398,16 +472,25 @@ function addBrushingListeners(
     });
   }
 
-  function finalizeSelection(event) {
+  function finalizeSelection(event, scatterdatasets: ScatterDatasets) {
     if (!brushingEnabled) return; // Exit if brushing is disabled
     const extent = event.selection;
     if (extent) {
-      scatter.selectAll("circle").each(function (d: Point) {
+      scatter.selectAll("circle").each(function (d: PointOnlyNumbers) {
         if (isBrushed(extent, scales.x(d.x), scales.y(d.y))) {
           d.selected = type === "select"; // Definitively select the point if it is brushed
         }
         // Update the class based on final selection
         d3.select(this).classed("selected", d.selected);
+        const point: PointOnlyNumbers = {
+          x: d.x,
+          y: d.y,
+        };
+        // Update the scatterdatasets
+        const index_set = findIndexForPoint(point, scatterdatasets, false);
+        scatterdatasets.sets[index_set.index_in_set].dimensional_data[
+          index_set.index_in_dimensional_data
+        ].selected = d.selected;
       });
     }
     brushingEnabled = false; // Disable brushing after the first brush
@@ -419,13 +502,13 @@ function addBrushingListeners(
 }
 
 function findTheClosestPoint(
-  datasets: Point[][],
+  datasets: PointOnlyNumbers[][],
   scales: Scales,
   clickX: number,
   clickY: number
 ) {
   let minDistance = Infinity;
-  let closestPoint: Point = null;
+  let closestPoint: PointOnlyNumbers = null;
   const flattenedDatasets = datasets.flat();
   for (let i = flattenedDatasets.length - 1; i >= 0; i--) {
     const point = flattenedDatasets[i];
@@ -441,7 +524,7 @@ function findTheClosestPoint(
 }
 // Iterate through the scatterplot datasets and return the last match index
 function findTheLastMatchIndexInSPDatasets(
-  closestPoint: Point,
+  closestPoint: PointOnlyNumbers,
   datasets: ScatterplotDataSets
 ) {
   let datasetIndex = -1;
@@ -450,7 +533,7 @@ function findTheLastMatchIndexInSPDatasets(
     if (
       dataset.scatter_titel === closestPoint.scatter_titel &&
       dataset.scatter_color === closestPoint.color &&
-      dataset.labels.includes(closestPoint.label) &&
+      dataset.ids.includes(closestPoint.id) &&
       dataset.dimensional_data.some(
         (point) =>
           point.x === closestPoint.x &&
@@ -466,7 +549,7 @@ function findTheLastMatchIndexInSPDatasets(
 }
 // Iterate through the scatterplot dataset and return the last match index
 function findTheLastMatchIndexInSPDataset(
-  closestPoint: Point,
+  closestPoint: PointOnlyNumbers,
   dimensionalData: { x: number; y: number; selected: boolean }[]
 ) {
   //Find the index of the point in the dataset
@@ -489,27 +572,40 @@ function addDragingPointListeners(
   svg: d3.Selection<SVGElement, unknown, null, undefined>,
   scatter: d3.Selection<SVGGElement, unknown, null, undefined>,
   scales: Scales,
+  scatterdatasets: ScatterDatasets,
   onFinish: () => void
 ) {
+  let index_set = {
+    index_in_set: -1,
+    index_in_dimensional_data: -1,
+    index_in_data_x: -1,
+    index_in_data_y: -1,
+  };
   const drag = d3
     .drag()
-    .on("start", (event) => {
+    .on("start", (event, d: PointOnlyNumbers) => {
       d3.select(event.sourceEvent.target).classed("selected", true);
+      index_set = findIndexForPoint(d, scatterdatasets, true);
     })
-    .on("drag", (event, d: Point) => {
-      console.log("dragging", d);
+    .on("drag", (event, d: PointOnlyNumbers) => {
       // Get new coordinates relative to the SVG container
       const [newX, newY] = d3.pointer(event, svg.node());
       d.x = scales.x.invert(newX);
       d.y = scales.y.invert(newY);
-
-      // Update the visual position of the circle
-      d3.select(event.sourceEvent.target)
-        .attr("cx", scales.x(d.x))
-        .attr("cy", scales.y(d.y));
+      // Update the visual position of the circle (this is true)
+      scatter.selectAll("circle").each(function (d: PointOnlyNumbers) {
+        d3.select(this).attr("cx", scales.x(d.x)).attr("cy", scales.y(d.y));
+      });
     })
-    .on("end", (event, d: Point) => {
+    .on("end", (event, d: PointOnlyNumbers) => {
       const selected = d.selected;
+      // Update the data point in the scatterdatasets
+      scatterdatasets.sets[index_set.index_in_set].dimensional_data[
+        index_set.index_in_dimensional_data
+      ].data[index_set.index_in_data_x] = d.x;
+      scatterdatasets.sets[index_set.index_in_set].dimensional_data[
+        index_set.index_in_dimensional_data
+      ].data[index_set.index_in_data_y] = d.y;
       // Update the visual position of the circle
       d3.select(event.sourceEvent.target).classed("selected", selected);
       // Re-render
@@ -552,7 +648,7 @@ function addGridListeners(
 function addRegressionLine(
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   scales: Scales,
-  dataset: Point[],
+  dataset: PointOnlyNumbers[],
   regressionType: string
 ) {
   let regression;
@@ -678,7 +774,7 @@ function addRegressionLine(
   }
   return { regressionFormula, regressionError };
 }
-function calculateCorrelation(dataset: Point[]) {
+function calculateCorrelation(dataset: PointOnlyNumbers[]) {
   const n = dataset.length;
   const x_mean = d3.mean(dataset.map((d) => d.x));
   const y_mean = d3.mean(dataset.map((d) => d.y));
@@ -693,7 +789,7 @@ function calculateCorrelation(dataset: Point[]) {
 function updateLineAndPoints(
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   scales: Scales,
-  d: Point,
+  d: PointOnlyNumbers,
   index: number,
   indexForEndPointsLeft: number,
   indexForEndPointsRight: number,
@@ -741,7 +837,7 @@ function updateLineAndPoints(
 // Find index i of the line
 function findIndexForLine(
   scales: Scales,
-  d: Point,
+  d: PointOnlyNumbers,
   lineDatasets: LineDataSets,
   index: number
 ) {
@@ -759,7 +855,8 @@ function findIndexForLine(
   }
   return index;
 }
-function calculateForRotation(d: Point, newX: number, newY: number) {
+
+function calculateForRotation(d: PointOnlyNumbers, newX: number, newY: number) {
   // Calculate the center of the line segment
   const centerX = (d[0].x + d[1].x) / 2;
   const centerY = (d[0].y + d[1].y) / 2;
@@ -787,7 +884,7 @@ function calculateForRotation(d: Point, newX: number, newY: number) {
 function deleteLineListeners(
   event: MouseEvent,
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  lineDatasetsWithCenterPoint: Point[][],
+  lineDatasetsWithCenterPoint: PointOnlyNumbers[][],
   scales: Scales,
   lineDatasets: LineDataSets
 ) {
@@ -826,11 +923,12 @@ function deleteLineListeners(
 function deletePointListeners(
   event: MouseEvent,
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  datasets: Point[][],
+  datasets: PointOnlyNumbers[][],
   scales: Scales,
-  scatterplotdatasets: ScatterplotDataSets
+  scatterdatasets: ScatterDatasets
 ) {
   event.preventDefault();
+  const scatterplotdatasets = getScatterplotDataSets(scatterdatasets);
   const [clickX, clickY] = d3.pointer(event, svg.node());
   // Find the closest point to the recht clicked position
   const result = findTheClosestPoint(datasets, scales, clickX, clickY);
@@ -851,12 +949,28 @@ function deletePointListeners(
       );
       if (index !== -1) {
         // Remove the point from the dataset
-        scatterplotdatasets.sets[datasetIndex].dimensional_data.splice(
+        /*scatterplotdatasets.sets[datasetIndex].dimensional_data.splice(
           index,
           1
         );
         // Remove the label from the dataset
-        scatterplotdatasets.sets[datasetIndex].labels.splice(index, 1);
+        scatterplotdatasets.sets[datasetIndex].ids.splice(index, 1);*/
+        // Remove the point from the original scatterdatasets
+        scatterdatasets.sets.forEach((set, index) => {
+          if (scatterdatasets.selected.dataset_indexes.includes(index)) {
+            const index_x = set.labels.indexOf(scatterdatasets.selected.axis.x);
+            const index_y = set.labels.indexOf(scatterdatasets.selected.axis.y);
+            set.dimensional_data = set.dimensional_data.filter(
+              (dimensional_data) =>
+                dimensional_data.data[index_x] !==
+                  scatterplotdatasets.sets[datasetIndex].dimensional_data[index]
+                    .x ||
+                dimensional_data.data[index_y] !==
+                  scatterplotdatasets.sets[datasetIndex].dimensional_data[index]
+                    .y
+            );
+          }
+        });
       }
     }
   }
@@ -865,28 +979,58 @@ function addPointListeners(
   event: MouseEvent,
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   scales: Scales,
-  scatterplotdatasets: ScatterplotDataSets,
+  scatterdatasets: ScatterDatasets,
   selectedIndextoAddNote: number
 ) {
+  //const scatterplotdatasets = getScatterplotDataSets(scatterdatasets);
   const [clickX, clickY] = d3.pointer(event, svg.node());
   const newX = scales.x.invert(clickX);
   const newY = scales.y.invert(clickY);
 
   // Add the new point to the dataset
-  scatterplotdatasets.sets[selectedIndextoAddNote].dimensional_data.push({
+  /*scatterplotdatasets.sets[selectedIndextoAddNote].dimensional_data.push({
     x: newX,
     y: newY,
     selected: false,
   });
-  scatterplotdatasets.sets[selectedIndextoAddNote].labels.push("new Point");
+  //TODO: Fix this
+  scatterplotdatasets.sets[selectedIndextoAddNote].ids.push(1);*/
+  // Add the new point to the original scatterdatasets
+  scatterdatasets.sets.forEach((set, index) => {
+    if (
+      scatterdatasets.selected.dataset_indexes.indexOf(index) ===
+      selectedIndextoAddNote
+    ) {
+      const index_x = set.labels.indexOf(scatterdatasets.selected.axis.x);
+      const index_y = set.labels.indexOf(scatterdatasets.selected.axis.y);
+      // Prepare the new data point for the original dataset
+      const newPointData = set.typeOfEachData.map((label, index) => {
+        if (index === index_x) {
+          return newX;
+        } else if (index === index_y) {
+          return newY;
+        } else if (label === "number") {
+          return 0; // or some default value
+        } else {
+          return "string"; // or some default value
+        }
+      });
+      set.dimensional_data.push({
+        data: newPointData,
+        selected: false,
+      });
+      set.ids.push(set.ids.length + 1);
+    }
+  });
 }
 function selectPointByClickingListeners(
   event: MouseEvent,
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  datasets: Point[][],
+  datasets: PointOnlyNumbers[][],
   scales: Scales,
-  scatterplotdatasets: ScatterplotDataSets
+  scatterDatasets: ScatterDatasets
 ) {
+  const scatterplotdatasets = getScatterplotDataSets(scatterDatasets);
   const [clickX, clickY] = d3.pointer(event, svg.node());
   // Find the closest point to the recht clicked position
   const result = findTheClosestPoint(datasets, scales, clickX, clickY);
@@ -906,12 +1050,117 @@ function selectPointByClickingListeners(
         dimensionalData
       );
       if (index !== -1) {
-        // Check if the point is selected, if it is, remove it, if it is not, add it
+        /*
+        Check if the point is selected, if it is, remove it, if it is not, add it
         dimensionalData[index].selected
           ? (dimensionalData[index].selected = false)
-          : (dimensionalData[index].selected = true);
+          : (dimensionalData[index].selected = true);*/
+        // Check if the point in original set is selected, if it is, remove it, if it is not, add it
+
+        scatterDatasets.sets.forEach((set, index) => {
+          if (scatterDatasets.selected.dataset_indexes.includes(index)) {
+            const index_x = set.labels.indexOf(scatterDatasets.selected.axis.x);
+            const index_y = set.labels.indexOf(scatterDatasets.selected.axis.y);
+            set.dimensional_data.map((dimensional_data) =>
+              dimensional_data.data[index_x] ===
+                scatterplotdatasets.sets[datasetIndex].dimensional_data[index]
+                  .x &&
+              dimensional_data.data[index_y] ===
+                scatterplotdatasets.sets[datasetIndex].dimensional_data[index].y
+                ? (dimensional_data.selected = !dimensional_data.selected)
+                : null
+            );
+          }
+        });
       }
     }
+  }
+}
+function updateColorForFilter(
+  i: number,
+  type: "number" | "string",
+  selectedDataset: ScatterDataset
+) {
+  const listofstringsforlabels: string[] = [];
+  const labelsandcolors: {
+    label: string;
+    color: string;
+  }[] = [];
+  const rangesandcolors: {
+    range: { min: number; max: number };
+    color: string;
+  }[] = [];
+  // find the min and max of the data
+  let min = Infinity;
+  let max = -Infinity;
+  let ranges: number[] = [];
+  let parts = 5;
+
+  // find the labels and colors for the data (5 colors) between min and max
+  if (type === "number") {
+    selectedDataset.dimensional_data.forEach((d) => {
+      if (Math.floor(d.data[i] as number) < min) {
+        min = Math.floor(d.data[i] as number);
+      }
+      if (Math.ceil(d.data[i] as number) > max) {
+        max = Math.ceil(d.data[i] as number);
+      }
+    });
+    const range_value = max - min;
+    if (range_value < 5) {
+      parts = range_value;
+      for (let i = 0; i < parts + 2; i++) {
+        ranges.push(min + i);
+      }
+    } else {
+      let step = Math.ceil(range_value / parts);
+      for (let i = 0; i < parts + 1; i++) {
+        ranges.push(min + i * step);
+      }
+    }
+    const colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#00ffff"];
+    for (let i = 0; i < ranges.length - 1; i++) {
+      rangesandcolors.push({
+        range: { min: ranges[i], max: ranges[i + 1] },
+        color: colors[i],
+      });
+    }
+
+    selectedDataset.filter.rangesandcolors = rangesandcolors;
+
+    selectedDataset.dimensional_data.forEach((d) => {
+      selectedDataset.filter.rangesandcolors.forEach((rangeandcolor, index) => {
+        if (
+          index === rangesandcolors.length - 1
+            ? (d.data[i] as number) >= rangeandcolor.range.min &&
+              (d.data[i] as number) <= rangeandcolor.range.max
+            : (d.data[i] as number) >= rangeandcolor.range.min &&
+              (d.data[i] as number) < rangeandcolor.range.max
+        ) {
+          d.color = rangeandcolor.color;
+        }
+      });
+    });
+  }
+
+  if (type === "string") {
+    selectedDataset.dimensional_data.forEach((d) => {
+      if (!listofstringsforlabels.includes(d.data[i] as string)) {
+        listofstringsforlabels.push(d.data[i] as string);
+        labelsandcolors.push({
+          label: d.data[i] as string,
+          color: randomColor(),
+        });
+      }
+    });
+    selectedDataset.filter.labelsandcolors = labelsandcolors;
+    selectedDataset.dimensional_data.forEach((d) => {
+      selectedDataset.filter.labelsandcolors.forEach((labelandcolor) => {
+        if (d.data[i] === labelandcolor.label) {
+          d.color = labelandcolor.color;
+        }
+      });
+    });
   }
 }
 export {
@@ -932,4 +1181,5 @@ export {
   deletePointListeners,
   addPointListeners,
   selectPointByClickingListeners,
+  updateColorForFilter,
 };

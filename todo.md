@@ -8,6 +8,7 @@
 - exercise: select correct point or set of points
   - teachers can set which points are correct and pupils need to select them
   - feedback after confirming selection
+- TODO: integrate chartoptions in chart interface
 
 # Individual Todos
 

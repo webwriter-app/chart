@@ -12,7 +12,6 @@ import * as Line from "./Line/definition";
 import * as PolarArea from "./PolarArea/definition";
 import * as Radar from "./Radar/definition";
 import * as Scatterplot from "./Scatterplot/definition";
-import * as ScatterplotAdvanced from "./ScatterplotAdvanced/definition";
 
 import "./Bar/chart";
 import "./Doughnut/chart";
@@ -21,18 +20,8 @@ import "./Line/chart";
 import "./PolarArea/chart";
 import "./Radar/chart";
 import "./Scatterplot/scatterplot";
-import "./ScatterplotAdvanced/scatterplotAdvanced";
 
-const charts = [
-  Pie,
-  Doughnut,
-  Bar,
-  Line,
-  PolarArea,
-  Radar,
-  Scatterplot,
-  ScatterplotAdvanced,
-];
+const charts = [Pie, Doughnut, Bar, Line, PolarArea, Radar, Scatterplot];
 //@end-auto-generated
 
 export const availableCharts = charts.map((chart) => chart.Name);
@@ -79,15 +68,15 @@ export function getChart(
   }">
 
     <${chartName} 
-      id="chart"
-      hide_excat_values="${attribute(!teacherOptions.showData)}"
-      datasets="${attribute(datasets)}"
-      label=${title}
-      style="display: flex; flex-grow: 1; max-height: 100%; max-width: 100%; justify-content: center; align-items: center;"
-      options="${attribute(options)}
+    id="chart"
+    hide_excat_values="${attribute(!teacherOptions.showData)}"
+    datasets="${attribute(datasets)}"
+    label=${title}
+    style="display: flex; flex-grow: 1; max-height: 100%; max-width: 100%; justify-content: center; align-items: center;"
+    options="${attribute(options)}
 
-      ">
-    </${chartName}>
+    ">
+  </${chartName}>
 
   </div>`;
 }

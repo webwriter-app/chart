@@ -30,8 +30,20 @@ td {
 .th_regression {
   min-width: 10rem;
 }
+.th_line {
+  min-width: 10rem;
+}
 .th_correlation {
   min-width: 2.5rem;
+}
+.th_color{
+  width: 2.5rem;
+}
+.th_range{
+  min-width: 10rem;
+}
+.th_label{
+  min-width: 10rem;
 }
 .table-wrapper {
   margin-top: 20px;
@@ -43,6 +55,17 @@ table {
 .regression-formulas td {
   font-size: 12px;
 }
+.color-formulas td {
+  font-size: 12px;
+}
+
+.color-span {
+  width: 1rem;
+  height: 1rem;
+  display: inline-block;
+  border-radius: 50%;
+}
+
 svg {
   border: 1px solid black;
   flex: 1 0 0
@@ -59,8 +82,8 @@ g {
 }
 .selected {
   opacity: 1 !important;
-  stroke: black !important;
-  stroke-width: 1px !important;
+  stroke: red !important;
+  stroke-width: 1.5px !important;
 }
 .selected-rect{
   opacity: 1 !important;

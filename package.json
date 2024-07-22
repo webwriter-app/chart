@@ -14,7 +14,8 @@
     "build": "tsc && vite build && ./create-files.sh",
     "check-prettier": "npx prettier --check .",
     "run-prettier": "npx prettier --write .",
-    "coverage": "vitest --coverage"
+    "coverage": "vitest --coverage",
+    "typecheck": "tsc --noEmit --composite false"
   },
   "repository": {
     "type": "git",

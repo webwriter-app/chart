@@ -69,5 +69,27 @@ export default css`
     align-items: stretch;
     background: white;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  .table-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    margin-top: 2rem;
+  }
+
+  .btn-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    margin-top: 1rem;
+    gap: 1rem;
+    z-index: 100;
+  }
+
+  sl-popup::part(popup) {
+    z-index: 1000000;
   }
 `;
