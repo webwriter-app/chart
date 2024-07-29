@@ -51,14 +51,7 @@ const initialState: sharedState = {
     addRemoveData: true,
   },
   lineDatasets: {
-    sets: [
-      {
-        data: [
-          { x: 0, y: 2 },
-          { x: 2, y: 4 },
-        ],
-      },
-    ],
+    sets: [],
   },
   scatterDatasets: {
     sets: [
@@ -69,14 +62,14 @@ const initialState: sharedState = {
           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
           21,
         ],
-        labels: ["a-label", "b-label", "c-label"],
+        labels: ["a-label", "b-label", "Gender"],
         typeOfEachData: ["number", "number", "string"],
         dimensional_data: [
-          { data: [1, 2, "one"], selected: false },
-          { data: [2, 4, "two"], selected: false },
-          { data: [3, 6, "three"], selected: false },
-          { data: [4, 6, "three"], selected: false },
-          { data: [5, 6, "three"], selected: false },
+          { data: [60, 17000, "male"], selected: false },
+          { data: [70, 18900, "male"], selected: false },
+          { data: [56, 16000, "female"], selected: false },
+          { data: [78, 17000, "female"], selected: false },
+          { data: [57, 15500, "female"], selected: false },
           /*{ data: [2, 2, "one"], selected: false },
           { data: [5, 4, "two"], selected: false },
           { data: [6, 6, "three"], selected: false },
@@ -129,11 +122,22 @@ const initialState: sharedState = {
         name: "My Second Dataset",
         ids: [1, 2, 3],
         labels: ["a-label", "b-label", "c-label"],
-        typeOfEachData: ["number", "string", "string"],
+        typeOfEachData: ["number", "number", "string"],
         dimensional_data: [
           { data: [6, 8, "six"], selected: false },
           { data: [5, 3, "five"], selected: false },
           { data: [7, 4, "seven"], selected: false },
+          /*
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },
+          { data: [3, 6, "three"], selected: false },*/
         ],
         filter: { label: "", type: "none", index_in_labels: -1 },
       },
@@ -142,7 +146,7 @@ const initialState: sharedState = {
         name: "My Third Dataset",
         ids: [1, 2, 3],
         labels: ["a-label", "b-label", "c-label"],
-        typeOfEachData: ["number", "string", "string"],
+        typeOfEachData: ["number", "number", "string"],
         dimensional_data: [
           { data: [6, 8, "six"], selected: false },
           { data: [5, 3, "five"], selected: false },

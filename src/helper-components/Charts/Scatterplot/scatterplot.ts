@@ -675,7 +675,10 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 x: dimensional_data.data[index_x] as number,
                 y: dimensional_data.data[index_y] as number,
                 selected: dimensional_data.selected,
-                color: set.color,
+                color:
+                  selectedDatasets.length === 1 && dimensional_data.color
+                    ? dimensional_data.color
+                    : set.color,
                 id: set.ids[i],
                 scatter_titel: set.name,
               };
@@ -685,14 +688,16 @@ export class ScatterplotChart extends SharedTestStateMixin(
           }
         );
       const lineDatasetsWithCenterPoint: PointOnlyNumbers[][] =
-        this.sharedState.lineDatasets.sets.map((dataset) =>
-          dataset.data.concat([
-            {
-              x: (dataset.data[0].x + dataset.data[1].x) / 2,
-              y: (dataset.data[0].y + dataset.data[1].y) / 2,
-            },
-          ])
-        );
+        this.sharedState.lineDatasets.sets.length > 0
+          ? this.sharedState.lineDatasets.sets.map((dataset) =>
+              dataset.data.concat([
+                {
+                  x: (dataset.data[0].x + dataset.data[1].x) / 2,
+                  y: (dataset.data[0].y + dataset.data[1].y) / 2,
+                },
+              ])
+            )
+          : [];
 
       const { svg, scales, scatter, dimensions, tooltip } = drawScatterplot(
         root,
@@ -706,16 +711,18 @@ export class ScatterplotChart extends SharedTestStateMixin(
 
       let animationTime = Number(this.definition.animationTime);
       // Handle recht click to remove point
-      svg.on("contextmenu", (event) => {
-        deletePointListeners(
-          event,
-          svg,
-          datasets,
-          scales,
-          this.sharedState.scatterDatasets
-        );
-        //Re-render
-        this.updateScatterplot();
+      datasets.forEach((_, index) => {
+        svg.selectAll(`circle.dataset-${index}`).on("contextmenu", (event) => {
+          deletePointListeners(
+            event,
+            svg,
+            datasets,
+            this.sharedState.scatterDatasets,
+            scales
+          );
+          //Re-render
+          this.updateScatterplot();
+        });
       });
 
       // Handle adding a new point
@@ -747,17 +754,19 @@ export class ScatterplotChart extends SharedTestStateMixin(
         !this.selectByBrushing &&
         !this.deselectByBrushing
       ) {
-        svg.on("click", (event) => {
-          selectPointByClickingListeners(
-            event,
-            svg,
-            datasets,
-            scales,
-            this.sharedState.scatterDatasets
-          );
-          // Re-render
-          this.selectByClicking = false;
-          this.updateScatterplot();
+        datasets.forEach((_, index) => {
+          svg.selectAll(`circle.dataset-${index}`).on("click", (event) => {
+            selectPointByClickingListeners(
+              event,
+              svg,
+              datasets,
+              scales,
+              this.sharedState.scatterDatasets
+            );
+            // Re-render
+            this.selectByClicking = false;
+            this.updateScatterplot();
+          });
         });
       }
 
@@ -770,6 +779,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
           scatter,
           scales,
           this.sharedState.scatterDatasets,
+          datasets,
           () => {
             this.updateScatterplot();
           }
@@ -974,6 +984,10 @@ export class ScatterplotChart extends SharedTestStateMixin(
           .attr("y2", y2)
           .attr("stroke", "#69b3a2")
           .attr("stroke-width", 2);
+        svg.select(`.line-${i}`).on("contextmenu", (_) => {
+          this.sharedState.lineDatasets.sets.splice(i, 1);
+          this.updateScatterplot();
+        });
 
         // Define the center point of the line
         const center = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
@@ -990,16 +1004,17 @@ export class ScatterplotChart extends SharedTestStateMixin(
           .attr("fill", "white") // Fill color of the rectangle
           .attr("stroke", "black")
           .attr("stroke-width", 1)
-          .call(dragCenter)
-          .on("contextmenu", (event) => {
-            deleteLineListeners(
-              event,
-              svg,
-              lineDatasetsWithCenterPoint,
-              scales,
-              this.sharedState.lineDatasets
-            );
-          });
+          .call(dragCenter);
+        svg.select(`.center-point-${i}`).on("contextmenu", (event) => {
+          deleteLineListeners(
+            event,
+            svg,
+            lineDatasetsWithCenterPoint,
+            scales,
+            this.sharedState.lineDatasets
+          );
+          this.updateScatterplot();
+        });
 
         // Append the end point left
         const end_point_left = svg
@@ -1012,16 +1027,17 @@ export class ScatterplotChart extends SharedTestStateMixin(
           .attr("height", 10) // Height of the rectangle
           .attr("fill", "white") // Fill color of the rectangle
           .attr("stroke", "black")
-          .attr("stroke-width", 1)
-          .on("contextmenu", (event) => {
-            deleteLineListeners(
-              event,
-              svg,
-              lineDatasetsWithCenterPoint,
-              scales,
-              this.sharedState.lineDatasets
-            );
-          });
+          .attr("stroke-width", 1);
+        svg.select(`.end-point-left-${i}`).on("contextmenu", (event) => {
+          deleteLineListeners(
+            event,
+            svg,
+            lineDatasetsWithCenterPoint,
+            scales,
+            this.sharedState.lineDatasets
+          );
+          this.updateScatterplot();
+        });
 
         // Append the end point right
         const end_point_right = svg
@@ -1034,16 +1050,17 @@ export class ScatterplotChart extends SharedTestStateMixin(
           .attr("height", 10) // Height of the rectangle
           .attr("fill", "white")
           .attr("stroke", "black")
-          .attr("stroke-width", 1)
-          .on("contextmenu", (event) => {
-            deleteLineListeners(
-              event,
-              svg,
-              lineDatasetsWithCenterPoint,
-              scales,
-              this.sharedState.lineDatasets
-            );
-          });
+          .attr("stroke-width", 1);
+        svg.select(`.end-point-right-${i}`).on("contextmenu", (event) => {
+          deleteLineListeners(
+            event,
+            svg,
+            lineDatasetsWithCenterPoint,
+            scales,
+            this.sharedState.lineDatasets
+          );
+          this.updateScatterplot();
+        });
         end_point_left.call(dragEndPointsLeft);
         end_point_right.call(dragEndPointsRight);
       });
@@ -1174,6 +1191,55 @@ export class ScatterplotChart extends SharedTestStateMixin(
       if (this.options.showGrid) {
         addGridListeners(svg, scales, dimensions);
       }
+      const colorFormulaRoot = this.shadowRoot.querySelector(".color-formulas");
+      if (
+        selectedDatasets[0].filter.label &&
+        selectedDatasets[0].filter.type !== "none" &&
+        selectedDatasets.length === 1
+      ) {
+        [...colorFormulaRoot.children].forEach((child) => child.remove());
+        if (selectedDatasets[0].filter.type === "number") {
+          selectedDatasets[0].filter.rangesandcolors.forEach(
+            (rangeandcolor, i) => {
+              const tr = document.createElement("tr");
+              const td1 = document.createElement("td");
+              const td2 = document.createElement("td");
+              tr.appendChild(td1);
+              tr.appendChild(td2);
+              const colorSpan = document.createElement("span");
+              td1.appendChild(colorSpan);
+              const rangeSpan = document.createElement("span");
+              td2.appendChild(rangeSpan);
+              colorFormulaRoot.appendChild(tr);
+              colorSpan.classList.add("color-span");
+              colorSpan.style.background = rangeandcolor.color;
+              rangeSpan.innerText =
+                i === selectedDatasets[0].filter.rangesandcolors.length - 1
+                  ? `[${rangeandcolor.range.min} - ${rangeandcolor.range.max}]`
+                  : `[${rangeandcolor.range.min} - ${rangeandcolor.range.max})`;
+            }
+          );
+        }
+        if (selectedDatasets[0].filter.type === "string") {
+          selectedDatasets[0].filter.labelsandcolors.forEach(
+            (labelandcolor) => {
+              const tr = document.createElement("tr");
+              const td1 = document.createElement("td");
+              const td2 = document.createElement("td");
+              tr.appendChild(td1);
+              tr.appendChild(td2);
+              const colorSpan = document.createElement("span");
+              td1.appendChild(colorSpan);
+              const labelSpan = document.createElement("span");
+              td2.appendChild(labelSpan);
+              colorFormulaRoot.appendChild(tr);
+              colorSpan.classList.add("color-span");
+              colorSpan.style.background = labelandcolor.color;
+              labelSpan.innerText = `${labelandcolor.label}`;
+            }
+          );
+        }
+      }
     } else if (selectedDatasets.length === 1) {
       const selectedDataset = selectedDatasets[0];
       const axisLabels = {
@@ -1274,6 +1340,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
         grid.selectAll(".domain").remove();
       };
       let data_for_x_axis_copy: { x: number | string; y: number | string }[];
+      let data_for_y_axis_copy: { x: number | string; y: number | string }[];
 
       !(x_axis_type === "none") && !(y_axis_type === "none")
         ? (data_for_x_axis_copy = datasets_copy)
@@ -1286,19 +1353,48 @@ export class ScatterplotChart extends SharedTestStateMixin(
             x: "",
             y: d.p,
           })));
+      !(x_axis_type === "none") && !(y_axis_type === "none")
+        ? (data_for_y_axis_copy = datasets_copy)
+        : !(y_axis_type === "none")
+        ? (data_for_y_axis_copy = singeledatasets_copy.map((d) => ({
+            x: "",
+            y: d.p,
+          })))
+        : (data_for_y_axis_copy = singeledatasets_copy.map((d) => ({
+            x: d.p,
+            y: "",
+          })));
+
       //TODO: max for number values
+      //  get the max value of the dataset
+      let maxX = 0;
+      let maxY = 0;
+      let minX = 0;
+      let minY = 0;
+      if (x_axis_type === "number") {
+        data_for_x_axis_copy.forEach((dataset) => {
+          maxX = Math.max(maxX, Number(dataset.x));
+          minX = Math.min(minX, Number(dataset.x));
+        });
+      }
+
+      if (y_axis_type === "number") {
+        data_for_y_axis_copy.forEach((dataset) => {
+          maxY = Math.max(maxY, Number(dataset.y));
+          minY = Math.min(minY, Number(dataset.y));
+        });
+      }
+      const roundingFactorX = 10 ** Math.floor(Math.log10(maxX));
+      maxX = Math.ceil(maxX / roundingFactorX) * roundingFactorX;
+
+      const roundingFactorY = 10 ** Math.floor(Math.log10(maxY));
+      maxY = Math.ceil(maxY / roundingFactorY) * roundingFactorY;
       // Add X axis
       let x;
       if (x_axis_type !== "none" && data_for_x_axis_copy.length > 0) {
         x =
           x_axis_type === "number"
-            ? d3
-                .scaleLinear()
-                .domain([
-                  0,
-                  d3.max(data_for_x_axis_copy, (d) => Number(d.x)) as number,
-                ])
-                .range([0, width])
+            ? d3.scaleLinear().domain([0, maxX]).range([0, width])
             : d3
                 .scaleBand()
                 .domain(data_for_x_axis_copy.map((d) => d.x as string))
@@ -1344,30 +1440,12 @@ export class ScatterplotChart extends SharedTestStateMixin(
           );
         }
       }
-      let data_for_y_axis_copy: { x: number | string; y: number | string }[];
-      !(x_axis_type === "none") && !(y_axis_type === "none")
-        ? (data_for_y_axis_copy = datasets_copy)
-        : !(y_axis_type === "none")
-        ? (data_for_y_axis_copy = singeledatasets_copy.map((d) => ({
-            x: "",
-            y: d.p,
-          })))
-        : (data_for_y_axis_copy = singeledatasets_copy.map((d) => ({
-            x: d.p,
-            y: "",
-          })));
       // Add Y axis
       let y;
       if (!(y_axis_type === "none") && data_for_y_axis_copy.length > 0) {
         y =
           y_axis_type === "number"
-            ? d3
-                .scaleLinear()
-                .domain([
-                  0,
-                  d3.max(data_for_y_axis_copy, (d) => Number(d.y)) as number,
-                ])
-                .range([height, 0])
+            ? d3.scaleLinear().domain([0, maxY]).range([height, 0])
             : d3
                 .scaleBand()
                 .domain(data_for_y_axis_copy.map((d) => d.y as string))
@@ -1567,20 +1645,8 @@ export class ScatterplotChart extends SharedTestStateMixin(
       const scatter = svg;
 
       const scales = {
-        x_num: d3
-          .scaleLinear()
-          .domain([
-            0,
-            d3.max(data_for_x_axis_copy, (d) => Number(d.x)) as number,
-          ])
-          .range([0, width]),
-        y_num: d3
-          .scaleLinear()
-          .domain([
-            0,
-            d3.max(data_for_y_axis_copy, (d) => Number(d.y)) as number,
-          ])
-          .range([height, 0]),
+        x_num: d3.scaleLinear().domain([0, maxX]).range([0, width]),
+        y_num: d3.scaleLinear().domain([0, maxY]).range([height, 0]),
         x_brand: d3
           .scaleBand()
           .domain(data_for_x_axis_copy.map((d) => d.x as string))
@@ -1700,7 +1766,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
       }
       // Dragging points to change their position along the axis
       if (!(this.selectNode || this.selectByClicking)) {
-        let minDistance = 0.3;
+        let minDistance = Infinity;
         let minDistance_band = Infinity;
         let index = -1;
         let newX = 0;
@@ -1837,17 +1903,19 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   }
                 }
               }
-              svg
-                .select(
-                  axis === "xy_xnum_ystr" || axis === "xy_xstr_ynum"
-                    ? `.dataset-${index}`
-                    : axis === "x"
-                    ? `.single-x-${index}`
-                    : axis === "y"
-                    ? `.single-y-${index}`
-                    : null
-                )
-                .classed("selected", true);
+              if (index !== -1) {
+                svg
+                  .select(
+                    axis === "xy_xnum_ystr" || axis === "xy_xstr_ynum"
+                      ? `.dataset-${index}`
+                      : axis === "x"
+                      ? `.single-x-${index}`
+                      : axis === "y"
+                      ? `.single-y-${index}`
+                      : null
+                  )
+                  .classed("selected", true);
+              }
             })
             .on("drag", (event) => {
               const [clickX, clickY] = d3.pointer(event, svg.node());
@@ -1931,39 +1999,40 @@ export class ScatterplotChart extends SharedTestStateMixin(
             .on("end", (_) => {
               count = 0;
               // Update the data of the circle (this is true)
-              axis === "x" || axis === "xy_xnum_ystr"
-                ? (selectedDataset.dimensional_data[index].data[
-                    selectedDataset.labels.indexOf(axisLabels.x)
-                  ] = Number(newX) as number)
-                : (selectedDataset.dimensional_data[index].data[
-                    selectedDataset.labels.indexOf(axisLabels.y)
-                  ] = Number(newY) as number);
-              this.updateScatterplot();
-              if (
-                this.sharedState.scatterDatasets.selected.axis.x ===
-                  selectedDataset.filter.label &&
-                selectedDataset.filter.type === "number" &&
-                (axis === "x" || axis === "xy_xnum_ystr")
-              ) {
-                console.log("XANh");
-                updateColorForFilter(
-                  selectedDataset.labels.indexOf(axisLabels.x),
-                  "number",
-                  selectedDataset
-                );
+              if (index !== -1) {
+                axis === "x" || axis === "xy_xnum_ystr"
+                  ? (selectedDataset.dimensional_data[index].data[
+                      selectedDataset.labels.indexOf(axisLabels.x)
+                    ] = Number(newX) as number)
+                  : (selectedDataset.dimensional_data[index].data[
+                      selectedDataset.labels.indexOf(axisLabels.y)
+                    ] = Number(newY) as number);
                 this.updateScatterplot();
-              } else if (
-                this.sharedState.scatterDatasets.selected.axis.y ===
-                  selectedDataset.filter.label &&
-                selectedDataset.filter.type === "number" &&
-                (axis === "y" || axis === "xy_xstr_ynum")
-              ) {
-                updateColorForFilter(
-                  selectedDataset.labels.indexOf(axisLabels.y),
-                  "number",
-                  selectedDataset
-                );
-                this.updateScatterplot();
+                if (
+                  this.sharedState.scatterDatasets.selected.axis.x ===
+                    selectedDataset.filter.label &&
+                  selectedDataset.filter.type === "number" &&
+                  (axis === "x" || axis === "xy_xnum_ystr")
+                ) {
+                  updateColorForFilter(
+                    selectedDataset.labels.indexOf(axisLabels.x),
+                    "number",
+                    selectedDataset
+                  );
+                  this.updateScatterplot();
+                } else if (
+                  this.sharedState.scatterDatasets.selected.axis.y ===
+                    selectedDataset.filter.label &&
+                  selectedDataset.filter.type === "number" &&
+                  (axis === "y" || axis === "xy_xstr_ynum")
+                ) {
+                  updateColorForFilter(
+                    selectedDataset.labels.indexOf(axisLabels.y),
+                    "number",
+                    selectedDataset
+                  );
+                  this.updateScatterplot();
+                }
               }
             });
         };
@@ -2175,7 +2244,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
         !this.selectByBrushing &&
         !this.deselectByBrushing
       ) {
-        let minDistance = 0.3;
+        let minDistance = Infinity;
         let minDistance_band = Infinity;
         let index = -1;
         let count = 0;
@@ -2309,7 +2378,8 @@ export class ScatterplotChart extends SharedTestStateMixin(
           }
           // Update the nearest point to be selected
           if (index !== -1) {
-            selectedDataset.dimensional_data[index].selected = true;
+            selectedDataset.dimensional_data[index].selected =
+              !selectedDataset.dimensional_data[index].selected;
           }
           this.selectByClicking = false;
           this.updateScatterplot();
@@ -2363,11 +2433,11 @@ export class ScatterplotChart extends SharedTestStateMixin(
       }
       // Show all points
       if (this.showAll) {
-        singeledatasets.forEach((d: OneDimentionalPoint, i) => {
+        singeledatasets.forEach((_, i) => {
           scatter.select(`.single-x-${i}`).style("display", "block");
           scatter.select(`.single-y-${i}`).style("display", "block");
         });
-        datasets.forEach((d: Point, i) => {
+        datasets.forEach((_, i) => {
           scatter.select(`.dataset-${i}`).style("display", "block");
         });
       }

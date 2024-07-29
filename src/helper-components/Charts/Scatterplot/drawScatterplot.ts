@@ -36,13 +36,13 @@ function getScatterplotDataSets(scatterdatasets: ScatterDatasets) {
       const set = scatterdatasets.sets[index];
       const index_x = set.labels.indexOf(scatterdatasets.selected.axis.x);
       const index_y = set.labels.indexOf(scatterdatasets.selected.axis.y);
+      const index_in_scatterdatasets = index;
 
       const dimensional_data = set.dimensional_data.map((dimensional_data) => {
         return {
           x: dimensional_data.data[index_x] as number,
           y: dimensional_data.data[index_y] as number,
           selected: dimensional_data.selected,
-          original_data: dimensional_data, // Keep reference to original data
         };
       });
 
@@ -51,6 +51,7 @@ function getScatterplotDataSets(scatterdatasets: ScatterDatasets) {
         scatter_titel: set.name,
         ids: set.ids,
         dimensional_data: dimensional_data,
+        index_in_scatterdatasets: index_in_scatterdatasets,
       };
     }),
   };
@@ -80,7 +81,7 @@ function calculateSVGDimensions(data: PointOnlyNumbers[][]): Dimensions {
   const margin = { top: 10, right: 30, bottom: 50, left: 70 },
     width = 550 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
-
+  console.log("maxX", maxX, "maxY", maxY, "minX", minX, "minY", minY);
   return {
     height,
     width,
@@ -337,8 +338,9 @@ function drawPoints(
     .attr("cy", (d) => scales.y(d.y))
     .attr("r", 7)
     .style("fill", (d) => d.color ?? "#417ca1")
-    .style("stroke", "white")
-    .style("opacity", 0.5)
+    .style("stroke", "back")
+    .style("stroke-width", 0.5)
+    .style("opacity", 1)
     .classed("selected", (d) => d.selected)
     .on("mouseover", (_e, d) => {
       if (!options.hoverTooltip) return;
@@ -503,9 +505,8 @@ function addBrushingListeners(
 
 function findTheClosestPoint(
   datasets: PointOnlyNumbers[][],
-  scales: Scales,
-  clickX: number,
-  clickY: number
+  click_X: number,
+  click_Y: number
 ) {
   let minDistance = Infinity;
   let closestPoint: PointOnlyNumbers = null;
@@ -513,7 +514,7 @@ function findTheClosestPoint(
   for (let i = flattenedDatasets.length - 1; i >= 0; i--) {
     const point = flattenedDatasets[i];
     const distance = Math.sqrt(
-      (scales.x(point.x) - clickX) ** 2 + (scales.y(point.y) - clickY) ** 2
+      (point.x - click_X) ** 2 + (point.y - click_Y) ** 2
     );
     if (distance < minDistance) {
       minDistance = distance;
@@ -573,6 +574,7 @@ function addDragingPointListeners(
   scatter: d3.Selection<SVGGElement, unknown, null, undefined>,
   scales: Scales,
   scatterdatasets: ScatterDatasets,
+  datasets: PointOnlyNumbers[][],
   onFinish: () => void
 ) {
   let index_set = {
@@ -611,7 +613,9 @@ function addDragingPointListeners(
       // Re-render
       onFinish();
     });
-  scatter.selectAll("circle").call(drag);
+  datasets.forEach((_, index) => {
+    scatter.selectAll(`circle.dataset-${index}`).call(drag);
+  });
 }
 function addGridListeners(
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -890,15 +894,15 @@ function deleteLineListeners(
 ) {
   event.preventDefault();
   const [clickX, clickY] = d3.pointer(event, svg.node());
+  const click_X = scales.x.invert(clickX);
+  const click_Y = scales.y.invert(clickY);
   // Find the closest point to the recht clicked position
   const result = findTheClosestPoint(
     lineDatasetsWithCenterPoint,
-    scales,
-    clickX,
-    clickY
+    click_X,
+    click_Y
   );
-  const threshold = 7;
-  if (result.minDistance < threshold && result.closestPoint) {
+  if (result.minDistance && result.closestPoint) {
     // Find the index i of the line
     let index = -1;
     for (let i = lineDatasetsWithCenterPoint.length - 1; i >= 0; i--) {
@@ -924,16 +928,17 @@ function deletePointListeners(
   event: MouseEvent,
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   datasets: PointOnlyNumbers[][],
-  scales: Scales,
-  scatterdatasets: ScatterDatasets
+  scatterdatasets: ScatterDatasets,
+  scales: Scales
 ) {
   event.preventDefault();
   const scatterplotdatasets = getScatterplotDataSets(scatterdatasets);
   const [clickX, clickY] = d3.pointer(event, svg.node());
+  const click_X = scales.x.invert(clickX);
+  const click_Y = scales.y.invert(clickY);
   // Find the closest point to the recht clicked position
-  const result = findTheClosestPoint(datasets, scales, clickX, clickY);
-  const threshold = 7;
-  if (result.minDistance < threshold && result.closestPoint) {
+  const result = findTheClosestPoint(datasets, click_X, click_Y);
+  if (result.minDistance && result.closestPoint) {
     // Find the index of the scatterplot dataset
     let datasetIndex = findTheLastMatchIndexInSPDatasets(
       result.closestPoint,
@@ -943,31 +948,29 @@ function deletePointListeners(
       const dimensionalData =
         scatterplotdatasets.sets[datasetIndex].dimensional_data;
       //Find the index of the point in the dataset
-      let index = findTheLastMatchIndexInSPDataset(
+      let index_in_dimensional_data = findTheLastMatchIndexInSPDataset(
         result.closestPoint,
         dimensionalData
       );
-      if (index !== -1) {
-        // Remove the point from the dataset
-        /*scatterplotdatasets.sets[datasetIndex].dimensional_data.splice(
-          index,
-          1
-        );
-        // Remove the label from the dataset
-        scatterplotdatasets.sets[datasetIndex].ids.splice(index, 1);*/
+      if (index_in_dimensional_data !== -1) {
         // Remove the point from the original scatterdatasets
         scatterdatasets.sets.forEach((set, index) => {
-          if (scatterdatasets.selected.dataset_indexes.includes(index)) {
+          if (
+            index ===
+            scatterplotdatasets.sets[datasetIndex].index_in_scatterdatasets
+          ) {
             const index_x = set.labels.indexOf(scatterdatasets.selected.axis.x);
             const index_y = set.labels.indexOf(scatterdatasets.selected.axis.y);
             set.dimensional_data = set.dimensional_data.filter(
               (dimensional_data) =>
                 dimensional_data.data[index_x] !==
-                  scatterplotdatasets.sets[datasetIndex].dimensional_data[index]
-                    .x ||
+                  scatterplotdatasets.sets[datasetIndex].dimensional_data[
+                    index_in_dimensional_data
+                  ].x ||
                 dimensional_data.data[index_y] !==
-                  scatterplotdatasets.sets[datasetIndex].dimensional_data[index]
-                    .y
+                  scatterplotdatasets.sets[datasetIndex].dimensional_data[
+                    index_in_dimensional_data
+                  ].y
             );
           }
         });
@@ -1032,10 +1035,11 @@ function selectPointByClickingListeners(
 ) {
   const scatterplotdatasets = getScatterplotDataSets(scatterDatasets);
   const [clickX, clickY] = d3.pointer(event, svg.node());
+  const click_X = scales.x.invert(clickX);
+  const click_Y = scales.y.invert(clickY);
   // Find the closest point to the recht clicked position
-  const result = findTheClosestPoint(datasets, scales, clickX, clickY);
-  const threshold = 7;
-  if (result.minDistance < threshold && result.closestPoint) {
+  const result = findTheClosestPoint(datasets, click_X, click_Y);
+  if (result.minDistance && result.closestPoint) {
     // Find the index of the scatterplot dataset
     let datasetIndex = findTheLastMatchIndexInSPDatasets(
       result.closestPoint,
@@ -1045,28 +1049,27 @@ function selectPointByClickingListeners(
       const dimensionalData =
         scatterplotdatasets.sets[datasetIndex].dimensional_data;
       //Find the index of the point in the dataset
-      let index = findTheLastMatchIndexInSPDataset(
+      let index_in_dimensional_data = findTheLastMatchIndexInSPDataset(
         result.closestPoint,
         dimensionalData
       );
-      if (index !== -1) {
-        /*
-        Check if the point is selected, if it is, remove it, if it is not, add it
-        dimensionalData[index].selected
-          ? (dimensionalData[index].selected = false)
-          : (dimensionalData[index].selected = true);*/
-        // Check if the point in original set is selected, if it is, remove it, if it is not, add it
-
+      if (index_in_dimensional_data !== -1) {
         scatterDatasets.sets.forEach((set, index) => {
-          if (scatterDatasets.selected.dataset_indexes.includes(index)) {
+          if (
+            index ===
+            scatterplotdatasets.sets[datasetIndex].index_in_scatterdatasets
+          ) {
             const index_x = set.labels.indexOf(scatterDatasets.selected.axis.x);
             const index_y = set.labels.indexOf(scatterDatasets.selected.axis.y);
             set.dimensional_data.map((dimensional_data) =>
               dimensional_data.data[index_x] ===
-                scatterplotdatasets.sets[datasetIndex].dimensional_data[index]
-                  .x &&
+                scatterplotdatasets.sets[datasetIndex].dimensional_data[
+                  index_in_dimensional_data
+                ].x &&
               dimensional_data.data[index_y] ===
-                scatterplotdatasets.sets[datasetIndex].dimensional_data[index].y
+                scatterplotdatasets.sets[datasetIndex].dimensional_data[
+                  index_in_dimensional_data
+                ].y
                 ? (dimensional_data.selected = !dimensional_data.selected)
                 : null
             );

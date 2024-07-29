@@ -22,6 +22,9 @@ import { updateColorForFilter } from "../../helper-components/Charts/Scatterplot
 //TODO: Add teacher options,
 //TODO:, file upload, dispatch event, change style for plus button
 //TODO: Add margin
+//TODO: Add style for selected Element
+// Fix the button add dataset
+// Add the possibility to change the type of the column
 @customElement("wwci-scatterdataset-input")
 export class ScatterDatasetInput extends SharedTestStateMixin(
   LitElementWw as unknown as LitElementWw &

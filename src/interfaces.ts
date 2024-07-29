@@ -44,6 +44,7 @@ export interface ScatterplotDataSet {
   scatter_titel: string;
   ids: number[];
   dimensional_data?: { x: number; y: number; selected: boolean }[];
+  index_in_scatterdatasets: number;
 }
 // TODO: Delete this interface
 // For Advanced Scatterplot with multiple columns for y and x axis
