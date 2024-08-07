@@ -73,19 +73,9 @@ export class WwChart extends SharedTestStateMixin(
     this.getAttributeNames().forEach((n) =>
       this.setAttribute(n, this.getAttribute(n))
     );
-
-    this.focus();
-    this.addEventListener("mouseup", this.handleMouseEvent.bind(this));
-  }
-  disconnectedCallback() {
-    this.removeEventListener("mouseup", this.handleMouseEvent.bind(this));
-    super.disconnectedCallback();
   }
 
-  handleMouseEvent() {
-    console.log("[Chart] mouseup");
-    this.focus();
-  }
+  tabIndex: number = -1
 
   @property()
   options: any = {};
@@ -121,10 +111,7 @@ export class WwChart extends SharedTestStateMixin(
       { chartType: false, title: false } as any
     );
   }
-  static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
+
   changeShowData() {
     this.showData = !this.showData;
   }
