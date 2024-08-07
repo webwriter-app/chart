@@ -62,6 +62,7 @@ export class ChartSettings extends SharedTestStateMixin(
           )}
           selectOptions="${attribute(availableCharts)}"
           @wwci-change="${(e: any) => {
+            console.log("[wwci-chart-settings] change chart", e.target.value);
             this.sharedState.chart.selectedType = e.target.value;
           }}"
         >

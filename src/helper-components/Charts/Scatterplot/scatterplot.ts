@@ -9,6 +9,7 @@ import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import SlPopup from "@shoelace-style/shoelace/dist/components/popup/popup.component.js";
 import SlMenu from "@shoelace-style/shoelace/dist/components/menu/menu.js";
 import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
+import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.component.js";
 import { LitElementWw } from "@webwriter/lit";
 import {
   addBrushingListeners,
@@ -405,24 +406,35 @@ export class ScatterplotChart extends SharedTestStateMixin(
             placement="bottom"
             strategy="fixed"
             .active=${this.filterOn}
+            distance="7"
           >
-            <sl-button
-              slot="anchor"
-              variant="default"
-              size="small"
-              circle
-              id="filter-button"
-              @click=${(e) => {
-                this.filterOn = true;
-                e.target.focus();
-              }}
-              .disabled=${this.options.animation ||
-              this.sharedState.scatterDatasets.selected.dataset_indexes
-                .length === 0}
-              @blur=${() => (this.filterOn = false)}
-            >
-              <sl-icon name="filter" label="Filter"></sl-icon>
-            </sl-button>
+            <span slot="anchor">
+              <sl-tooltip
+                hoist
+                placement="top-end"
+                content=${this.sharedState.scatterDatasets.selected
+                  .dataset_indexes.length !== 1
+                  ? "You must select exactly one dataset to use the filter"
+                  : "Filter data points"}
+              >
+                <sl-button
+                  variant="default"
+                  size="small"
+                  circle
+                  id="filter-button"
+                  @click=${(e) => {
+                    this.filterOn = true;
+                    e.target.focus();
+                  }}
+                  .disabled=${this.options.animation ||
+                  this.sharedState.scatterDatasets.selected.dataset_indexes
+                    .length !== 1}
+                  @blur=${() => (this.filterOn = false)}
+                >
+                  <sl-icon name="filter" label="Filter"></sl-icon>
+                </sl-button>
+              </sl-tooltip>
+            </span>
             <div class="popup-content">
               ${(firstSelectedDataset?.labels ?? []).map(
                 (label, i) =>
@@ -586,6 +598,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
   // TODO: Fix edit button
   // TODO: dymanic and manuell scaling for x and y axis
   // TODO: Feedback for choose the right point
+  // TODO: Fix the random color problem
   updatePlot() {
     const animationRange = this.shadowRoot.querySelector(
       "#animationRange"
@@ -2451,18 +2464,6 @@ export class ScatterplotChart extends SharedTestStateMixin(
           const data =
             axis === "x" ? data_for_x_axis_copy : data_for_y_axis_copy;
           const mean = d3.mean(data, (d) => Number(axis === "x" ? d.x : d.y));
-          // line with tooltip
-          const tooltip = d3
-            .select(root)
-            .append("div")
-            .style("opacity", 0)
-            .attr("class", "tooltip")
-            .style("position", "absolute")
-            .style("background-color", "white")
-            .style("border", "solid")
-            .style("border-width", "1px")
-            .style("border-radius", "5px")
-            .style("padding", "10px");
           if (x_axis_type === "none" || y_axis_type === "none") {
             svg
               .append("line")
@@ -2474,20 +2475,25 @@ export class ScatterplotChart extends SharedTestStateMixin(
               .attr("stroke-width", 2)
               .attr("stroke-dasharray", "4")
               .attr("class", `mean-line-${axis}`);
-            /*.on("mouseover", (event, d) => {
-                tooltip
-                  .style("opacity", 1)
-                  .html(
-                    `${
-                      axis === "x" ? axisLabels.x : axisLabels.y
-                    } + mean: ${mean.toFixed(2)}`
-                  )
-                  .style("left", `${event.pageX - 100}px`)
-                  .style("top", `${event.pageY - 100}px`);
-              })
-              .on("mouseleave", () => {
-                tooltip.transition().duration(200).style("opacity", 0);
-              });*/
+            //Make the mean line label on the left side of the line
+            svg
+              .append("text")
+              .attr("class", "line label")
+              .text(`m = ${mean.toFixed(2)}`)
+              .attr("fill", "red");
+            if (y_axis_type === "none") {
+              svg
+                .select(".line.label")
+                .attr("text-anchor", "start")
+                .attr("x", axis === "x" ? scales.x_num(mean) + 5 : 0)
+                .attr("y", axis === "y" ? scales.y_num(mean) : 10);
+            } else {
+              svg
+                .select(".line.label")
+                .attr("text-anchor", "end")
+                .attr("x", axis === "x" ? scales.x_num(mean) : width)
+                .attr("y", axis === "y" ? scales.y_num(mean) - 5 : 0);
+            }
           } else {
             if (axis === "x") {
               listofstringsforlabels_y_axis.map((l, i) => {
@@ -2505,16 +2511,14 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   .attr("stroke-width", 2)
                   .attr("stroke-dasharray", "4")
                   .attr("class", `mean-line-${axis}-${i}`);
-                /*.on("mouseover", (event, d) => {
-                    tooltip
-                      .style("opacity", 1)
-                      .html(`${axisLabels.x} + mean: ${mean_i.toFixed(2)}`)
-                      .style("left", `${event.pageX - 100}px`)
-                      .style("top", `${event.pageY - 100}px`);
-                  })
-                  .on("mouseleave", () => {
-                    tooltip.transition().duration(200).style("opacity", 0);
-                  });*/
+                svg
+                  .append("text")
+                  .attr("class", "line label")
+                  .attr("text-anchor", "end")
+                  .attr("x", scales.x_num(mean_i) - 5)
+                  .attr("y", height - (i + 1) * y.bandwidth() + 10)
+                  .text(`m = ${mean_i.toFixed(2)}`)
+                  .attr("fill", "red");
               });
             } else {
               listofstringsforlabels_x_axis.map((l, i) => {
@@ -2532,17 +2536,14 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   .attr("stroke-width", 2)
                   .attr("stroke-dasharray", "4")
                   .attr("class", `mean-line-${axis}-${i}`);
-                /*
-                  .on("mouseover", (event, d) => {
-                    tooltip
-                      .style("opacity", 1)
-                      .html(`${axisLabels.y} + mean: ${mean_i.toFixed(2)}`)
-                      .style("left", `${event.pageX - 100}px`)
-                      .style("top", `${event.pageY - 100}px`);
-                  })
-                  .on("mouseleave", () => {
-                    tooltip.transition().duration(200).style("opacity", 0);
-                  });*/
+                svg
+                  .append("text")
+                  .attr("class", "line label")
+                  .attr("text-anchor", "end")
+                  .attr("x", (i + 1) * x.bandwidth())
+                  .attr("y", scales.y_num(mean_i) - 5)
+                  .text(`m = ${mean_i.toFixed(2)}`)
+                  .attr("fill", "red");
               });
             }
           }
@@ -2610,6 +2611,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
       "sl-popup": SlPopup,
       "sl-menu": SlMenu,
       "sl-menu-item": SlMenuItem,
+      "sl-tooltip": SlTooltip,
     };
   }
 }

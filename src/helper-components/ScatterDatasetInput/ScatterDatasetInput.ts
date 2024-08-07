@@ -14,6 +14,8 @@ import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/i
 import SlInput from "@shoelace-style/shoelace/dist/components/input/input.component.js";
 import SlColorPicker from "@shoelace-style/shoelace/dist/components/color-picker/color-picker.component.js";
 import SlPopup from "@shoelace-style/shoelace/dist/components/popup/popup.component.js";
+import SlDropdown from "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
+import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item.component.js";
 import "../FileUploadButton";
 import { SharedTestStateMixin } from "../../state";
 import { LitElementWw } from "@webwriter/lit";
@@ -23,6 +25,9 @@ import { updateColorForFilter } from "../../helper-components/Charts/Scatterplot
 //TODO:, file upload, dispatch event, change style for plus button
 //TODO: Add margin
 //TODO: Add style for selected Element
+//TODO: Fix color by changing lightgreen and yellow to a better color
+//TODO: Fix color of trash to red when hovering
+// TODO: Fix style for the popup of buttons SelectDatasets?
 // Fix the button add dataset
 // Add the possibility to change the type of the column
 @customElement("wwci-scatterdataset-input")
@@ -32,26 +37,15 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
 ) {
   @state() addDatasetPopupOpen = false;
   @state() addColumnPopupOpenIndex = -1;
-  addNumbericDataset() {
+  addNewDataset() {
     this.sharedState.scatterDatasets.sets.push({
       color: randomColor(),
       name: randomString(),
       ids: [1],
-      labels: [randomString()],
-      typeOfEachData: ["number"],
-      dimensional_data: [{ data: [randomNumber()], selected: false }],
+      labels: [],
+      typeOfEachData: [],
+      dimensional_data: [{ data: [], selected: false }],
       //TODO: Change "" to undefined?
-      filter: { label: "", type: "none", index_in_labels: -1 },
-    });
-  }
-  addCategoricalDataset() {
-    this.sharedState.scatterDatasets.sets.push({
-      color: randomColor(),
-      name: randomString(),
-      ids: [1],
-      labels: [randomString()],
-      typeOfEachData: ["string"],
-      dimensional_data: [{ data: [randomString()], selected: false }],
       filter: { label: "", type: "none", index_in_labels: -1 },
     });
   }
@@ -218,45 +212,20 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
   render() {
     return html`${this.sharedState.teacherOptions.addRemoveData
       ? html`<div class="btn-wrapper">
-          <sl-popup
-            placement="bottom-start"
-            strategy="fixed"
-            .active=${this.addDatasetPopupOpen}
+          <sl-button
+            slot="anchor"
+            label="Add ${this.sharedState.scatterDatasets.sets.length === 0
+              ? "first"
+              : "new"} Dataset"
+            @click=${() => {
+              this.addNewDataset();
+            }}
+            >Add
+            ${this.sharedState.scatterDatasets.sets.length === 0
+              ? "First"
+              : "New"}
+            Dataset</sl-button
           >
-            <sl-button
-              slot="anchor"
-              label="Add ${this.sharedState.scatterDatasets.sets.length === 0
-                ? "first"
-                : "new"} Dataset"
-              @click=${(e) => {
-                this.addDatasetPopupOpen = true;
-                e.target.focus();
-              }}
-              @blur=${() => (this.addDatasetPopupOpen = false)}
-              >Add New Dataset</sl-button
-            >
-
-            <div class="popup-content">
-              <sl-button
-                @mousedown=${(e: MouseEvent) => {
-                  if (e.button !== 0) return;
-                  this.addNumbericDataset();
-                  this.addDatasetPopupOpen = false;
-                }}
-              >
-                Add new dataset with the first column with numeric values
-              </sl-button>
-              <sl-button
-                @mousedown=${(e: MouseEvent) => {
-                  if (e.button !== 0) return;
-                  this.addCategoricalDataset();
-                  this.addDatasetPopupOpen = false;
-                }}
-              >
-                Add new dataset with the first column with categorical values
-              </sl-button>
-            </div>
-          </sl-popup>
           <wwci-select-dataset></wwci-select-dataset>
         </div>`
       : html``}
@@ -319,18 +288,36 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                 </th>
                 ${this.sharedState.scatterDatasets.sets[index_inset].labels.map(
                   (label, index_inlabels) =>
-                    html`<th>
+                    html`<th
+                      style="background: ${this.sharedState.scatterDatasets
+                        .sets[index_inset].typeOfEachData[index_inlabels] ===
+                      "number"
+                        ? "lightgreen"
+                        : "yellow"}"
+                    >
                       <div
                         style="display: flex; flex-direction: row; align-items: center"
                       >
-                        <div class="input-wrapper">
+                        <div
+                          class="input-wrapper"
+                          style="background: ${this.sharedState.scatterDatasets
+                            .sets[index_inset].typeOfEachData[
+                            index_inlabels
+                          ] === "number"
+                            ? "lightgreen"
+                            : "yellow"}"
+                        >
                           <sl-input
                             ?disabled=${!(
                               this.sharedState.editable ||
                               this.sharedState.teacherOptions.changeData
                             )}
                             type="text"
-                            class="input"
+                            class="${this.sharedState.scatterDatasets.sets[
+                              index_inset
+                            ].typeOfEachData[index_inlabels] === "number"
+                              ? "input-lightgreen"
+                              : "input-yellow"}"
                             value="${label}"
                             @sl-input=${(e: any) => {
                               const newValue = e.target.value as string;
@@ -356,18 +343,150 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                             }}
                           ></sl-input>
                         </div>
-                        ${!this.sharedState.printable
-                          ? html`<sl-icon-button
-                              ?disabled=${!(
-                                this.sharedState.editable ||
-                                this.sharedState.teacherOptions.addRemoveData
-                              )}
-                              name="trash"
-                              label="Settings"
-                              @click=${() =>
-                                this.deleteColumn(index_inset, index_inlabels)}
-                            ></sl-icon-button>`
-                          : html``}
+
+                        <sl-dropdown>
+                          <sl-icon-button
+                            slot="trigger"
+                            name="caret-down"
+                            label="Toggle dropdown"
+                          ></sl-icon-button>
+
+                          <div class="dropdown-content">
+                            ${!this.sharedState.printable
+                              ? html` <sl-menu-item
+                                  @mousedown=${(e: MouseEvent) => {
+                                    if (e.button !== 0) return;
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    this.deleteColumn(
+                                      index_inset,
+                                      index_inlabels
+                                    );
+                                  }}
+                                  ?disabled=${!(
+                                    this.sharedState.editable ||
+                                    this.sharedState.teacherOptions
+                                      .addRemoveData
+                                  )}
+                                >
+                                  <sl-icon-button
+                                    class="delete-column-button"
+                                    name="trash"
+                                    label="Settings"
+                                  ></sl-icon-button
+                                  >Delete Column</sl-menu-item
+                                >`
+                              : html``}
+                            ${!this.sharedState.printable
+                              ? html`<sl-menu-item
+                                    type="checkbox"
+                                    .checked=${this.sharedState.scatterDatasets
+                                      .sets[index_inset].typeOfEachData[
+                                      index_inlabels
+                                    ] === "number"
+                                      ? false
+                                      : true}
+                                    @click=${() => {
+                                      this.sharedState.scatterDatasets.sets[
+                                        index_inset
+                                      ].typeOfEachData[index_inlabels] =
+                                        "string";
+                                      this.sharedState.scatterDatasets.sets[
+                                        index_inset
+                                      ].dimensional_data.map((data) => {
+                                        data.data[index_inlabels] =
+                                          data.data[index_inlabels].toString();
+                                      });
+
+                                      if (
+                                        this.sharedState.scatterDatasets
+                                          .selected.dataset_indexes.length ===
+                                          1 &&
+                                        this.sharedState.scatterDatasets
+                                          .selected.dataset_indexes[0] ===
+                                          index_inset &&
+                                        this.sharedState.scatterDatasets.sets[
+                                          index_inset
+                                        ].filter?.label === label &&
+                                        this.sharedState.scatterDatasets.sets[
+                                          index_inset
+                                        ].filter?.index_in_labels ===
+                                          index_inlabels
+                                      ) {
+                                        this.sharedState.scatterDatasets.sets[
+                                          index_inset
+                                        ].filter.type = "string";
+                                        updateColorForFilter(
+                                          this.sharedState.scatterDatasets.sets[
+                                            index_inset
+                                          ].filter.index_in_labels,
+                                          "string",
+                                          this.sharedState.scatterDatasets.sets[
+                                            index_inset
+                                          ]
+                                        );
+                                      }
+                                    }}
+                                    >Convert column values to
+                                    categorical</sl-menu-item
+                                  >
+                                  <sl-menu-item
+                                    type="checkbox"
+                                    .checked=${this.sharedState.scatterDatasets
+                                      .sets[index_inset].typeOfEachData[
+                                      index_inlabels
+                                    ] === "number"
+                                      ? true
+                                      : false}
+                                    @click=${() => {
+                                      this.sharedState.scatterDatasets.sets[
+                                        index_inset
+                                      ].typeOfEachData[index_inlabels] =
+                                        "number";
+                                      this.sharedState.scatterDatasets.sets[
+                                        index_inset
+                                      ].dimensional_data.map((data) => {
+                                        data.data[index_inlabels] = Number(
+                                          data.data[index_inlabels]
+                                        )
+                                          ? Number(data.data[index_inlabels])
+                                          : 0;
+
+                                        if (
+                                          this.sharedState.scatterDatasets
+                                            .selected.dataset_indexes.length ===
+                                            1 &&
+                                          this.sharedState.scatterDatasets
+                                            .selected.dataset_indexes[0] ===
+                                            index_inset &&
+                                          this.sharedState.scatterDatasets.sets[
+                                            index_inset
+                                          ].filter?.label === label &&
+                                          this.sharedState.scatterDatasets.sets[
+                                            index_inset
+                                          ].filter?.index_in_labels ===
+                                            index_inlabels
+                                        ) {
+                                          this.sharedState.scatterDatasets.sets[
+                                            index_inset
+                                          ].filter.type = "number";
+                                          updateColorForFilter(
+                                            this.sharedState.scatterDatasets
+                                              .sets[index_inset].filter
+                                              .index_in_labels,
+                                            "number",
+                                            this.sharedState.scatterDatasets
+                                              .sets[index_inset]
+                                          );
+                                        }
+                                      });
+                                    }}
+                                    >Convert column values to
+                                    numeric</sl-menu-item
+                                  >`
+                              : html``}
+                          </div>
+                        </sl-dropdown>
                       </div>
                     </th>`
                 )}
@@ -413,11 +532,24 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
 
                     ${each_data_scatterplot.data.map(
                       (data, index_indata) => html`
-                        <td>
+                        <td
+                          style="background: ${this.sharedState.scatterDatasets
+                            .sets[index_inset].typeOfEachData[index_indata] ===
+                          "number"
+                            ? "lightgreen"
+                            : "yellow"}"
+                        >
                           <div
                             style="display: flex; flex-direction: row; align-items: center"
                           >
-                            <div class="input-wrapper">
+                            <div
+                              class="input-wrapper"
+                              style="background: ${this.sharedState
+                                .scatterDatasets.sets[index_inset]
+                                .typeOfEachData[index_indata] === "number"
+                                ? "lightgreen"
+                                : "yellow"}"
+                            >
                               <sl-input
                                 ?disabled=${!(
                                   this.sharedState.editable ||
@@ -425,7 +557,11 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                                 )}
                                 id="input-x-${index_inset}-${index_inscatter}-${index_indata}"
                                 type="text or number"
-                                class="input"
+                                class="${this.sharedState.scatterDatasets.sets[
+                                  index_inset
+                                ].typeOfEachData[index_indata] === "number"
+                                  ? "input-lightgreen"
+                                  : "input-yellow"}"
                                 value="${data}"
                                 @sl-input=${(e: any) => {
                                   each_dataset.typeOfEachData[index_indata] ===
@@ -512,7 +648,7 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                           this.addColumnPopupOpenIndex = -1;
                         }}
                       >
-                        Text dataset
+                        Categorical values
                       </sl-button>
                       <sl-button
                         @mousedown=${(e: MouseEvent) => {
@@ -521,7 +657,7 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                           this.addColumnPopupOpenIndex = -1;
                         }}
                       >
-                        Numeric dataset
+                        Numeric values
                       </sl-button>
                     </div>
                   </sl-popup>
@@ -578,6 +714,8 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
       "sl-input": SlInput,
       "sl-popup": SlPopup,
       "wwci-select-dataset": SelectDataset,
+      "sl-dropdown": SlDropdown,
+      "sl-menu-item": SlMenuItem,
     };
   }
 }

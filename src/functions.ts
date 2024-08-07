@@ -132,6 +132,20 @@ export function randomColor(): string {
   return hslToHex(h, 100, l);
 }
 
+export function generateColorWheel(numColors: number): string[] {
+  const colors = [];
+  const saturation = 100; // Full saturation for vibrant colors
+  const lightness = 50; // Midpoint lightness for a balanced color
+
+  for (let i = 0; i < numColors; i++) {
+    // Evenly space the hue values around the color wheel
+    const hue = Math.floor((360 / numColors) * i);
+    colors.push(hslToHex(hue, saturation, lightness));
+  }
+
+  return colors;
+}
+
 export function randomString(): string {
   return randomWords(1)[0];
 }

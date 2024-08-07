@@ -41,14 +41,9 @@ export class WwChart extends SharedTestStateMixin(
   LitElementWw as unknown as LitElementWw &
     Parameters<typeof SharedTestStateMixin>[0]
 ) {
-  //TODO: extends (SharedTestStateMixin(LitElementWw) as unknown as LitElementWw & ReturnType<SharedTestStateMixin>)
   /**WebWriter API: If true, render the component such that easy printing is possible. */
   @property({ type: Boolean, attribute: true, reflect: true })
   printable: boolean;
-
-  /**WebWriter API: If true, allow user interaction to change the component. */
-  @property({ type: Boolean, attribute: true, reflect: true })
-  editable: boolean;
 
   /**WebWriter API: If true, emit DOM events enriched with xAPI statements. */
   @property({ type: Boolean, attribute: true, reflect: true })
@@ -65,7 +60,7 @@ export class WwChart extends SharedTestStateMixin(
   // TODO: Convert to image
   // TODO: printable option (delete?)
   // TODO: Focus on the chart element when it is clicked
-  //TODO: Button show Data and show Chart wechseln when clicked
+  // TODO: Button show Data and show Chart wechseln when clicked
   /*@click=${() => {
     this.requestUpdate();
     this.chartElement.focus();
@@ -78,6 +73,18 @@ export class WwChart extends SharedTestStateMixin(
     this.getAttributeNames().forEach((n) =>
       this.setAttribute(n, this.getAttribute(n))
     );
+
+    this.focus();
+    this.addEventListener("mouseup", this.handleMouseEvent.bind(this));
+  }
+  disconnectedCallback() {
+    this.removeEventListener("mouseup", this.handleMouseEvent.bind(this));
+    super.disconnectedCallback();
+  }
+
+  handleMouseEvent() {
+    console.log("[Chart] mouseup");
+    this.focus();
   }
 
   @property()
@@ -94,7 +101,6 @@ export class WwChart extends SharedTestStateMixin(
   }
 
   initializeDefaultOptions() {
-    this.editable = true;
     this.showChart = true;
     this.showData = false;
     this.showOptions = false;
@@ -130,24 +136,20 @@ export class WwChart extends SharedTestStateMixin(
   }
 
   render() {
-    this.sharedState.editable = this.editable;
+    this.sharedState.editable = this.isContentEditable;
     this.sharedState.printable = this.printable;
 
     this.sharedState.chart.optionDefinition = getOptionsDefinition(
       this.sharedState.chart.selectedType
     );
 
-    return html`<div id="settings" part="options">
+    return html`<div
+        id="settings"
+        part="options"
+        style=${this.isContentEditable ? "" : "display: none;"}
+      >
         <h2>Setting</h2>
         <div id="settings-panel">
-          <sl-checkbox
-            .checked=${this.editable}
-            @sl-change=${(e: any) => {
-              this.editable = e.target.checked;
-              this.sharedState.editable = e.target.checked;
-            }}
-            >Editable</sl-checkbox
-          >
           <wwci-chart-settings style="display: contents;"></wwci-chart-settings>
         </div>
       </div>
@@ -175,7 +177,7 @@ export class WwChart extends SharedTestStateMixin(
               this.showData = false;
               this.showTeacherOptions = false;
             }}
-            ?disabled=${this.editable
+            ?disabled=${this.isContentEditable
               ? false
               : !this.sharedState.teacherOptions.showOptions}
             >Chart Options</sl-button
@@ -186,7 +188,7 @@ export class WwChart extends SharedTestStateMixin(
               this.showOptions = false;
               this.showTeacherOptions = false;
             }}
-            ?disabled=${this.editable
+            ?disabled=${this.isContentEditable
               ? false
               : !this.sharedState.teacherOptions.showData}
             >Show Data</sl-button
@@ -197,7 +199,7 @@ export class WwChart extends SharedTestStateMixin(
               this.showOptions = false;
               this.showData = false;
             }}
-            ?disabled=${!this.editable}
+            ?disabled=${!this.isContentEditable}
             >Teacher Options</sl-button
           >
         </div>

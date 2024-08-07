@@ -7,7 +7,7 @@ import {
   ScatterDatasets,
   ScatterDataset,
 } from "../../../interfaces";
-import { randomColor } from "../../../functions";
+import { generateColorWheel, randomColor } from "../../../functions";
 
 interface Dimensions {
   height: number;
@@ -1121,7 +1121,7 @@ function updateColorForFilter(
         ranges.push(min + i * step);
       }
     }
-    const colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#00ffff"];
+    const colors = generateColorWheel(5);
     for (let i = 0; i < ranges.length - 1; i++) {
       rangesandcolors.push({
         range: { min: ranges[i], max: ranges[i + 1] },
@@ -1156,6 +1156,11 @@ function updateColorForFilter(
         });
       }
     });
+    const colorss = generateColorWheel(labelsandcolors.length);
+    labelsandcolors.forEach((labelandcolor, index) => {
+      labelandcolor.color = colorss[index];
+    });
+
     selectedDataset.filter.labelsandcolors = labelsandcolors;
     selectedDataset.dimensional_data.forEach((d) => {
       selectedDataset.filter.labelsandcolors.forEach((labelandcolor) => {

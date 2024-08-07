@@ -63,7 +63,7 @@ const initialState: sharedState = {
           21,
         ],
         labels: ["a-label", "b-label", "Gender"],
-        typeOfEachData: ["number", "number", "string"],
+        typeOfEachData: ["string", "number", "string"],
         dimensional_data: [
           { data: [60, 17000, "male"], selected: false },
           { data: [70, 18900, "male"], selected: false },
@@ -157,16 +157,16 @@ const initialState: sharedState = {
     ],
     selected: {
       axis: {
-        x: undefined,
-        y: undefined,
+        x: "a-label",
+        y: "b-label",
       },
-      dataset_indexes: [],
+      dataset_indexes: [2],
     },
   },
 
   regressionType: "none",
   chart: {
-    selectedType: "Bar",
+    selectedType: "Scatterplot",
     title: "My fancy Chart",
     filled: false,
     datasets: {

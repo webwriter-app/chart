@@ -148,7 +148,6 @@ export default css`
     font-weight: 400;
 
     box-sizing: border-box;
-    outline: 5px solid red;
   }
   #settings-panel {
     background-color: white;
@@ -160,7 +159,6 @@ export default css`
     align-items: left;
     gap: 30px;
     box-sizing: border-box;
-    outline: 5px solid orange;
   }
 
   #settings h2 {

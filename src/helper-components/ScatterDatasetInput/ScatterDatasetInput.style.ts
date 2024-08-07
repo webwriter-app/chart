@@ -31,6 +31,15 @@ export default css`
   sl-input::part(base) {
     border: 0;
   }
+  sl-input.input-lightgreen::part(base) {
+    border: 0;
+    background: lightgreen;
+  }
+  sl-input.input-yellow::part(base) {
+    border: 0;
+    background: yellow;
+  }
+
   .container {
     display: flex;
     overflow: visible;
@@ -91,5 +100,10 @@ export default css`
 
   sl-popup::part(popup) {
     z-index: 1000000;
+  }
+  .dropdown-content {
+    background: white;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    z-index: 1000;
   }
 `;

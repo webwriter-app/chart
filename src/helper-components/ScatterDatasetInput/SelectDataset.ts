@@ -39,11 +39,6 @@ export class SelectDataset extends SharedTestStateMixin(
             ) ?? []
           );
 
-    console.log({
-      commonLabels,
-      selectedDatasets: selectedDatasets.map((set) => set.name),
-    });
-
     return html`
       <div class="btn-wrapper">
         <sl-popup
@@ -88,19 +83,29 @@ export class SelectDataset extends SharedTestStateMixin(
                       );
                     }
                   }}
-                  .checked=${this.sharedState.scatterDatasets.selected.dataset_indexes.indexOf(
-                    i
-                  ) !== -1}
-                  ?disabled=${selectedDatasets.length > 0 &&
-                  commonLabels.filter(
-                    (commonLabel) =>
-                      set.labels.includes(commonLabel) &&
-                      set.typeOfEachData[set.labels.indexOf(commonLabel)] ===
-                        "number"
-                  ).length < 2 &&
-                  this.sharedState.scatterDatasets.selected.dataset_indexes.indexOf(
-                    i
-                  ) === -1}
+                  .checked=${
+                    this.sharedState.scatterDatasets.selected.dataset_indexes.indexOf(
+                      i
+                    ) !== -1
+                  }
+                  ?disabled=${
+                    selectedDatasets.length > 0 &&
+                    set.labels.filter(
+                      (label, i) =>
+                        commonLabels.includes(label) &&
+                        set.typeOfEachData[i] === "number" &&
+                        selectedDatasets.every(
+                          (selectedSet) =>
+                            selectedSet.labels.includes(label) &&
+                            selectedSet.typeOfEachData[
+                              selectedSet.labels.indexOf(label)
+                            ] === "number"
+                        )
+                    ).length < 2 &&
+                    this.sharedState.scatterDatasets.selected.dataset_indexes.indexOf(
+                      i
+                    ) === -1
+                  } // Disable if the dataset does not have at least 2 common labels with the selected datasets
                 >
                   ${set.name}
                 </sl-menu-item>

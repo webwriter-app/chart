@@ -40,11 +40,9 @@
         const elmt = document.getElementById("webwriter-chart");
         if (!elmt) console.log("webwriter-chart not found");
         if (event.target.checked) {
-          elmt.setAttribute("editable", "true");
-          elmt.editable = true;
+          elmt.setAttribute("contentEditable", "true");
         } else {
-          elmt.setAttribute("editable", "false");
-          elmt.editable = false;
+          elmt.removeAttribute("contentEditable");
         }
       });
       document
