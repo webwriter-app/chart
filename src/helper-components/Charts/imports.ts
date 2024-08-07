@@ -63,9 +63,7 @@ export function getChart(
   //@ts-ignore
   const chartName = unsafeStatic(chart.TagName);
 
-  return html`<div style="inset: 0px; padding: 10px; box-sizing: border-box; display: flex; height: 80%; width: 100%; justify-content: center; flex-direction: row; align-items: end; ${
-    chart.Align === "center" ? "aspect-ratio: 1;" : ""
-  }">
+  return html`<div style="inset: 0px; padding: 10px; box-sizing: border-box; display: flex; width: 100%; justify-content: center; flex-direction: row; align-items: end;">
 
     <${chartName} 
     id="chart"

@@ -95,7 +95,6 @@ export default css`
   }
 
   #main {
-    height: 65%;
     width: 100%;
     outline: 2px solid black;
     display: flex;
