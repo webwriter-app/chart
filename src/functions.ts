@@ -135,11 +135,22 @@ export function randomColor(): string {
 export function generateColorWheel(numColors: number): string[] {
   const colors = [];
   const saturation = 100; // Full saturation for vibrant colors
-  const lightness = 50; // Midpoint lightness for a balanced color
+  const lightnessBase = 50; // Midpoint lightness for a balanced color
+
+  // Exclude red by spacing hues and avoiding the red spectrum
+  const step = Math.floor((360 - 60) / numColors); // Total degrees excluding red range
 
   for (let i = 0; i < numColors; i++) {
-    // Evenly space the hue values around the color wheel
-    const hue = Math.floor((360 / numColors) * i);
+    let hue = step * i;
+
+    // Adjust hue to skip the red range (0-30° and 330-360°)
+    if (hue >= 0 && hue < 30) {
+      hue += 20; // Skip the first red range
+    } else if (hue >= 330) {
+      hue -= 20; // Skip the second red range
+    }
+    // Introduce a slight variation in lightness for more contrast
+    const lightness = lightnessBase + (i % 2 === 0 ? 10 : -10);
     colors.push(hslToHex(hue, saturation, lightness));
   }
 

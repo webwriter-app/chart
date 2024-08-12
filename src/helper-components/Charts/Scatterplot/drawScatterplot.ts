@@ -1,6 +1,11 @@
 import * as d3 from "d3";
 import * as d3regression from "d3-regression";
-import { PointOnlyNumbers } from "./scatterplot";
+import {
+  OneDimentionalPoint,
+  PointOnlyNumbers,
+  Point,
+  OneDimentionalNumberPoint,
+} from "./scatterplot";
 import {
   LineDataSets,
   ScatterplotDataSets,
@@ -25,6 +30,14 @@ interface Dimensions {
 interface Scales {
   x: d3.ScaleLinear<number, number>;
   y: d3.ScaleLinear<number, number>;
+}
+interface Scales_singleDataset {
+  x_num: d3.ScaleLinear<number, number>;
+  y_num: d3.ScaleLinear<number, number>;
+  x_band: d3.ScaleBand<string>;
+  y_band: d3.ScaleBand<string>;
+  x_none: d3.ScaleLinear<number, number>;
+  y_none: d3.ScaleLinear<number, number>;
 }
 function getScatterplotDataSets(scatterdatasets: ScatterDatasets) {
   const scatterplotdatasets: ScatterplotDataSets = {
@@ -81,7 +94,6 @@ function calculateSVGDimensions(data: PointOnlyNumbers[][]): Dimensions {
   const margin = { top: 10, right: 30, bottom: 50, left: 70 },
     width = 550 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
-  console.log("maxX", maxX, "maxY", maxY, "minX", minX, "minY", minY);
   return {
     height,
     width,
@@ -188,6 +200,7 @@ function drawScatterplot(
   options: {
     hoverTooltip: boolean;
     showOutliers: boolean;
+    hoverCursorChange: boolean;
   }
 ) {
   const dimensions = calculateSVGDimensions(datasets);
@@ -222,7 +235,44 @@ function drawScatterplot(
   // Draw points in the scatter plot
   for (let i = 0; i < datasets.length; i++) {
     const dataset = datasets[i];
-    drawPoints(scatter, dataset, i, axisLabels, tooltip, scales, options);
+    drawPoints(scatter, dataset, i, scales);
+    // Hover points to make them bigger and show tooltip
+    scatter
+      .selectAll(`circle.dataset-${i}`)
+      .on("mouseover", function (_e, d: PointOnlyNumbers) {
+        if (options.hoverCursorChange) {
+          d3.select(this).attr("r", 8);
+          // Change the cursor to move
+          d3.select(this).style("cursor", "move");
+        }
+        // Show tooltip
+        if (options.hoverTooltip) {
+          tooltip
+            .style("opacity", 1)
+            .html(
+              "ID: " +
+                d.id +
+                "<br/>" +
+                axisLabels.x +
+                ": " +
+                d.x +
+                " " +
+                axisLabels.y +
+                ": " +
+                d.y
+            );
+        }
+      })
+      .on("mousemove", (e) => {
+        tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
+      })
+      .on("mouseleave", function () {
+        d3.select(this).attr("r", 7);
+        // Change the cursor back to normal
+        d3.select(this).style("cursor", "default");
+        // Hide tooltip
+        tooltip.transition().duration(200).style("opacity", 0);
+      });
 
     // Show outliers for each dataset
     if (options.showOutliers) {
@@ -321,12 +371,7 @@ function drawPoints(
   parent: d3.Selection<SVGGElement, unknown, null, undefined>,
   dataset: PointOnlyNumbers[],
   index: number,
-  axisLabels: { x: string; y: string },
-  tooltip: d3.Selection<HTMLDivElement, unknown, null, undefined>,
-  scales: Scales,
-  options: {
-    hoverTooltip: boolean;
-  }
+  scales: Scales
 ) {
   parent
     .selectAll(`circle.dataset-${index}`)
@@ -341,29 +386,7 @@ function drawPoints(
     .style("stroke", "back")
     .style("stroke-width", 0.5)
     .style("opacity", 1)
-    .classed("selected", (d) => d.selected)
-    .on("mouseover", (_e, d) => {
-      if (!options.hoverTooltip) return;
-      tooltip
-        .style("opacity", 1)
-        .html(
-          d.id +
-            "<br/>" +
-            axisLabels.x +
-            ": " +
-            d.x +
-            " " +
-            axisLabels.y +
-            ": " +
-            d.y
-        );
-    })
-    .on("mousemove", (e) => {
-      tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
-    })
-    .on("mouseleave", () => {
-      tooltip.transition().duration(200).style("opacity", 0);
-    });
+    .classed("selected", (d) => d.selected);
 }
 
 // Function to check if a point is brushed
@@ -533,7 +556,6 @@ function findTheLastMatchIndexInSPDatasets(
     const dataset = datasets.sets[i];
     if (
       dataset.scatter_titel === closestPoint.scatter_titel &&
-      dataset.scatter_color === closestPoint.color &&
       dataset.ids.includes(closestPoint.id) &&
       dataset.dimensional_data.some(
         (point) =>
@@ -622,7 +644,7 @@ function addGridListeners(
   scales: Scales,
   dimensions: Dimensions
 ) {
-  svg
+  const grid_y = svg
     .append("g")
     .attr("class", "grid")
     .call(
@@ -630,8 +652,11 @@ function addGridListeners(
         .axisLeft(scales.y)
         .tickSize(-dimensions.width)
         .tickFormat(() => "")
-    );
-  svg
+    )
+    .style("stroke", "#0a0909")
+    .style("stroke-opacity", "0.15")
+    .style("shape-rendering", "crispEdges");
+  const grid_x = svg
     .append("g")
     .attr("class", "grid")
     .attr("transform", "translate(0," + dimensions.height + ")")
@@ -640,13 +665,13 @@ function addGridListeners(
         .axisBottom(scales.x)
         .tickSize(-dimensions.height)
         .tickFormat(() => "")
-    );
-
-  svg
-    .selectAll(".grid line")
+    )
     .style("stroke", "#0a0909")
     .style("stroke-opacity", "0.15")
     .style("shape-rendering", "crispEdges");
+
+  grid_x.selectAll(".domain").remove(); // Important, since the activities on point are not working
+  grid_y.selectAll(".domain").remove();
 }
 //TODO: Fix any type
 function addRegressionLine(
@@ -1171,6 +1196,538 @@ function updateColorForFilter(
     });
   }
 }
+/*  */
+//  get the max value of the dataset
+function calculateSVGDimensions_singleDataset(
+  data_for_x_axis_copy: { x: number | string; y: number | string }[],
+  data_for_y_axis_copy: { x: number | string; y: number | string }[],
+  x_axis_type: string,
+  y_axis_type: string
+) {
+  let maxX = 0;
+  let maxY = 0;
+  let minX = 0;
+  let minY = 0;
+  if (x_axis_type === "number") {
+    data_for_x_axis_copy.forEach((dataset) => {
+      maxX = Math.max(maxX, Number(dataset.x));
+      minX = Math.min(minX, Number(dataset.x));
+    });
+  }
+
+  if (y_axis_type === "number") {
+    data_for_y_axis_copy.forEach((dataset) => {
+      maxY = Math.max(maxY, Number(dataset.y));
+      minY = Math.min(minY, Number(dataset.y));
+    });
+  }
+  const roundingFactorX = 10 ** Math.floor(Math.log10(maxX));
+  maxX = Math.ceil(maxX / roundingFactorX) * roundingFactorX;
+
+  const roundingFactorY = 10 ** Math.floor(Math.log10(maxY));
+  maxY = Math.ceil(maxY / roundingFactorY) * roundingFactorY;
+  // set the dimensions and margins of the graph
+  const margin = { top: 10, right: 30, bottom: 50, left: 70 },
+    width = 550 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+  return {
+    height,
+    width,
+    margin,
+    min: { x: minX, y: minY },
+    max: { x: maxX, y: maxY },
+  };
+}
+function createSVG_SingleDataset(
+  parent: Element,
+  width: number,
+  height: number,
+  margin: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  }
+) {
+  // append the svg object to the body of the page
+  const svg = d3
+    .select(parent)
+    .append("svg")
+    .attr(
+      "viewBox",
+      `0 0 ${width + margin.left + margin.right} ${
+        height + margin.top + margin.bottom
+      }`
+    )
+    .attr("preserveAspectRatio", "xMidYMid meet")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  return svg;
+}
+function drawAxis_singleDataset(
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>,
+  height: number,
+  width: number,
+  margin: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  },
+  x_axis_type: string,
+  y_axis_type: string,
+  data_for_x_axis_copy: { x: number | string; y: number | string }[],
+  data_for_y_axis_copy: { x: number | string; y: number | string }[],
+  maxX: number,
+  maxY: number,
+  axisLabels: { x: string; y: string }
+) {
+  // Add Gridlines
+  const addGrid = (axis, scale, dimension, transform, offset) => {
+    const grid = svg
+      .append("g")
+      .attr("class", "grid")
+      .attr("transform", transform)
+      .call(
+        axis(scale)
+          .tickSize(-dimension)
+          .tickFormat(() => "")
+          .tickSizeOuter(0)
+      );
+
+    grid
+      .selectAll(".tick line")
+      .attr("transform", `translate(${offset})`)
+      .attr("stroke", "lightgrey");
+    grid.selectAll(".domain").remove();
+  };
+  // Add X axis
+  let x_bandwidth = 0;
+  let y_bandwidth = 0;
+  let x;
+  if (x_axis_type !== "none" && data_for_x_axis_copy.length > 0) {
+    x =
+      x_axis_type === "number"
+        ? d3.scaleLinear().domain([0, maxX]).range([0, width])
+        : d3
+            .scaleBand()
+            .domain(data_for_x_axis_copy.map((d) => d.x as string))
+            .range([0, width])
+            .align(0)
+            .paddingOuter(0)
+            .paddingInner(0);
+    if (x_axis_type === "number") {
+      svg
+        .append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+    } else {
+      let axis_x = svg
+        .append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+      x_bandwidth = x.bandwidth();
+      if (y_axis_type !== "none") {
+        if (x_axis_type === "string" && y_axis_type === "number") {
+          axis_x
+            .selectAll(".tick text")
+            .attr("transform", `translate(${-x.bandwidth() / 2}, 0)`);
+          svg.selectAll(".tick line").remove();
+        }
+      }
+    }
+    svg
+      .append("text")
+      .attr("class", "x label")
+      .attr("text-anchor", "middle")
+      .attr("x", width / 2)
+      .attr("y", height + 40)
+      .attr("style", "text-align: center;")
+      .text(axisLabels.x);
+    // Add Gridlines
+    if (!(x_axis_type === "number")) {
+      addGrid(
+        d3.axisBottom,
+        x,
+        height,
+        `translate(0, ${height})`,
+        `${-x.bandwidth() / 2}, 0`
+      );
+    }
+  }
+  // Add Y axis
+  let y;
+  if (!(y_axis_type === "none") && data_for_y_axis_copy.length > 0) {
+    y =
+      y_axis_type === "number"
+        ? d3.scaleLinear().domain([0, maxY]).range([height, 0])
+        : d3
+            .scaleBand()
+            .domain(data_for_y_axis_copy.map((d) => d.y as string))
+            .range([height, 0])
+            .padding(0)
+            .paddingOuter(0);
+    if (y_axis_type === "number") {
+      svg.append("g").call(d3.axisLeft(y));
+    } else {
+      let axis_y = svg.append("g").call(d3.axisLeft(y));
+      y_bandwidth = y.bandwidth();
+
+      if (y_axis_type === "string" && x_axis_type === "number") {
+        axis_y
+          .selectAll(".tick text")
+          .attr("transform", `translate( 0, ${y.bandwidth() / 2})`);
+        svg.selectAll(".tick line").remove();
+      }
+    }
+    svg
+      .append("text")
+      .attr("class", "y label")
+      .attr("text-anchor", "middle")
+      .attr("x", -((height + margin.bottom) / 2)) // to my x axis
+      .attr("y", -40) // to my y axis
+      .attr("transform", "rotate(-90)")
+      .text(axisLabels.y);
+    // Add Gridlines
+    if (!(y_axis_type === "number")) {
+      addGrid(d3.axisLeft, y, width, null, `0, ${y.bandwidth() / 2}`);
+    }
+  }
+
+  if (!(x_axis_type === "none") && !(y_axis_type === "none")) {
+    if (y_axis_type === "string" && x_axis_type === "string") {
+      x_bandwidth = x.bandwidth();
+      y_bandwidth = y.bandwidth();
+      addGrid(d3.axisLeft, y, width, null, `0, ${y.bandwidth() / 2}`);
+      addGrid(
+        d3.axisBottom,
+        x,
+        height,
+        `translate(0, ${height})`,
+        `${-x.bandwidth() / 2}, 0`
+      );
+    }
+  }
+
+  svg.selectAll(".domain, .tick line").attr("stroke", "lightgrey");
+  return { x_bandwidth, y_bandwidth };
+}
+
+function drawScatterplot_singleDataset(
+  root: Element,
+  data_for_x_axis_copy: { x: number | string; y: number | string }[],
+  data_for_y_axis_copy: { x: number | string; y: number | string }[],
+  x_axis_type: string,
+  y_axis_type: string,
+  axisLabels: { x: string; y: string }
+) {
+  const dimensions = calculateSVGDimensions_singleDataset(
+    data_for_x_axis_copy,
+    data_for_y_axis_copy,
+    x_axis_type,
+    y_axis_type
+  );
+  const svg = createSVG_SingleDataset(
+    root,
+    dimensions.width,
+    dimensions.height,
+    dimensions.margin
+  );
+
+  const scales = {
+    x_num: d3
+      .scaleLinear()
+      .domain([0, dimensions.max.x])
+      .range([0, dimensions.width]),
+    y_num: d3
+      .scaleLinear()
+      .domain([0, dimensions.max.y])
+      .range([dimensions.height, 0]),
+    x_band: d3
+      .scaleBand()
+      .domain(data_for_x_axis_copy.map((d) => d.x as string))
+      .range([0, dimensions.width]),
+    y_band: d3
+      .scaleBand()
+      .domain(data_for_y_axis_copy.map((d) => d.y as string))
+      .range([dimensions.height, 0]),
+    x_none: d3
+      .scaleLinear()
+      .domain([0, dimensions.width])
+      .range([0, dimensions.width]),
+    y_none: d3
+      .scaleLinear()
+      .domain([0, dimensions.height])
+      .range([dimensions.height, 0]),
+  };
+  const bandwidth_result = drawAxis_singleDataset(
+    svg,
+    dimensions.height,
+    dimensions.width,
+    dimensions.margin,
+    x_axis_type,
+    y_axis_type,
+    data_for_x_axis_copy,
+    data_for_y_axis_copy,
+    dimensions.max.x,
+    dimensions.max.y,
+    axisLabels
+  );
+  console.log(
+    "Wnn" + bandwidth_result.x_bandwidth + bandwidth_result.y_bandwidth
+  );
+
+  return { svg, scales, dimensions, bandwidth_result };
+}
+function drawScatterplot_singleDataset2(
+  root: Element,
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>,
+  x_axis_type: string,
+  y_axis_type: string,
+  datasets: Point[],
+  singeledatasets: OneDimentionalPoint[],
+  scales: Scales_singleDataset,
+  dimensions: Dimensions,
+  bandwidth_result: { x_bandwidth: number; y_bandwidth: number },
+  options: {
+    hoverCursorChange: boolean;
+    hoverTooltip: boolean;
+  },
+  axisLabels: { x: string; y: string }
+) {
+  const tooltip = createTooltip(root);
+  const scatter = svg.append("g");
+  // if one of the axis is string and there are multiple value of the other axis, those values are the same, then the circles will be on top of each other
+  if (!(x_axis_type === "none") && !(y_axis_type === "none")) {
+    datasets.forEach((d: Point, i) => {
+      scatter
+        .append("circle")
+        .attr("class", `dataset-${i}`)
+        .attr(
+          "cx",
+          x_axis_type === "number"
+            ? scales.x_num(d.x as number)
+            : y_axis_type === "number"
+            ? scales.x_band(d.x as string) + 6 + d.offset
+            : scales.x_band(d.x as string) + bandwidth_result.x_bandwidth / 2
+        ) // 6 is the radius of the circle
+        .attr(
+          "cy",
+          y_axis_type === "number"
+            ? scales.y_num(d.y as number)
+            : scales.y_band(d.y as string) -
+                6 -
+                d.offset +
+                bandwidth_result.y_bandwidth
+        )
+        .attr("r", 6)
+        .style("fill", d.color ?? "#417ca1")
+        .style("opacity", 1)
+        .style("stroke", "black")
+        .style("stroke-width", 0.5)
+        .classed("selected", d.selected ?? false);
+
+      scatter
+        .selectAll(`circle.dataset-${i}`)
+        .on("mouseover", function () {
+          if (options.hoverCursorChange) {
+            d3.select(this).attr("r", 7);
+            // Change the cursor to move
+            d3.select(this).style("cursor", "move");
+          }
+          // Show tooltip
+          if (options.hoverTooltip) {
+            tooltip
+              .style("opacity", 1)
+              .html(
+                "ID: " +
+                  d.id +
+                  "<br>" +
+                  axisLabels.x +
+                  ": " +
+                  d.x +
+                  " " +
+                  axisLabels.y +
+                  ": " +
+                  d.y
+              );
+          }
+        })
+        .on("mousemove", (e) => {
+          tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
+        })
+        .on("mouseleave", function () {
+          d3.select(this).attr("r", 6);
+          // Change the cursor back to normal
+          d3.select(this).style("cursor", "default");
+          // Hide tooltip
+          tooltip.transition().duration(200).style("opacity", 0);
+        });
+    });
+  }
+  if (x_axis_type === "none" && y_axis_type === "number") {
+    singeledatasets.forEach((d: OneDimentionalNumberPoint, i) => {
+      scatter
+        .append("circle")
+        .attr("class", `single-y-${i}`)
+        .attr("cx", 6 + d.offset)
+        .attr("cy", scales.y_num(d.p as number))
+        .attr("r", 6)
+        .style("fill", d.color ?? "#417ca1")
+        .style("opacity", 1)
+        .style("stroke", "black")
+        .style("stroke-width", 0.5)
+        .classed("selected", d.selected ?? false);
+      scatter
+        .selectAll(`circle.single-y-${i}`)
+        .on("mouseover", function () {
+          if (options.hoverCursorChange) {
+            d3.select(this).attr("r", 7);
+            // Change the cursor to move
+            d3.select(this).style("cursor", "move");
+          }
+          // Show tooltip
+          if (options.hoverTooltip) {
+            tooltip
+              .style("opacity", 1)
+              .html("ID: " + d.id + "<br>" + axisLabels.y + ": " + d.p);
+          }
+        })
+        .on("mousemove", (e) => {
+          tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
+        })
+        .on("mouseleave", function () {
+          d3.select(this).attr("r", 6);
+          // Change the cursor back to normal
+          d3.select(this).style("cursor", "default");
+          // Hide tooltip
+          tooltip.transition().duration(200).style("opacity", 0);
+        });
+    });
+  }
+  if (x_axis_type === "none" && y_axis_type === "string") {
+    singeledatasets.forEach((d: OneDimentionalPoint, i) => {
+      scatter
+        .append("circle")
+        .attr("class", `single-string-y-${i}`)
+        .attr("cx", 6 + d.offset)
+        .attr(
+          "cy",
+          scales.y_band(d.p as string) + bandwidth_result.y_bandwidth / 2
+        )
+        .attr("r", 6)
+        .style("fill", d.color ?? "#417ca1")
+        .style("opacity", 1)
+        .style("stroke", "black")
+        .style("stroke-width", 0.5)
+        .classed("selected", d.selected ?? false);
+      scatter
+        .selectAll(`circle.single-string-y-${i}`)
+        .on("mouseover", function () {
+          if (options.hoverCursorChange) {
+            d3.select(this).attr("r", 7);
+          }
+          // Show tooltip
+          if (options.hoverTooltip) {
+            tooltip
+              .style("opacity", 1)
+              .html("ID: " + d.id + "<br>" + axisLabels.y + ": " + d.p);
+          }
+        })
+        .on("mousemove", (e) => {
+          tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
+        })
+        .on("mouseleave", function () {
+          d3.select(this).attr("r", 6);
+          // Hide tooltip
+          tooltip.transition().duration(200).style("opacity", 0);
+        });
+    });
+  }
+
+  if (x_axis_type === "number" && y_axis_type === "none") {
+    singeledatasets.forEach((d: OneDimentionalNumberPoint, i) => {
+      scatter
+        .append("circle")
+        .attr("class", `single-x-${i}`)
+        .attr("cx", scales.x_num(d.p as number))
+        .attr("cy", -6 + dimensions.height - d.offset)
+        .attr("r", 6)
+        .style("fill", d.color ?? "#417ca1")
+        .style("opacity", 1)
+        .style("stroke", "black")
+        .style("stroke-width", 0.5)
+        .classed("selected", d.selected ?? false);
+      scatter
+        .selectAll(`circle.single-x-${i}`)
+        .on("mouseover", function () {
+          if (options.hoverCursorChange) {
+            d3.select(this).attr("r", 7);
+            // Change the cursor to move
+            d3.select(this).style("cursor", "move");
+          }
+          // Show tooltip
+          if (options.hoverTooltip) {
+            tooltip
+              .style("opacity", 1)
+              .html("ID: " + d.id + "<br>" + axisLabels.x + ": " + d.p);
+          }
+        })
+        .on("mousemove", (e) => {
+          tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
+        })
+        .on("mouseleave", function () {
+          d3.select(this).attr("r", 6);
+          // Change the cursor back to normal
+          d3.select(this).style("cursor", "default");
+          // Hide tooltip
+          tooltip.transition().duration(200).style("opacity", 0);
+        });
+    });
+  }
+  if (x_axis_type === "string" && y_axis_type === "none") {
+    singeledatasets.forEach((d: OneDimentionalPoint, i) => {
+      scatter
+        .append("circle")
+        .attr("class", `single-string-x-${i}`)
+        .attr(
+          "cx",
+          scales.x_band(d.p as string) + bandwidth_result.x_bandwidth / 2
+        )
+        .attr("cy", -6 + dimensions.height - d.offset)
+        .attr("r", 6)
+        .style("fill", d.color ?? "#417ca1")
+        .style("opacity", 1)
+        .style("stroke", "black")
+        .style("stroke-width", 0.5)
+        .classed("selected", d.selected ?? false);
+      scatter
+        .selectAll(`circle.single-string-x-${i}`)
+        .on("mouseover", function () {
+          if (options.hoverCursorChange) {
+            d3.select(this).attr("r", 7);
+          }
+          // Show tooltip
+          if (options.hoverTooltip) {
+            tooltip
+              .style("opacity", 1)
+              .html("ID: " + d.id + "<br>" + axisLabels.x + ": " + d.p);
+          }
+        })
+        .on("mousemove", (e) => {
+          tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
+        })
+        .on("mouseleave", function () {
+          d3.select(this).attr("r", 6);
+          // Hide tooltip
+          tooltip.transition().duration(200).style("opacity", 0);
+        });
+    });
+  }
+  return scatter;
+}
 export {
   drawScatterplot,
   addDrawLineListeners,
@@ -1190,4 +1747,6 @@ export {
   addPointListeners,
   selectPointByClickingListeners,
   updateColorForFilter,
+  drawScatterplot_singleDataset,
+  drawScatterplot_singleDataset2,
 };

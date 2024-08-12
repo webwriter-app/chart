@@ -33,9 +33,9 @@ export default css`
     position: relative;
   }
 
+  /* 
   .table-scroll-container {
     overflow: auto;
-    width: 100%;
     position: absolute;
     inset: 0;
     width: 100%;
@@ -43,6 +43,7 @@ export default css`
     padding: 10px;
     box-sizing: border-box;
   }
+*/
 
   .table-layout-container {
     display: grid;

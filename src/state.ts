@@ -70,7 +70,7 @@ const initialState: sharedState = {
           { data: [56, 16000, "female"], selected: false },
           { data: [78, 17000, "female"], selected: false },
           { data: [57, 15500, "female"], selected: false },
-          /*{ data: [2, 2, "one"], selected: false },
+          { data: [2, 2, "one"], selected: false },
           { data: [5, 4, "two"], selected: false },
           { data: [6, 6, "three"], selected: false },
           { data: [3, 6, "three"], selected: false },
@@ -87,9 +87,8 @@ const initialState: sharedState = {
           { data: [3, 6, "three"], selected: false },
           { data: [3, 6, "three"], selected: false },
           { data: [3, 6, "three"], selected: false },
-          { data: [3, 6, "three"], selected: false },*/
+          { data: [3, 6, "three"], selected: false },
 
-          /*
           { data: [3, 6, "three"], selected: false },
           { data: [3, 6, "three"], selected: false },
           { data: [3, 6, "three"], selected: false },
@@ -113,7 +112,7 @@ const initialState: sharedState = {
           { data: [3, 6, "three"], selected: false },
           { data: [3, 6, "three"], selected: false },
           { data: [3, 6, "three"], selected: false },
-          { data: [3, 6, "three"], selected: false },*/
+          { data: [3, 6, "three"], selected: false },
         ],
         filter: { label: "", type: "none", index_in_labels: -1 },
       },
@@ -157,10 +156,10 @@ const initialState: sharedState = {
     ],
     selected: {
       axis: {
-        x: "a-label",
-        y: "b-label",
+        x: "Gender",
+        y: undefined,
       },
-      dataset_indexes: [2],
+      dataset_indexes: [0],
     },
   },
 

@@ -16,6 +16,9 @@ import SlColorPicker from "@shoelace-style/shoelace/dist/components/color-picker
 import SlPopup from "@shoelace-style/shoelace/dist/components/popup/popup.component.js";
 import SlDropdown from "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
 import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item.component.js";
+import IconTrash from "bootstrap-icons/icons/trash.svg";
+import IconPlusCircle from "bootstrap-icons/icons/plus-circle.svg";
+import IconCaretdown from "bootstrap-icons/icons/caret-down.svg";
 import "../FileUploadButton";
 import { SharedTestStateMixin } from "../../state";
 import { LitElementWw } from "@webwriter/lit";
@@ -258,7 +261,7 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                                 this.sharedState.editable ||
                                 this.sharedState.teacherOptions.addRemoveData
                               )}
-                              name="trash"
+                              src=${IconTrash}
                               label="Settings"
                               @click=${() =>
                                 this.deleteTableDataset(index_inset)}
@@ -347,7 +350,7 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                         <sl-dropdown>
                           <sl-icon-button
                             slot="trigger"
-                            name="caret-down"
+                            src=${IconCaretdown}
                             label="Toggle dropdown"
                           ></sl-icon-button>
 
@@ -371,7 +374,7 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                                 >
                                   <sl-icon-button
                                     class="delete-column-button"
-                                    name="trash"
+                                    src=${IconTrash}
                                     label="Settings"
                                   ></sl-icon-button
                                   >Delete Column</sl-menu-item
@@ -506,7 +509,7 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                                 this.sharedState.editable ||
                                 this.sharedState.teacherOptions.addRemoveData
                               )}
-                              name="trash"
+                              src=${IconTrash}
                               label="Settings"
                               @click=${() =>
                                 this.deleteRow(index_inset, index_inscatter)}
@@ -632,7 +635,7 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                   >
                     <sl-icon-button
                       slot="anchor"
-                      name="plus-circle"
+                      src=${IconPlusCircle}
                       label="Add Column"
                       @click=${(e) => {
                         this.addColumnPopupOpenIndex = index_inset;
@@ -669,7 +672,7 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
             this.sharedState.teacherOptions.addRemoveData
               ? html`<sl-icon-button
                   @click=${() => this.addRow(index_inset)}
-                  name="plus-circle"
+                  src=${IconPlusCircle}
                   label="Add Dataset"
                 ></sl-icon-button>`
               : html``

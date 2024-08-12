@@ -14,6 +14,8 @@ import style from "./DatasetInput.style";
 import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js";
 import SlColorPicker from "@shoelace-style/shoelace/dist/components/color-picker/color-picker.js";
+import IconTrash from "bootstrap-icons/icons/trash.svg";
+import IconPlusCircle from "bootstrap-icons/icons/plus-circle.svg";
 import { SharedTestStateMixin } from "../../state";
 import { FileUploadButton } from "../FileUploadButton";
 import { LitElementWw } from "@webwriter/lit";
@@ -94,7 +96,7 @@ export class DatasetInput extends SharedTestStateMixin(
                                 this.sharedState.editable ||
                                 this.sharedState.teacherOptions.addRemoveData
                               )}
-                              name="trash"
+                              src=${IconTrash}
                               label="Settings"
                               @click=${() => this.deleteColumn(i)}
                             ></sl-icon-button>`
@@ -119,7 +121,7 @@ export class DatasetInput extends SharedTestStateMixin(
                                 this.sharedState.editable ||
                                 this.sharedState.teacherOptions.addRemoveData
                               )}
-                              name="trash"
+                              src=${IconTrash}
                               label="Settings"
                               @click=${() => this.deleteDataset(i)}
                             ></sl-icon-button>`
@@ -211,12 +213,12 @@ export class DatasetInput extends SharedTestStateMixin(
             ? html`
                 <sl-icon-button
                   @click=${this.addColumn}
-                  name="plus-circle"
+                  src=${IconPlusCircle}
                   label="Add Column"
                 ></sl-icon-button>
                 <sl-icon-button
                   @click=${this.addDataset}
-                  name="plus-circle"
+                  src=${IconPlusCircle}
                   label="Add Dataset"
                 ></sl-icon-button>
 

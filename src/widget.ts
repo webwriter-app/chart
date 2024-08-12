@@ -1,4 +1,4 @@
-import { LitElement, PropertyValueMap, html } from "lit";
+import { PropertyValueMap, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 import { DatasetInput } from "./helper-components/DatasetInput/DatasetInput";
@@ -67,15 +67,14 @@ export class WwChart extends SharedTestStateMixin(
   }}*/
   //@query("wwci-dataset-input") private datasetInput!: Select;
   //@query("#chart") private chartElement!: HTMLElement;
-
+  tabIndex: number;
   connectedCallback() {
+    this.tabIndex = -1;
     super.connectedCallback();
     this.getAttributeNames().forEach((n) =>
       this.setAttribute(n, this.getAttribute(n))
     );
   }
-
-  tabIndex: number = -1
 
   @property()
   options: any = {};

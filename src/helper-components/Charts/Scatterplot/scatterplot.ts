@@ -10,6 +10,11 @@ import SlPopup from "@shoelace-style/shoelace/dist/components/popup/popup.compon
 import SlMenu from "@shoelace-style/shoelace/dist/components/menu/menu.js";
 import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
 import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.component.js";
+import IconFileBarGraph from "bootstrap-icons/icons/file-bar-graph.svg";
+import IconHandIndex from "bootstrap-icons/icons/hand-index.svg";
+import IconEye from "bootstrap-icons/icons/eye.svg";
+import IconPencil from "bootstrap-icons/icons/pencil.svg";
+import IconFilter from "bootstrap-icons/icons/filter.svg";
 import { LitElementWw } from "@webwriter/lit";
 import {
   addBrushingListeners,
@@ -27,6 +32,8 @@ import {
   selectPointByClickingListeners,
   updateLineAndPoints,
   updateColorForFilter,
+  drawScatterplot_singleDataset,
+  drawScatterplot_singleDataset2,
 } from "./drawScatterplot";
 import style from "./scatterplot.style";
 export interface PointOnlyNumbers {
@@ -104,6 +111,13 @@ export class ScatterplotChart extends SharedTestStateMixin(
   drawLine = false;
   @property({ type: Boolean })
   filterOn = false;
+  @property({ type: Boolean })
+  hoverCursorChange = true;
+  //TODO: Use this attribute to change the cursor to a hand with a pointing finger
+  @property({ type: Boolean })
+  hoverCursorToMove = false;
+  @property({ type: Boolean })
+  hoverCursorToPointer = false;
 
   constructor(optionsDefinition = OptionDefinition) {
     super();
@@ -155,7 +169,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
               .disabled=${this.options.animation}
               @blur=${() => (this.addNode = false)}
             >
-              <sl-icon name="file-bar-graph" label="Data"></sl-icon>
+              <sl-icon src=${IconFileBarGraph} label="Data"></sl-icon>
             </sl-button>
             <div class="popup-content">
               ${this.sharedState.scatterDatasets.selected.dataset_indexes.map(
@@ -166,6 +180,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                     @mousedown=${(e: MouseEvent) => {
                       if (e.button !== 0) return;
                       this.selectedIndextoAddNote = i;
+                      this.hoverCursorChange = false;
                       this.updateScatterplot();
                     }}
                   >
@@ -194,7 +209,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
               }}
               @blur=${() => (this.selectNode = false)}
             >
-              <sl-icon name="hand-index" label="Selection"></sl-icon>
+              <sl-icon src=${IconHandIndex} label="Selection"></sl-icon>
             </sl-button>
             <div class="popup-content">
               <sl-button
@@ -209,6 +224,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   this.hideSelected = false;
                   this.hideUnselected = false;
                   this.showAll = false;
+                  this.hoverCursorChange = false;
                   this.updateScatterplot();
                 }}
               >
@@ -270,7 +286,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
               }}
               @blur=${() => (this.editShowing = false)}
             >
-              <sl-icon name="eye" label="View"></sl-icon>
+              <sl-icon src=${IconEye} label="View"></sl-icon>
             </sl-button>
             <div class="popup-content">
               <sl-menu-item
@@ -388,7 +404,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
               .disabled=${this.options.animation}
               @blur=${() => (this.extraOptions = false)}
             >
-              <sl-icon name="pencil" label="Draw"></sl-icon>
+              <sl-icon src=${IconPencil} label="Draw"></sl-icon>
             </sl-button>
             <div class="popup-content">
               <sl-button
@@ -431,7 +447,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                     .length !== 1}
                   @blur=${() => (this.filterOn = false)}
                 >
-                  <sl-icon name="filter" label="Filter"></sl-icon>
+                  <sl-icon src=${IconFilter} label="Filter"></sl-icon>
                 </sl-button>
               </sl-tooltip>
             </span>
@@ -575,6 +591,9 @@ export class ScatterplotChart extends SharedTestStateMixin(
     this.extraOptions = false;
     this.drawLine = false;
     this.filterOn = false;
+    this.hoverCursorChange = true;
+    this.hoverCursorToMove = false;
+    this.hoverCursorToPointer = false;
     this.createScatterPlot();
     // TODO: remove event listener on unmount
     document.addEventListener("keypress", (e) => {
@@ -627,24 +646,6 @@ export class ScatterplotChart extends SharedTestStateMixin(
   }
   // !IMPORTANT: TODO: Fix the drag behavior out of scatterplot area ?
   createScatterPlot() {
-    /*const datasets: Point[][] = this.sharedState.scatterplotdatasets.sets.map(
-      (dataset) =>
-        dataset.dimensional_data.map((d: Point, i) => {
-          // !IMPORTANT: Keep the refernce to the original dataset to update data when updating points directly!
-          d.color = dataset.scatter_color;
-          d.label = dataset.labels[i];
-          d.scatter_titel = dataset.scatter_titel;
-          return d;
-          export interface Point {
-            x: number;
-            y: number;
-            selected?: boolean;
-            color?: string;
-            label?: string;
-            scatter_titel?: string;
-          }
-        })
-    );*/
     const selectedDatasets = this.sharedState.scatterDatasets.sets.filter(
       (_, i) =>
         this.sharedState.scatterDatasets.selected.dataset_indexes.includes(i)
@@ -719,6 +720,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
         {
           hoverTooltip: this.options.hoverTooltip,
           showOutliers: this.options.showOutliers,
+          hoverCursorChange: this.hoverCursorChange,
         } as any
       );
 
@@ -747,6 +749,29 @@ export class ScatterplotChart extends SharedTestStateMixin(
         this.selectedIndextoAddNote <
           this.sharedState.scatterDatasets.selected.dataset_indexes.length
       ) {
+        // Change cursor to a circle with the color of the selected dataset
+        let color: string;
+        this.sharedState.scatterDatasets.sets.forEach((set, index) => {
+          if (
+            this.sharedState.scatterDatasets.selected.dataset_indexes.indexOf(
+              index
+            ) === this.selectedIndextoAddNote
+          ) {
+            color = set.color;
+          }
+        });
+
+        let circleCursorSVG = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="${color}" class="bi bi-circle-fill" viewBox="0 0 16 16">
+    <circle cx="8" cy="8" r="7"/>
+  </svg>
+`;
+        let circleCursorURL = `data:image/svg+xml;base64,${btoa(
+          circleCursorSVG
+        )}`;
+
+        // Set the cursor style to the circle with the specified color
+        svg.style("cursor", `url(${circleCursorURL}) 8 8, auto`); // Centered cursor
         svg.on("click", (event) => {
           addPointListeners(
             event,
@@ -758,6 +783,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
           this.addNode = false;
           this.updateScatterplot();
         });
+        this.hoverCursorChange = true;
       }
 
       // Clicking for selecting points
@@ -767,6 +793,8 @@ export class ScatterplotChart extends SharedTestStateMixin(
         !this.selectByBrushing &&
         !this.deselectByBrushing
       ) {
+        // Change cursor to a hand with a pointing finger
+        svg.style("cursor", "pointer");
         datasets.forEach((_, index) => {
           svg.selectAll(`circle.dataset-${index}`).on("click", (event) => {
             selectPointByClickingListeners(
@@ -781,6 +809,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
             this.updateScatterplot();
           });
         });
+        this.hoverCursorChange = true;
       }
 
       // Dragging points to change their position
@@ -845,13 +874,23 @@ export class ScatterplotChart extends SharedTestStateMixin(
       // Draw a line in scatter plot
       if (this.extraOptions && this.drawLine) {
         // change cursor to pencil
-        //TODO: Fix the cursor problem
-        //svg.style("cursor", pencilCursor);
+
+        // Define the pencil SVG as a string
+        let pencilCursorSVG = `
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+  <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+</svg>
+`;
+
+        // Encode the SVG to a Base64 data URL
+        let pencilCursorURL = `data:image/svg+xml;base64,${btoa(
+          pencilCursorSVG
+        )}`;
+        svg.style("cursor", `url(${pencilCursorURL}) 0 16, auto`);
+
         addDrawLineListeners(svg, scales, (line) => {
           this.sharedState.lineDatasets.sets.push({ data: line });
           this.updateScatterplot();
-          // change cursor back to default
-          //svg.style("cursor", "default");
         });
       }
 
@@ -897,8 +936,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
             this.sharedState.lineDatasets
           );
         })
-        .on("end", (event) => {
-          d3.select(event.sourceEvent.target).classed("selected-rect", false);
+        .on("end", () => {
           this.updateScatterplot();
         });
       let index_right = -1;
@@ -1010,70 +1048,94 @@ export class ScatterplotChart extends SharedTestStateMixin(
           .append("rect")
           .datum([endPointsLeft, endPointsRight])
           .attr("class", `center-point-${i}`)
-          .attr("x", center.x - 7)
-          .attr("y", center.y - 7)
+          .attr("x", center.x - 5)
+          .attr("y", center.y - 5)
           .attr("width", 10) // Width of the rectangle
           .attr("height", 10) // Height of the rectangle
           .attr("fill", "white") // Fill color of the rectangle
           .attr("stroke", "black")
-          .attr("stroke-width", 1)
+          .attr("stroke-width", 1.5)
           .call(dragCenter);
-        svg.select(`.center-point-${i}`).on("contextmenu", (event) => {
-          deleteLineListeners(
-            event,
-            svg,
-            lineDatasetsWithCenterPoint,
-            scales,
-            this.sharedState.lineDatasets
-          );
-          this.updateScatterplot();
-        });
+        svg
+          .select(`.center-point-${i}`)
+          .on("contextmenu", (event) => {
+            deleteLineListeners(
+              event,
+              svg,
+              lineDatasetsWithCenterPoint,
+              scales,
+              this.sharedState.lineDatasets
+            );
+            this.updateScatterplot();
+          })
+          .on("mouseover", () => {
+            svg.style("cursor", "move");
+          })
+          .on("mouseleave", () => {
+            svg.style("cursor", "default");
+          });
 
         // Append the end point left
         const end_point_left = svg
           .append("rect")
           .datum([endPointsLeft, endPointsRight])
           .attr("class", `end-point-left-${i}`)
-          .attr("x", endPointsLeft.x - 7) // Position of the rectangle
-          .attr("y", endPointsLeft.y - 7)
+          .attr("x", endPointsLeft.x - 5) // Position of the rectangle
+          .attr("y", endPointsLeft.y - 5) // 5 is half of the width and height of the rectangle
           .attr("width", 10) // Width of the rectangle
           .attr("height", 10) // Height of the rectangle
           .attr("fill", "white") // Fill color of the rectangle
           .attr("stroke", "black")
-          .attr("stroke-width", 1);
-        svg.select(`.end-point-left-${i}`).on("contextmenu", (event) => {
-          deleteLineListeners(
-            event,
-            svg,
-            lineDatasetsWithCenterPoint,
-            scales,
-            this.sharedState.lineDatasets
-          );
-          this.updateScatterplot();
-        });
+          .attr("stroke-width", 1.5);
+        svg
+          .select(`.end-point-left-${i}`)
+          .on("contextmenu", (event) => {
+            deleteLineListeners(
+              event,
+              svg,
+              lineDatasetsWithCenterPoint,
+              scales,
+              this.sharedState.lineDatasets
+            );
+            this.updateScatterplot();
+          })
+          .on("mouseover", () => {
+            svg.style("cursor", "move");
+          })
+          .on("mouseleave", () => {
+            svg.style("cursor", "default");
+          });
 
         // Append the end point right
         const end_point_right = svg
           .append("rect")
           .datum([endPointsLeft, endPointsRight])
           .attr("class", `end-point-right-${i}`)
-          .attr("x", endPointsRight.x - 7)
-          .attr("y", endPointsRight.y - 7)
+          .attr("x", endPointsRight.x - 5)
+          .attr("y", endPointsRight.y - 5)
           .attr("width", 10) // Width of the rectangle
           .attr("height", 10) // Height of the rectangle
           .attr("fill", "white")
           .attr("stroke", "black")
-          .attr("stroke-width", 1);
-        svg.select(`.end-point-right-${i}`).on("contextmenu", (event) => {
-          deleteLineListeners(
-            event,
-            svg,
-            lineDatasetsWithCenterPoint,
-            scales,
-            this.sharedState.lineDatasets
-          );
-          this.updateScatterplot();
-        });
+          .attr("stroke-width", 1.5);
+        svg
+          .select(`.end-point-right-${i}`)
+          .on("contextmenu", (event) => {
+            deleteLineListeners(
+              event,
+              svg,
+              lineDatasetsWithCenterPoint,
+              scales,
+              this.sharedState.lineDatasets
+            );
+            this.updateScatterplot();
+          })
+          .on("mouseover", () => {
+            svg.style("cursor", "move");
+          })
+          .on("mouseleave", () => {
+            svg.style("cursor", "default");
+          });
         end_point_left.call(dragEndPointsLeft);
         end_point_right.call(dragEndPointsRight);
       });
@@ -1277,12 +1339,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
               this.sharedState.scatterDatasets.selected.axis.y
             )
           ],
-          /*selected: dimensional_data.selected,
-          color: selectedDataset.color,
-          id: selectedDataset.ids[i],
-          scatter_titel: selectedDataset.name,*/
         };
-        // !IMPORTANT: Keep the reference to the original dataset to update data when updating points directly!
         return datasets_copy.push(d);
       });
       let singeledatasets_copy: {
@@ -1303,55 +1360,11 @@ export class ScatterplotChart extends SharedTestStateMixin(
                       this.sharedState.scatterDatasets.selected.axis.x
                     )
                   ],
-            /*
-          selected: dimensional_data.selected,
-          color: selectedDataset.color,
-          id: selectedDataset.ids[i],
-          scatter_titel: selectedDataset.name,*/
           };
-          // !IMPORTANT: Keep the reference to the original dataset to update data when updating points directly!
           return d;
         }
       );
 
-      // set the dimensions and margins of the graph
-      const margin = { top: 10, right: 30, bottom: 50, left: 70 },
-        width = 550 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
-      // append the svg object to the body of the page
-      const svg = d3
-        .select(root)
-        .append("svg")
-        .attr(
-          "viewBox",
-          `0 0 ${width + margin.left + margin.right} ${
-            height + margin.top + margin.bottom
-          }`
-        )
-        .attr("preserveAspectRatio", "xMidYMid meet")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-      // Add Gridlines
-      const addGrid = (axis, scale, dimension, transform, offset) => {
-        const grid = svg
-          .append("g")
-          .attr("class", "grid")
-          .attr("transform", transform)
-          .call(
-            axis(scale)
-              .tickSize(-dimension)
-              .tickFormat(() => "")
-              .tickSizeOuter(0)
-          );
-
-        grid
-          .selectAll(".tick line")
-          .attr("transform", `translate(${offset})`)
-          .attr("stroke", "lightgrey");
-        grid.selectAll(".domain").remove();
-      };
       let data_for_x_axis_copy: { x: number | string; y: number | string }[];
       let data_for_y_axis_copy: { x: number | string; y: number | string }[];
 
@@ -1378,136 +1391,20 @@ export class ScatterplotChart extends SharedTestStateMixin(
             y: "",
           })));
 
-      //TODO: max for number values
-      //  get the max value of the dataset
-      let maxX = 0;
-      let maxY = 0;
-      let minX = 0;
-      let minY = 0;
-      if (x_axis_type === "number") {
-        data_for_x_axis_copy.forEach((dataset) => {
-          maxX = Math.max(maxX, Number(dataset.x));
-          minX = Math.min(minX, Number(dataset.x));
-        });
-      }
+      const { svg, scales, dimensions, bandwidth_result } =
+        drawScatterplot_singleDataset(
+          root,
+          data_for_x_axis_copy,
+          data_for_y_axis_copy,
+          x_axis_type,
+          y_axis_type,
+          axisLabels
+        );
 
-      if (y_axis_type === "number") {
-        data_for_y_axis_copy.forEach((dataset) => {
-          maxY = Math.max(maxY, Number(dataset.y));
-          minY = Math.min(minY, Number(dataset.y));
-        });
-      }
-      const roundingFactorX = 10 ** Math.floor(Math.log10(maxX));
-      maxX = Math.ceil(maxX / roundingFactorX) * roundingFactorX;
-
-      const roundingFactorY = 10 ** Math.floor(Math.log10(maxY));
-      maxY = Math.ceil(maxY / roundingFactorY) * roundingFactorY;
-      // Add X axis
-      let x;
-      if (x_axis_type !== "none" && data_for_x_axis_copy.length > 0) {
-        x =
-          x_axis_type === "number"
-            ? d3.scaleLinear().domain([0, maxX]).range([0, width])
-            : d3
-                .scaleBand()
-                .domain(data_for_x_axis_copy.map((d) => d.x as string))
-                .range([0, width])
-                .align(0)
-                .paddingOuter(0)
-                .paddingInner(0);
-        if (x_axis_type === "number") {
-          svg
-            .append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x));
-        } else {
-          let axis_x = svg
-            .append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x));
-          if (y_axis_type !== "none") {
-            if (x_axis_type === "string" && y_axis_type === "number") {
-              axis_x
-                .selectAll(".tick text")
-                .attr("transform", `translate(${-x.bandwidth() / 2}, 0)`);
-              svg.selectAll(".tick line").remove();
-            }
-          }
-        }
-        svg
-          .append("text")
-          .attr("class", "x label")
-          .attr("text-anchor", "middle")
-          .attr("x", width / 2)
-          .attr("y", height + 40)
-          .attr("style", "text-align: center;")
-          .text(axisLabels.x);
-        // Add Gridlines
-        if (!(x_axis_type === "number")) {
-          addGrid(
-            d3.axisBottom,
-            x,
-            height,
-            `translate(0, ${height})`,
-            `${-x.bandwidth() / 2}, 0`
-          );
-        }
-      }
-      // Add Y axis
-      let y;
-      if (!(y_axis_type === "none") && data_for_y_axis_copy.length > 0) {
-        y =
-          y_axis_type === "number"
-            ? d3.scaleLinear().domain([0, maxY]).range([height, 0])
-            : d3
-                .scaleBand()
-                .domain(data_for_y_axis_copy.map((d) => d.y as string))
-                .range([height, 0])
-                .padding(0)
-                .paddingOuter(0);
-        if (y_axis_type === "number") {
-          svg.append("g").call(d3.axisLeft(y));
-        } else {
-          let axis_y = svg.append("g").call(d3.axisLeft(y));
-
-          if (y_axis_type === "string" && x_axis_type === "number") {
-            axis_y
-              .selectAll(".tick text")
-              .attr("transform", `translate( 0, ${y.bandwidth() / 2})`);
-            svg.selectAll(".tick line").remove();
-          }
-        }
-        svg
-          .append("text")
-          .attr("class", "y label")
-          .attr("text-anchor", "middle")
-          .attr("x", -((height + margin.bottom) / 2)) // to my x axis
-          .attr("y", -40) // to my y axis
-          .attr("transform", "rotate(-90)")
-          .text(axisLabels.y);
-        // Add Gridlines
-        if (!(y_axis_type === "number")) {
-          addGrid(d3.axisLeft, y, width, null, `0, ${y.bandwidth() / 2}`);
-        }
-      }
-
-      if (!(x_axis_type === "none") && !(y_axis_type === "none")) {
-        if (y_axis_type === "string" && x_axis_type === "string") {
-          addGrid(d3.axisLeft, y, width, null, `0, ${y.bandwidth() / 2}`);
-          addGrid(
-            d3.axisBottom,
-            x,
-            height,
-            `translate(0, ${height})`,
-            `${-x.bandwidth() / 2}, 0`
-          );
-        }
-      }
-
-      svg.selectAll(".domain, .tick line").attr("stroke", "lightgrey");
       // Check if x or y is a string and if an offset needs to be applied
-      selectedDataset.dimensional_data.forEach((dataset) => {
+      selectedDataset.dimensional_data.forEach((dataset, i) => {
         const color = dataset.color ? dataset.color : selectedDataset.color;
+        const id = selectedDataset.ids[i];
         let offset = 0;
         const selected = dataset.selected;
         if (!(x_axis_type === "none") && !(y_axis_type === "none")) {
@@ -1531,7 +1428,8 @@ export class ScatterplotChart extends SharedTestStateMixin(
           } else if (y_axis_type === "string" && x_axis_type === "string") {
             offset = calculateOffset(datasets, "y", y, x);
           }
-          datasets.push({ x, y, selected, offset, color });
+
+          datasets.push({ x, y, selected, offset, color, id });
         } else if (x_axis_type === "none" && !(y_axis_type === "none")) {
           const y =
             dataset.data[
@@ -1540,7 +1438,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
               )
             ];
           offset = calculateOffset(singeledatasets, "x_none", null, y);
-          singeledatasets.push({ p: y, selected, offset, color });
+          singeledatasets.push({ p: y, selected, offset, color, id });
         } else if (!(x_axis_type === "none") && y_axis_type === "none") {
           const x =
             dataset.data[
@@ -1549,7 +1447,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
               )
             ];
           offset = calculateOffset(singeledatasets, "y_none", null, x);
-          singeledatasets.push({ p: x, selected, offset, color });
+          singeledatasets.push({ p: x, selected, offset, color, id });
         }
       });
       // Calculate the offset for the scatterplot
@@ -1637,12 +1535,12 @@ export class ScatterplotChart extends SharedTestStateMixin(
         const count = filteredData.length; // Number of data points
         const bandwidth =
           string_axis === "x"
-            ? x.bandwidth()
+            ? bandwidth_result.x_bandwidth
             : string_axis === "y"
-            ? y.bandwidth()
+            ? bandwidth_result.y_bandwidth
             : string_axis === "x_none"
-            ? width
-            : height; // Assuming x is a scale object with a bandwidth method
+            ? dimensions.width
+            : dimensions.height; // Assuming x is a scale object with a bandwidth method
 
         let distance = defaultDistance; // Set initial distance to the default
 
@@ -1655,22 +1553,23 @@ export class ScatterplotChart extends SharedTestStateMixin(
 
         return distance;
       }
-      const scatter = svg;
+      const scatter = drawScatterplot_singleDataset2(
+        root,
+        svg,
+        x_axis_type,
+        y_axis_type,
+        datasets,
+        singeledatasets,
+        scales,
+        dimensions,
+        bandwidth_result,
+        {
+          hoverCursorChange: this.hoverCursorChange,
+          hoverTooltip: this.options.hoverTooltip,
+        } as any,
+        axisLabels
+      );
 
-      const scales = {
-        x_num: d3.scaleLinear().domain([0, maxX]).range([0, width]),
-        y_num: d3.scaleLinear().domain([0, maxY]).range([height, 0]),
-        x_brand: d3
-          .scaleBand()
-          .domain(data_for_x_axis_copy.map((d) => d.x as string))
-          .range([0, width]),
-        y_brand: d3
-          .scaleBand()
-          .domain(data_for_y_axis_copy.map((d) => d.y as string))
-          .range([height, 0]),
-        y_none: d3.scaleLinear().domain([0, height]).range([height, 0]),
-        x_none: d3.scaleLinear().domain([0, width]).range([0, width]),
-      };
       const listofstringsforlabels_x_axis: string[] = [];
       if (x_axis_type === "string") {
         datasets_copy.forEach((d) => {
@@ -1687,96 +1586,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
           }
         });
       }
-      // if one of the axis is string and there are multiple value of the other axis, those values are the same, then the circles will be on top of each other
-      if (!(x_axis_type === "none") && !(y_axis_type === "none")) {
-        datasets.forEach((d: Point, i) => {
-          scatter
-            .append("circle")
-            .attr("class", `dataset-${i}`)
-            .attr(
-              "cx",
-              x_axis_type === "number"
-                ? scales.x_num(d.x as number)
-                : y_axis_type === "number"
-                ? scales.x_brand(d.x as string) + 6 + d.offset
-                : scales.x_brand(d.x as string) + x.bandwidth() / 2
-            ) // 6 is the radius of the circle
-            .attr(
-              "cy",
-              y_axis_type === "number"
-                ? scales.y_num(d.y as number)
-                : scales.y_brand(d.y as string) - 6 - d.offset + y.bandwidth()
-            )
-            .attr("r", 6)
-            .style("fill", d.color ?? "#417ca1")
-            .style("opacity", 1)
-            .style("stroke", "black")
-            .style("stroke-width", 0.5)
-            .classed("selected", d.selected ?? false);
-        });
-      }
-      if (x_axis_type === "none" && y_axis_type === "number") {
-        singeledatasets.forEach((d: OneDimentionalNumberPoint, i) => {
-          console.log("Single datasets" + d.p);
-          scatter
-            .append("circle")
-            .attr("class", `single-y-${i}`)
-            .attr("cx", 6 + d.offset)
-            .attr("cy", scales.y_num(d.p as number))
-            .attr("r", 6)
-            .style("fill", d.color ?? "#417ca1")
-            .style("opacity", 1)
-            .style("stroke", "black")
-            .style("stroke-width", 0.5)
-            .classed("selected", d.selected ?? false);
-        });
-      }
-      if (x_axis_type === "none" && y_axis_type === "string") {
-        singeledatasets.forEach((d: OneDimentionalPoint, i) => {
-          scatter
-            .append("circle")
-            .attr("class", `single-string-y-${i}`)
-            .attr("cx", 6 + d.offset)
-            .attr("cy", scales.y_brand(d.p as string) + y.bandwidth() / 2)
-            .attr("r", 6)
-            .style("fill", d.color ?? "#417ca1")
-            .style("opacity", 1)
-            .style("stroke", "black")
-            .style("stroke-width", 0.5)
-            .classed("selected", d.selected ?? false);
-        });
-      }
 
-      if (x_axis_type === "number" && y_axis_type === "none") {
-        singeledatasets.forEach((d: OneDimentionalNumberPoint, i) => {
-          scatter
-            .append("circle")
-            .attr("class", `single-x-${i}`)
-            .attr("cx", scales.x_num(d.p as number))
-            .attr("cy", -6 + height - d.offset)
-            .attr("r", 6)
-            .style("fill", d.color ?? "#417ca1")
-            .style("opacity", 1)
-            .style("stroke", "black")
-            .style("stroke-width", 0.5)
-            .classed("selected", d.selected ?? false);
-        });
-      }
-      if (x_axis_type === "string" && y_axis_type === "none") {
-        singeledatasets.forEach((d: OneDimentionalPoint, i) => {
-          scatter
-            .append("circle")
-            .attr("class", `single-string-x-${i}`)
-            .attr("cx", scales.x_brand(d.p as string) + x.bandwidth() / 2)
-            .attr("cy", -6 + height - d.offset)
-            .attr("r", 6)
-            .style("fill", d.color ?? "#417ca1")
-            .style("opacity", 1)
-            .style("stroke", "black")
-            .style("stroke-width", 0.5)
-            .classed("selected", d.selected ?? false);
-        });
-      }
       // Dragging points to change their position along the axis
       if (!(this.selectNode || this.selectByClicking)) {
         let minDistance = Infinity;
@@ -1786,7 +1596,6 @@ export class ScatterplotChart extends SharedTestStateMixin(
         let newY = 0;
         let count = 0;
         let index_set: number[] = [];
-        // TODO: Fix the dragging and add for y-axis
         const drag = (axis: "x" | "y" | "xy_xnum_ystr" | "xy_xstr_ynum") => {
           return d3
             .drag()
@@ -1877,7 +1686,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                               (listofstringsforlabels_y_axis.indexOf(
                                 datasets[index_set[i]].y as string
                               ) *
-                                y.bandwidth() +
+                                bandwidth_result.y_bandwidth +
                                 datasets[index_set[i]].offset +
                                 6)
                           ) < minDistance_band
@@ -1886,7 +1695,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                               (listofstringsforlabels_x_axis.indexOf(
                                 datasets[index_set[i]].x as string
                               ) *
-                                x.bandwidth() +
+                                bandwidth_result.x_bandwidth +
                                 datasets[index_set[i]].offset +
                                 6)
                           ) < minDistance_band
@@ -1899,7 +1708,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                                 (listofstringsforlabels_y_axis.indexOf(
                                   datasets[index_set[i]].y as string
                                 ) *
-                                  y.bandwidth() +
+                                  bandwidth_result.y_bandwidth +
                                   datasets[index_set[i]].offset +
                                   6)
                             )
@@ -1908,7 +1717,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                                 (listofstringsforlabels_x_axis.indexOf(
                                   datasets[index_set[i]].x as string
                                 ) *
-                                  x.bandwidth() +
+                                  bandwidth_result.x_bandwidth +
                                   datasets[index_set[i]].offset +
                                   6)
                             );
@@ -1959,7 +1768,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                         i === index && axis === "y"
                           ? scales.y_num(newY)
                           : i === index && axis === "x"
-                          ? -6 + height
+                          ? -6 + dimensions.height
                           : d3.select(this).attr("cy")
                       );
                   });
@@ -1976,7 +1785,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                       .attr(
                         "cx",
                         i === index && axis === "xy_xstr_ynum"
-                          ? scales.x_brand(d.x as string) + 6
+                          ? scales.x_band(d.x as string) + 6
                           : i === index && axis === "xy_xnum_ystr"
                           ? scales.x_num(newX)
                           : d3.select(this).attr("cx")
@@ -1984,7 +1793,9 @@ export class ScatterplotChart extends SharedTestStateMixin(
                       .attr(
                         "cy",
                         i === index && axis === "xy_xnum_ystr"
-                          ? scales.y_brand(d.y as string) - 6 + y.bandwidth()
+                          ? scales.y_band(d.y as string) -
+                              6 +
+                              bandwidth_result.y_bandwidth
                           : i === index && axis === "xy_xstr_ynum"
                           ? scales.y_num(newY)
                           : d3.select(this).attr("cy")
@@ -2006,8 +1817,14 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 .select(`.mean-line-${axis}`)
                 .attr("x1", axis === "x" ? scales.x_num(mean) : 0)
                 .attr("y1", axis === "y" ? scales.y_num(mean) : 0)
-                .attr("x2", axis === "x" ? scales.x_num(mean) : width)
-                .attr("y2", axis === "y" ? scales.y_num(mean) : height);
+                .attr(
+                  "x2",
+                  axis === "x" ? scales.x_num(mean) : dimensions.width
+                )
+                .attr(
+                  "y2",
+                  axis === "y" ? scales.y_num(mean) : dimensions.height
+                );
             })
             .on("end", (_) => {
               count = 0;
@@ -2075,7 +1892,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
             .brush()
             .extent([
               [0, 0],
-              [width, height],
+              [dimensions.width, dimensions.height],
             ])
             .on("start brush", (event) => {
               if (!brushingEnabled) return; // Exit if brushing is disabled
@@ -2094,14 +1911,18 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   const cx =
                     x_axis_type === "number"
                       ? scales.x_num(d.x as number)
-                      : scales.x_brand(d.x as string) + 6 + d.offset;
+                      : y_axis_type === "number"
+                      ? scales.x_band(d.x as string) + 6 + d.offset
+                      : scales.x_band(d.x as string) +
+                        bandwidth_result.x_bandwidth / 2;
+
                   const cy =
                     y_axis_type === "number"
                       ? scales.y_num(d.y as number)
-                      : scales.y_brand(d.y as string) -
+                      : scales.y_band(d.y as string) -
                         6 -
                         d.offset +
-                        y.bandwidth();
+                        bandwidth_result.y_bandwidth;
                   //console.log("Point" + i + "p" + "Cx" + cx + "Cy" + cy);
                   //console.log("X0 " + x0 + "X1 " + x1 + "Y0 " + y0 + "Y1 " + y1);
                   const boolean = x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
@@ -2147,13 +1968,15 @@ export class ScatterplotChart extends SharedTestStateMixin(
                       ? 6 + d.offset
                       : x_axis_type === "number"
                       ? scales.x_num(d.p as number)
-                      : scales.x_brand(d.p as string) + x.bandwidth() / 2;
+                      : scales.x_band(d.p as string) +
+                        bandwidth_result.x_bandwidth / 2;
                   const cy =
                     y_axis_type === "none"
-                      ? -6 + height - d.offset
+                      ? -6 + dimensions.height - d.offset
                       : y_axis_type === "number"
                       ? scales.y_num(d.p as number)
-                      : scales.y_brand(d.p as string) + y.bandwidth() / 2;
+                      : scales.y_band(d.p as string) +
+                        bandwidth_result.y_bandwidth / 2;
                   const boolean = x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
                   if (boolean) {
                     if (x_axis_type === "none" && y_axis_type === "number") {
@@ -2195,14 +2018,17 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   const cx =
                     x_axis_type === "number"
                       ? scales.x_num(d.x as number)
-                      : scales.x_brand(d.x as string) + 6 + d.offset;
+                      : y_axis_type === "number"
+                      ? scales.x_band(d.x as string) + 6 + d.offset
+                      : scales.x_band(d.x as string) +
+                        bandwidth_result.x_bandwidth / 2;
                   const cy =
                     y_axis_type === "number"
                       ? scales.y_num(d.y as number)
-                      : scales.y_brand(d.y as string) -
+                      : scales.y_band(d.y as string) -
                         6 -
                         d.offset +
-                        y.bandwidth();
+                        bandwidth_result.y_bandwidth;
                   const boolean =
                     selection[0][0] <= cx &&
                     cx <= selection[1][0] &&
@@ -2219,13 +2045,15 @@ export class ScatterplotChart extends SharedTestStateMixin(
                       ? 6 + d.offset
                       : x_axis_type === "number"
                       ? scales.x_num(d.p as number)
-                      : scales.x_brand(d.p as string) + x.bandwidth() / 2;
+                      : scales.x_band(d.p as string) +
+                        bandwidth_result.x_bandwidth / 2;
                   const cy =
                     y_axis_type === "none"
-                      ? -6 + height - d.offset
+                      ? -6 + dimensions.height - d.offset
                       : y_axis_type === "number"
                       ? scales.y_num(d.p as number)
-                      : scales.y_brand(d.p as string) + y.bandwidth() / 2;
+                      : scales.y_band(d.p as string) +
+                        bandwidth_result.y_bandwidth / 2;
                   const boolean =
                     selection[0][0] <= cx &&
                     cx <= selection[1][0] &&
@@ -2257,36 +2085,45 @@ export class ScatterplotChart extends SharedTestStateMixin(
         !this.selectByBrushing &&
         !this.deselectByBrushing
       ) {
+        // Change cursor to a hand with a pointing finger
+        svg.style("cursor", "pointer");
         let minDistance = Infinity;
         let minDistance_band = Infinity;
         let index = -1;
         let count = 0;
         let index_set: number[] = [];
         const clicked = (
-          axis: "x" | "y" | "xy_xnum_ystr" | "xy_xstr_ynum",
+          axis:
+            | "x_num"
+            | "y_num"
+            | "xy_xnum_ystr"
+            | "xy_xstr_ynum"
+            | "x_string"
+            | "y_string"
+            | "xy_xstr_ystr",
           event: MouseEvent
         ) => {
           const [clickX, clickY] = d3.pointer(event, svg.node());
           const oldX =
-            axis === "x" || axis === "xy_xnum_ystr"
+            axis === "x_num" || axis === "xy_xnum_ystr"
               ? scales.x_num.invert(clickX)
               : scales.x_none.invert(clickX);
           const oldY =
-            axis === "x" || axis === "xy_xnum_ystr"
-              ? scales.y_none.invert(clickY)
-              : scales.y_num.invert(clickY);
-          if (axis === "x" || axis === "y") {
+            axis === "y_num" || axis === "xy_xstr_ynum"
+              ? scales.y_num.invert(clickY)
+              : scales.y_none.invert(clickY);
+          if (axis === "x_num" || axis === "y_num") {
             for (let i = 0; i < singeledatasets.length; i++) {
               if (
                 Math.abs(
                   (singeledatasets[i].p as number) -
-                    (axis === "x" ? oldX : oldY)
+                    (axis === "x_num" ? oldX : oldY)
                 ) < minDistance
               ) {
                 index = i;
                 minDistance = Math.abs(
                   (singeledatasets[i].p as number) -
-                    (axis === "x" ? oldX : oldY)
+                    (axis === "x_num" ? oldX : oldY)
                 );
               }
             }
@@ -2294,7 +2131,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
               if (
                 Math.abs(
                   (singeledatasets[i].p as number) -
-                    (axis === "x" ? oldX : oldY)
+                    (axis === "x_num" ? oldX : oldY)
                 ) === minDistance
               ) {
                 index_set.push(i);
@@ -2305,19 +2142,19 @@ export class ScatterplotChart extends SharedTestStateMixin(
               for (let i = 0; i < index_set.length; i++) {
                 if (
                   Math.abs(
-                    (axis === "x" ? oldY : oldX) -
+                    (axis === "x_num" ? oldY : oldX) -
                       (singeledatasets[index_set[i]].offset + 6)
                   ) < minDistance_band
                 ) {
                   index = index_set[i];
                   minDistance_band = Math.abs(
-                    (axis === "x" ? oldY : oldX) -
+                    (axis === "x_num" ? oldY : oldX) -
                       (singeledatasets[index_set[i]].offset + 6)
                   );
                 }
               }
             }
-          } else {
+          } else if (axis === "xy_xnum_ystr" || axis === "xy_xstr_ynum") {
             for (let i = 0; i < datasets.length; i++) {
               if (
                 axis === "xy_xnum_ystr"
@@ -2350,7 +2187,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                           (listofstringsforlabels_y_axis.indexOf(
                             datasets[index_set[i]].y as string
                           ) *
-                            y.bandwidth() +
+                            bandwidth_result.y_bandwidth +
                             datasets[index_set[i]].offset +
                             6)
                       ) < minDistance_band
@@ -2359,7 +2196,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                           (listofstringsforlabels_x_axis.indexOf(
                             datasets[index_set[i]].x as string
                           ) *
-                            x.bandwidth() +
+                            bandwidth_result.x_bandwidth +
                             datasets[index_set[i]].offset +
                             6)
                       ) < minDistance_band
@@ -2372,7 +2209,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                             (listofstringsforlabels_y_axis.indexOf(
                               datasets[index_set[i]].y as string
                             ) *
-                              y.bandwidth() +
+                              bandwidth_result.y_bandwidth +
                               datasets[index_set[i]].offset +
                               6)
                         )
@@ -2381,10 +2218,156 @@ export class ScatterplotChart extends SharedTestStateMixin(
                             (listofstringsforlabels_x_axis.indexOf(
                               datasets[index_set[i]].x as string
                             ) *
-                              x.bandwidth() +
+                              bandwidth_result.x_bandwidth +
                               datasets[index_set[i]].offset +
                               6)
                         );
+                }
+              }
+            }
+          } else if (axis === "x_string" || axis === "y_string") {
+            for (let i = 0; i < singeledatasets.length; i++) {
+              if (
+                axis === "y_string"
+                  ? Math.abs(
+                      oldY -
+                        (listofstringsforlabels_y_axis.indexOf(
+                          singeledatasets[i].p as string
+                        ) +
+                          1 / 2) *
+                          bandwidth_result.y_bandwidth
+                    ) < minDistance_band
+                  : Math.abs(
+                      oldX -
+                        (listofstringsforlabels_x_axis.indexOf(
+                          singeledatasets[i].p as string
+                        ) +
+                          1 / 2) *
+                          bandwidth_result.x_bandwidth
+                    ) < minDistance_band
+              ) {
+                index = i;
+                minDistance_band =
+                  axis === "y_string"
+                    ? Math.abs(
+                        oldY -
+                          (listofstringsforlabels_y_axis.indexOf(
+                            singeledatasets[i].p as string
+                          ) +
+                            1 / 2) *
+                            bandwidth_result.y_bandwidth
+                      )
+                    : Math.abs(
+                        oldX -
+                          (listofstringsforlabels_x_axis.indexOf(
+                            singeledatasets[i].p as string
+                          ) +
+                            1 / 2) *
+                            bandwidth_result.x_bandwidth
+                      );
+              }
+            }
+            for (let i = 0; i < singeledatasets.length; i++) {
+              if (
+                axis === "y_string"
+                  ? Math.abs(
+                      oldY -
+                        (listofstringsforlabels_y_axis.indexOf(
+                          singeledatasets[i].p as string
+                        ) +
+                          1 / 2) *
+                          bandwidth_result.y_bandwidth
+                    ) === minDistance_band
+                  : Math.abs(
+                      oldX -
+                        (listofstringsforlabels_x_axis.indexOf(
+                          singeledatasets[i].p as string
+                        ) +
+                          1 / 2) *
+                          bandwidth_result.x_bandwidth
+                    ) === minDistance_band
+              ) {
+                index_set.push(i);
+                count++;
+              }
+            }
+            if (count > 1) {
+              for (let i = 0; i < index_set.length; i++) {
+                if (
+                  Math.abs(
+                    (axis === "x_string" ? oldY : oldX) -
+                      (singeledatasets[index_set[i]].offset + 6)
+                  ) < minDistance
+                ) {
+                  index = index_set[i];
+                  minDistance = Math.abs(
+                    (axis === "x_string" ? oldY : oldX) -
+                      (singeledatasets[index_set[i]].offset + 6)
+                  );
+                }
+              }
+            }
+          } else if (axis === "xy_xstr_ystr") {
+            for (let i = 0; i < datasets.length; i++) {
+              if (
+                Math.abs(
+                  oldX -
+                    (listofstringsforlabels_x_axis.indexOf(
+                      datasets[i].x as string
+                    ) +
+                      1 / 2) *
+                      bandwidth_result.x_bandwidth
+                ) < minDistance
+              ) {
+                index = i;
+                minDistance = Math.abs(
+                  oldX -
+                    (listofstringsforlabels_x_axis.indexOf(
+                      datasets[i].x as string
+                    ) +
+                      1 / 2) *
+                      bandwidth_result.x_bandwidth
+                );
+              }
+            }
+            for (let i = 0; i < datasets.length; i++) {
+              if (
+                Math.abs(
+                  oldX -
+                    (listofstringsforlabels_x_axis.indexOf(
+                      datasets[i].x as string
+                    ) +
+                      1 / 2) *
+                      bandwidth_result.x_bandwidth
+                ) === minDistance
+              ) {
+                index_set.push(i);
+                count++;
+              }
+            }
+            if (count > 1) {
+              for (let i = 0; i < index_set.length; i++) {
+                if (
+                  Math.abs(
+                    oldY -
+                      (listofstringsforlabels_y_axis.indexOf(
+                        datasets[index_set[i]].y as string
+                      ) *
+                        bandwidth_result.y_bandwidth +
+                        datasets[index_set[i]].offset +
+                        6)
+                  ) < minDistance_band
+                ) {
+                  index = index_set[i];
+                  minDistance_band = Math.abs(
+                    oldY -
+                      (listofstringsforlabels_y_axis.indexOf(
+                        datasets[index_set[i]].y as string
+                      ) *
+                        bandwidth_result.y_bandwidth +
+                        datasets[index_set[i]].offset +
+                        6)
+                  );
                 }
               }
             }
@@ -2395,25 +2378,38 @@ export class ScatterplotChart extends SharedTestStateMixin(
               !selectedDataset.dimensional_data[index].selected;
           }
           this.selectByClicking = false;
+          this.hoverCursorChange = true;
           this.updateScatterplot();
         };
         // Click event listener
         singeledatasets.forEach((_, i) => {
           svg
             .select(`.single-x-${i}`)
-            .on("click", (event) => clicked("x", event));
+            .on("click", (event) => clicked("x_num", event));
           svg
             .select(`.single-y-${i}`)
-            .on("click", (event) => clicked("y", event));
+            .on("click", (event) => clicked("y_num", event));
+          svg
+            .select(`.single-string-x-${i}`)
+            .on("click", (event) => clicked("x_string", event));
+          svg
+            .select(`.single-string-y-${i}`)
+            .on("click", (event) => clicked("y_string", event));
         });
         datasets.forEach((_, i) => {
           x_axis_type === "number" && y_axis_type === "string"
             ? svg
                 .select(`.dataset-${i}`)
                 .on("click", (event) => clicked("xy_xnum_ystr", event))
-            : svg
+            : x_axis_type === "string" && y_axis_type === "number"
+            ? svg
                 .select(`.dataset-${i}`)
-                .on("click", (event) => clicked("xy_xstr_ynum", event));
+                .on("click", (event) => clicked("xy_xstr_ynum", event))
+            : x_axis_type === "string" && y_axis_type === "string"
+            ? svg
+                .select(`.dataset-${i}`)
+                .on("click", (event) => clicked("xy_xstr_ystr", event))
+            : null;
         });
       }
       //Hide selected points
@@ -2422,6 +2418,8 @@ export class ScatterplotChart extends SharedTestStateMixin(
           if (d.selected) {
             scatter.select(`.single-x-${i}`).style("display", "none");
             scatter.select(`.single-y-${i}`).style("display", "none");
+            scatter.select(`.single-string-x-${i}`).style("display", "none");
+            scatter.select(`.single-string-y-${i}`).style("display", "none");
           }
         });
         datasets.forEach((d: Point, i) => {
@@ -2436,6 +2434,8 @@ export class ScatterplotChart extends SharedTestStateMixin(
           if (!d.selected) {
             scatter.select(`.single-x-${i}`).style("display", "none");
             scatter.select(`.single-y-${i}`).style("display", "none");
+            scatter.select(`.single-string-x-${i}`).style("display", "none");
+            scatter.select(`.single-string-y-${i}`).style("display", "none");
           }
         });
         datasets.forEach((d: Point, i) => {
@@ -2449,6 +2449,8 @@ export class ScatterplotChart extends SharedTestStateMixin(
         singeledatasets.forEach((_, i) => {
           scatter.select(`.single-x-${i}`).style("display", "block");
           scatter.select(`.single-y-${i}`).style("display", "block");
+          scatter.select(`.single-string-x-${i}`).style("display", "block");
+          scatter.select(`.single-string-y-${i}`).style("display", "block");
         });
         datasets.forEach((_, i) => {
           scatter.select(`.dataset-${i}`).style("display", "block");
@@ -2469,8 +2471,8 @@ export class ScatterplotChart extends SharedTestStateMixin(
               .append("line")
               .attr("x1", axis === "x" ? scales.x_num(mean) : 0)
               .attr("y1", axis === "y" ? scales.y_num(mean) : 0)
-              .attr("x2", axis === "x" ? scales.x_num(mean) : width)
-              .attr("y2", axis === "y" ? scales.y_num(mean) : height)
+              .attr("x2", axis === "x" ? scales.x_num(mean) : dimensions.width)
+              .attr("y2", axis === "y" ? scales.y_num(mean) : dimensions.height)
               .attr("stroke", "black")
               .attr("stroke-width", 2)
               .attr("stroke-dasharray", "4")
@@ -2491,7 +2493,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
               svg
                 .select(".line.label")
                 .attr("text-anchor", "end")
-                .attr("x", axis === "x" ? scales.x_num(mean) : width)
+                .attr("x", axis === "x" ? scales.x_num(mean) : dimensions.width)
                 .attr("y", axis === "y" ? scales.y_num(mean) - 5 : 0);
             }
           } else {
@@ -2504,9 +2506,15 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 svg
                   .append("line")
                   .attr("x1", scales.x_num(mean_i))
-                  .attr("y1", height - i * y.bandwidth())
+                  .attr(
+                    "y1",
+                    dimensions.height - i * bandwidth_result.y_bandwidth
+                  )
                   .attr("x2", scales.x_num(mean_i))
-                  .attr("y2", height - (i + 1) * y.bandwidth())
+                  .attr(
+                    "y2",
+                    dimensions.height - (i + 1) * bandwidth_result.y_bandwidth
+                  )
                   .attr("stroke", "black")
                   .attr("stroke-width", 2)
                   .attr("stroke-dasharray", "4")
@@ -2516,7 +2524,12 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   .attr("class", "line label")
                   .attr("text-anchor", "end")
                   .attr("x", scales.x_num(mean_i) - 5)
-                  .attr("y", height - (i + 1) * y.bandwidth() + 10)
+                  .attr(
+                    "y",
+                    dimensions.height -
+                      (i + 1) * bandwidth_result.y_bandwidth +
+                      10
+                  )
                   .text(`m = ${mean_i.toFixed(2)}`)
                   .attr("fill", "red");
               });
@@ -2528,9 +2541,9 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 );
                 svg
                   .append("line")
-                  .attr("x1", i * x.bandwidth())
+                  .attr("x1", i * bandwidth_result.x_bandwidth)
                   .attr("y1", scales.y_num(mean_i))
-                  .attr("x2", (i + 1) * x.bandwidth())
+                  .attr("x2", (i + 1) * bandwidth_result.x_bandwidth)
                   .attr("y2", scales.y_num(mean_i))
                   .attr("stroke", "black")
                   .attr("stroke-width", 2)
@@ -2540,7 +2553,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   .append("text")
                   .attr("class", "line label")
                   .attr("text-anchor", "end")
-                  .attr("x", (i + 1) * x.bandwidth())
+                  .attr("x", (i + 1) * bandwidth_result.x_bandwidth)
                   .attr("y", scales.y_num(mean_i) - 5)
                   .text(`m = ${mean_i.toFixed(2)}`)
                   .attr("fill", "red");
