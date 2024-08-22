@@ -15,7 +15,9 @@ export class LineChart extends GenericChart<typeof OptionDefinition> {
   }
 
   @state()
-  chartHelper: ChartHelper<Chart<"line", number[], string>> | undefined;
+  accessor chartHelper:
+    | ChartHelper<Chart<"line", number[], string>>
+    | undefined;
 
   updated(): void {
     if (!this.chartHelper) return;

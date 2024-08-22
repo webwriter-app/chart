@@ -8,10 +8,10 @@ import SlSwitch from "@shoelace-style/shoelace/dist/components/switch/switch.js"
 @customElement("wwci-switch")
 export class Switch extends LitElementWw {
   @property({ type: Boolean })
-  checked: boolean = false;
+  accessor checked: boolean = false;
 
   @property({ type: Boolean })
-  disabled: boolean = false;
+  accessor disabled: boolean = false;
 
   change(e: any) {
     this.checked = e.target.checked;

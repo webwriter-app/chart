@@ -14,7 +14,7 @@ export class BarChart extends GenericChart<typeof OptionDefinition> {
   }
 
   @state()
-  chartHelper: ChartHelper<Chart<"bar", number[], string>> | undefined;
+  accessor chartHelper: ChartHelper<Chart<"bar", number[], string>> | undefined;
 
   updated(): void {
     if (!this.chartHelper) return;

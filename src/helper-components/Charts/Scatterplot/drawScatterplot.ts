@@ -71,7 +71,10 @@ function getScatterplotDataSets(scatterdatasets: ScatterDatasets) {
   return scatterplotdatasets;
 }
 
-function calculateSVGDimensions(data: PointOnlyNumbers[][]): Dimensions {
+function calculateSVGDimensions(
+  data: PointOnlyNumbers[][],
+  line_datasets: LineDataSets
+): Dimensions {
   // get the max value of the dataset
   let maxX = 0;
   let maxY = 0;
@@ -84,11 +87,29 @@ function calculateSVGDimensions(data: PointOnlyNumbers[][]): Dimensions {
     minY = Math.min(...dataset.map((d) => d.y), minY);
   });
 
+  line_datasets.sets.forEach((line_dataset) => {
+    maxX = Math.max(...line_dataset.data.map((d) => d.x), maxX);
+    maxY = Math.max(...line_dataset.data.map((d) => d.y), maxY);
+    minX = Math.min(...line_dataset.data.map((d) => d.x), minX);
+    minY = Math.min(...line_dataset.data.map((d) => d.y), minY);
+  });
+
   const roundingFactorX = 10 ** Math.floor(Math.log10(maxX));
   maxX = Math.ceil(maxX / roundingFactorX) * roundingFactorX;
 
   const roundingFactorY = 10 ** Math.floor(Math.log10(maxY));
   maxY = Math.ceil(maxY / roundingFactorY) * roundingFactorY;
+  // Round the min if the min is negative
+
+  const roundingFactorMinX = 10 ** Math.floor(Math.log10(Math.abs(minX)));
+
+  const roundingFactorMinY = 10 ** Math.floor(Math.log10(Math.abs(minY)));
+  minX < 0
+    ? (minX = Math.floor(minX / roundingFactorMinX) * roundingFactorMinX)
+    : null;
+  minY < 0
+    ? (minY = Math.floor(minY / roundingFactorMinY) * roundingFactorMinY)
+    : null;
 
   // set the dimensions and margins of the graph
   const margin = { top: 10, right: 30, bottom: 50, left: 70 },
@@ -150,13 +171,38 @@ function drawAxis(
     bottom: number;
   },
   axisLabels: { x: string; y: string },
-  scales: Scales
+  scales: Scales,
+  maxX: number,
+  maxY: number,
+  minX: number,
+  minY: number
 ) {
   // Add X axis
-  svg
-    .append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(scales.x));
+  // 3: < 10^12
+  // 4: from 10^6 to 8*10^9
+  // 5: from 10^3 to 10^6
+  let s_x = -1;
+  //TODO: idea for y axis
+  let gx = svg.append("g").attr("transform", "translate(0," + height + ")");
+  if (maxX - minX > 10 ** 3 && maxX - minX <= 10 ** 4) {
+    s_x = 5;
+  } else if (maxX - minX > 10 ** 4 && maxX - minX <= 8 * 10 ** 9) {
+    s_x = 4;
+  } else if (maxX - minX > 8 * 10 ** 9 && maxX - minX <= 10 ** 12) {
+    s_x = 3;
+  } else if (maxX - minX > 10 ** 12 && maxX - minX <= 4 * 10 ** 16) {
+    s_x = 2;
+  } else if (maxX - minX > 4 * 10 ** 16 && maxX - minX <= 10 ** 17) {
+    s_x = 1;
+  } else if (maxX - minX > 10 ** 17 && maxX - minX <= 10 ** 18) {
+    s_x = 2;
+  } else if (maxX - minX > 10 ** 18) {
+    s_x = 1.5;
+  }
+  s_x === -1
+    ? gx.call(d3.axisBottom(scales.x))
+    : gx.call(d3.axisBottom(scales.x).tickArguments([s_x]));
+
   svg
     .append("text")
     .attr("class", "x label")
@@ -167,7 +213,26 @@ function drawAxis(
     .text(axisLabels.x);
 
   // Add Y axis
-  svg.append("g").call(d3.axisLeft(scales.y));
+  const gy = svg.append("g");
+  let s_y = -1;
+  if (maxY - minY > 10 ** 3 && maxY - minY <= 10 ** 4) {
+    s_y = 5;
+  } else if (maxY - minY > 10 ** 4 && maxY - minY <= 8 * 10 ** 9) {
+    s_y = 4;
+  } else if (maxY - minY > 8 * 10 ** 9 && maxY - minY <= 10 ** 12) {
+    s_y = 3;
+  } else if (maxY - minY > 10 ** 12 && maxY - minY <= 4 * 10 ** 16) {
+    s_y = 2;
+  } else if (maxY - minY > 4 * 10 ** 16 && maxY - minY <= 10 ** 17) {
+    s_y = 1;
+  } else if (maxY - minY > 10 ** 17 && maxY - minY <= 10 ** 18) {
+    s_y = 2;
+  } else if (maxY - minY > 10 ** 18) {
+    s_y = 1.5;
+  }
+  s_y === -1
+    ? gy.call(d3.axisLeft(scales.y))
+    : gy.call(d3.axisLeft(scales.y).tickArguments([s_y]));
   svg
     .append("text")
     .attr("class", "y label")
@@ -176,6 +241,7 @@ function drawAxis(
     .attr("y", -40) // to my y axis
     .attr("transform", "rotate(-90)")
     .text(axisLabels.y);
+  return { gx, gy };
 }
 
 function createTooltip(parent: Element) {
@@ -201,9 +267,10 @@ function drawScatterplot(
     hoverTooltip: boolean;
     showOutliers: boolean;
     hoverCursorChange: boolean;
-  }
+  },
+  line_datasets: LineDataSets
 ) {
-  const dimensions = calculateSVGDimensions(datasets);
+  const dimensions = calculateSVGDimensions(datasets, line_datasets);
   const svg = createSVG(
     root,
     dimensions.width,
@@ -226,7 +293,11 @@ function drawScatterplot(
     dimensions.width,
     dimensions.margin,
     axisLabels,
-    scales
+    scales,
+    dimensions.max.x,
+    dimensions.max.y,
+    dimensions.min.x,
+    dimensions.min.y
   );
   const tooltip = createTooltip(root);
 
@@ -1226,6 +1297,15 @@ function calculateSVGDimensions_singleDataset(
 
   const roundingFactorY = 10 ** Math.floor(Math.log10(maxY));
   maxY = Math.ceil(maxY / roundingFactorY) * roundingFactorY;
+  // Round the min if the min is negative
+  const roundingFactorMinX = 10 ** Math.floor(Math.log10(Math.abs(minX)));
+  const roundingFactorMinY = 10 ** Math.floor(Math.log10(Math.abs(minY)));
+  minX < 0
+    ? (minX = Math.floor(minX / roundingFactorMinX) * roundingFactorMinX)
+    : null;
+  minY < 0
+    ? (minY = Math.floor(minY / roundingFactorMinY) * roundingFactorMinY)
+    : null;
   // set the dimensions and margins of the graph
   const margin = { top: 10, right: 30, bottom: 50, left: 70 },
     width = 550 - margin.left - margin.right,
@@ -1280,6 +1360,8 @@ function drawAxis_singleDataset(
   y_axis_type: string,
   data_for_x_axis_copy: { x: number | string; y: number | string }[],
   data_for_y_axis_copy: { x: number | string; y: number | string }[],
+  minX: number,
+  minY: number,
   maxX: number,
   maxY: number,
   axisLabels: { x: string; y: string }
@@ -1310,7 +1392,7 @@ function drawAxis_singleDataset(
   if (x_axis_type !== "none" && data_for_x_axis_copy.length > 0) {
     x =
       x_axis_type === "number"
-        ? d3.scaleLinear().domain([0, maxX]).range([0, width])
+        ? d3.scaleLinear().domain([minX, maxX]).range([0, width])
         : d3
             .scaleBand()
             .domain(data_for_x_axis_copy.map((d) => d.x as string))
@@ -1362,7 +1444,7 @@ function drawAxis_singleDataset(
   if (!(y_axis_type === "none") && data_for_y_axis_copy.length > 0) {
     y =
       y_axis_type === "number"
-        ? d3.scaleLinear().domain([0, maxY]).range([height, 0])
+        ? d3.scaleLinear().domain([minY, maxY]).range([height, 0])
         : d3
             .scaleBand()
             .domain(data_for_y_axis_copy.map((d) => d.y as string))
@@ -1439,11 +1521,11 @@ function drawScatterplot_singleDataset(
   const scales = {
     x_num: d3
       .scaleLinear()
-      .domain([0, dimensions.max.x])
+      .domain([dimensions.min.x, dimensions.max.x])
       .range([0, dimensions.width]),
     y_num: d3
       .scaleLinear()
-      .domain([0, dimensions.max.y])
+      .domain([dimensions.min.y, dimensions.max.y])
       .range([dimensions.height, 0]),
     x_band: d3
       .scaleBand()
@@ -1471,6 +1553,8 @@ function drawScatterplot_singleDataset(
     y_axis_type,
     data_for_x_axis_copy,
     data_for_y_axis_copy,
+    dimensions.min.x,
+    dimensions.min.y,
     dimensions.max.x,
     dimensions.max.y,
     axisLabels
@@ -1532,7 +1616,10 @@ function drawScatterplot_singleDataset2(
       scatter
         .selectAll(`circle.dataset-${i}`)
         .on("mouseover", function () {
-          if (options.hoverCursorChange) {
+          if (
+            options.hoverCursorChange &&
+            !(x_axis_type === "string" && y_axis_type === "string")
+          ) {
             d3.select(this).attr("r", 7);
             // Change the cursor to move
             d3.select(this).style("cursor", "move");
@@ -1559,9 +1646,14 @@ function drawScatterplot_singleDataset2(
           tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
         })
         .on("mouseleave", function () {
-          d3.select(this).attr("r", 6);
-          // Change the cursor back to normal
-          d3.select(this).style("cursor", "default");
+          if (
+            options.hoverCursorChange &&
+            !(x_axis_type === "string" && y_axis_type === "string")
+          ) {
+            d3.select(this).attr("r", 6);
+            // Change the cursor back to normal
+            d3.select(this).style("cursor", "default");
+          }
           // Hide tooltip
           tooltip.transition().duration(200).style("opacity", 0);
         });

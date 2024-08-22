@@ -3,10 +3,8 @@ import { chartOption } from "../../../functions";
 export const OptionDefinition = {
   //radius: chartOption("number", 0, "Radius", 0, 10),
   //filled: chartOption("boolean", true, "Filled"),
-  hoverTooltip: chartOption("boolean", false, "Hover Tooltip"),
   listRegressionLine: chartOption("array", false, "Regression Model"),
-  //showOutliers: chartOption("boolean", false, "Show Outliers"),
-  //zoom: chartOption("boolean", false, "Zoom"),
+  hoverTooltip: chartOption("boolean", false, "Hover Tooltip"),
   showGrid: chartOption("boolean", false, "Show Grid"),
   animation: chartOption("boolean", false, "Animation"),
   showCorrelation: chartOption("boolean", false, "Show Correlation"),

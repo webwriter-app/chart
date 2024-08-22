@@ -13,16 +13,16 @@ export class GenericChart<
     Parameters<typeof SharedTestStateMixin>[0]
 ) {
   @property({ type: Array, converter })
-  datasets: ChartDataSets = {} as any;
+  accessor datasets: ChartDataSets = {} as any;
 
   @property({ type: String })
-  label = "";
+  accessor label = "";
 
   @property({ type: Object, converter })
-  options: ChartOptions<T> = {} as ChartOptions<T>;
+  accessor options: ChartOptions<T> = {} as ChartOptions<T>;
 
   @property({ type: Boolean, converter })
-  hide_excat_values: boolean = false;
+  accessor hide_excat_values: boolean = false;
 
   exportCanvasContent() {
     var canvas = this.shadowRoot?.getElementById("chart-canvas") as

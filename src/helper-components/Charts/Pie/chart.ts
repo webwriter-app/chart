@@ -14,7 +14,7 @@ export class PieChart extends GenericChart<typeof OptionDefinition> {
   }
 
   @state()
-  chartHelper: ChartHelper<Chart<"pie", number[], string>> | undefined;
+  accessor chartHelper: ChartHelper<Chart<"pie", number[], string>> | undefined;
 
   //TODO: This is exactly the same as in Doughnut.ts
   updated(): void {

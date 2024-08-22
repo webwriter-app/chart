@@ -14,7 +14,9 @@ export class PolarChart extends GenericChart<typeof OptionDefinition> {
   }
 
   @state()
-  chartHelper: ChartHelper<Chart<"polarArea", number[], string>> | undefined;
+  accessor chartHelper:
+    | ChartHelper<Chart<"polarArea", number[], string>>
+    | undefined;
 
   //TODO: This is exactly the same as in Doughnut.ts
   updated(): void {

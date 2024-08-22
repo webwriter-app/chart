@@ -21,7 +21,7 @@ export class FileUploadButton extends LitElementWw {
   `;
 
   @property({ type: String })
-  buttonText = "load external data";
+  accessor buttonText = "load external data";
 
   render() {
     return html`

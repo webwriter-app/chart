@@ -27,7 +27,7 @@
   "dependencies": {
     "@shoelace-style/shoelace": "^2.15.1",
     "@types/d3": "^7.4.3",
-    "@webwriter/lit": "^1.6.3",
+    "@webwriter/lit": "^2.0.0",
     "bootstrap-icons": "^1.11.3",
     "chart.js": "^4.4.2",
     "d3": "^7.9.0",

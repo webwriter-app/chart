@@ -14,7 +14,9 @@ export class DoughnutChart extends GenericChart<typeof OptionDefinition> {
   }
 
   @state()
-  chartHelper: ChartHelper<Chart<"doughnut", number[], string>> | undefined;
+  accessor chartHelper:
+    | ChartHelper<Chart<"doughnut", number[], string>>
+    | undefined;
 
   updated(): void {
     if (!this.chartHelper) return;

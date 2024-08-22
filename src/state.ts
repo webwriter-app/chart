@@ -156,10 +156,10 @@ const initialState: sharedState = {
     ],
     selected: {
       axis: {
-        x: "Gender",
-        y: undefined,
+        x: "a-label",
+        y: "b-label",
       },
-      dataset_indexes: [0],
+      dataset_indexes: [2],
     },
   },
 

@@ -88,13 +88,15 @@ export default css`
     padding: 0;
     box-sizing: border-box;
   }
-  .button-group {
+  #button-group {
+    flex: 0 0 auto;
     display: flex;
     flex-direction: row;
     gap: 1em;
   }
 
   #main {
+    height: 60vh;
     width: 100%;
     outline: 2px solid black;
     display: flex;
@@ -102,6 +104,7 @@ export default css`
   }
 
   #main.print {
+    height: auto;
   }
 
   #main > * {
@@ -109,7 +112,9 @@ export default css`
     box-sizing: border-box;
   }
   #display-chart {
-    flex: 1;
+    flex: 1 0 0;
+    position: relative;
+    display: flex;
   }
 
   #data-panel {
@@ -121,12 +126,11 @@ export default css`
     overflow: auto;
   }
   #options-panel {
-    background-color: white;
     overflow: auto;
     padding-left: 20px;
     padding-right: 20px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     grid-gap: 10px;
     box-sizing: border-box;
   }
@@ -147,16 +151,24 @@ export default css`
     font-weight: 400;
 
     box-sizing: border-box;
+    overflow: overlay;
+    padding-top: 0px !important;
+  }
+  #settings-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
   }
   #settings-panel {
     background-color: white;
-    height: 300px;
     overflow: hidden;
     display: flex;
     padding: 3px;
+    padding-top: 0;
     flex-direction: column;
     align-items: left;
-    gap: 30px;
+    gap: 16px;
+    margin-bottom: 16px;
     box-sizing: border-box;
   }
 
@@ -167,8 +179,14 @@ export default css`
     );
     font-weight: 500;
 
+    position: sticky;
+    top: 0;
+    background: #f4f4f4;
+    z-index: 1;
+
     margin-top: 0;
     margin-bottom: 0;
+    padding: 0 .5em
 
     display: flex;
     align-items: center;

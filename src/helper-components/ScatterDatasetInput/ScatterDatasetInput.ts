@@ -38,8 +38,8 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
   LitElementWw as unknown as LitElementWw &
     Parameters<typeof SharedTestStateMixin>[0]
 ) {
-  @state() addDatasetPopupOpen = false;
-  @state() addColumnPopupOpenIndex = -1;
+  @state() accessor addDatasetPopupOpen = false;
+  @state() accessor addColumnPopupOpenIndex = -1;
   addNewDataset() {
     this.sharedState.scatterDatasets.sets.push({
       color: randomColor(),

@@ -10,16 +10,16 @@ import { LitElementWw } from "@webwriter/lit";
 @customElement("bar-chart")
 export class BarChart extends LitElementWw {
   @property({ type: "ChartData", converter })
-  data: CompleteChartData = {};
+  accessor data: CompleteChartData = {};
 
   @property({ type: String })
-  type: ChartType = "bar";
+  accessor type: ChartType = "bar";
 
   @property({ type: String })
-  label = "";
+  accessor label = "";
 
   @property({ type: Boolean, converter })
-  filled = false;
+  accessor filled = false;
 
   render() {
     console.log({ data: this.data, filled: this.filled });

@@ -12,22 +12,22 @@ import SlOption from "@shoelace-style/shoelace/dist/components/option/option.com
 @customElement("wwci-select")
 export class Select extends LitElementWw {
   @property({ type: Array<string>, converter })
-  selectOptions: Array<string> = [];
+  accessor selectOptions: Array<string> = [];
 
   @property()
-  label: string = "";
+  accessor label: string = "";
 
   @property()
-  placeholder: string = "";
+  accessor placeholder: string = "";
 
   @property()
-  value: string = "";
+  accessor value: string = "";
 
   @property({ type: Number })
-  selectedIndex = 0;
+  accessor selectedIndex = 0;
 
   @property({ type: Boolean })
-  disabled: boolean = false;
+  accessor disabled: boolean = false;
 
   changeSelected(e: any) {
     this.selectedIndex = this.selectOptions.findIndex(
@@ -53,6 +53,7 @@ export class Select extends LitElementWw {
         label="${this.label}"
         @sl-change="${this.changeSelected}"
         value=${convertFriendlyNameToId(this.selectOptions[this.selectedIndex])}
+        hoist
       >
         ${this.selectOptions.map(
           (option) =>

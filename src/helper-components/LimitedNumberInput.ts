@@ -6,19 +6,19 @@ import { customElement, property } from "lit/decorators.js";
 @customElement("wwci-limited-number-input")
 export class NumberInput extends LitElementWw {
   @property({ type: Number })
-  value = 0;
+  accessor value = 0;
 
   @property({ type: Number })
-  min = Number.MIN_SAFE_INTEGER;
+  accessor min = Number.MIN_SAFE_INTEGER;
 
   @property({ type: Number })
-  max = Number.MAX_SAFE_INTEGER;
+  accessor max = Number.MAX_SAFE_INTEGER;
 
   @property({ type: String })
-  label = "";
+  accessor label = "";
 
   @property({ type: Boolean })
-  disabled = false;
+  accessor disabled = false;
 
   inputEvent(e: any) {
     const value = Number(e.target.value);

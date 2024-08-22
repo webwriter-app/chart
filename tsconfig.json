@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "ESNext",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "target": "ES2020",
+    "target": "ES2022",
     "declaration": false,
     "emitDeclarationOnly": false,
     "outDir": "./types",
@@ -14,9 +14,9 @@
     "moduleResolution": "Node",
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
+    "experimentalDecorators": false,
     "forceConsistentCasingInFileNames": true,
-    "useDefineForClassFields": false,
+    "useDefineForClassFields": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "stripInternal": false

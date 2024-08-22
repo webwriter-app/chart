@@ -78,50 +78,46 @@ export class ScatterplotChart extends SharedTestStateMixin(
   static styles = style;
 
   @property({ type: Object })
-  options = OptionDefinition;
-  @property({ type: Object })
-  definition = Definition;
+  accessor definition = Definition;
   @property({ type: Boolean })
-  addNode = false;
+  accessor addNode = false;
   @property({ type: Boolean })
-  selectNode = false;
+  accessor selectNode = false;
   @property({ type: Boolean })
-  selectByClicking = false;
+  accessor selectByClicking = false;
   @property({ type: Boolean })
-  selectByBrushing = false;
+  accessor selectByBrushing = false;
   @property({ type: Number })
-  selectedIndextoAddNote = 0;
+  accessor selectedIndextoAddNote = 0;
   @property({ type: Boolean })
-  deselectByBrushing = false;
+  accessor deselectByBrushing = false;
   @property({ type: Boolean })
-  editShowing = false;
+  accessor editShowing = false;
   @property({ type: Boolean })
-  hideSelected = false;
+  accessor hideSelected = false;
   @property({ type: Boolean })
-  hideUnselected = false;
+  accessor hideUnselected = false;
   @property({ type: Boolean })
-  deleteSelected = false;
+  accessor deleteSelected = false;
   @property({ type: Boolean })
-  deleteUnselected = false;
+  accessor deleteUnselected = false;
   @property({ type: Boolean })
-  showAll = true;
+  accessor showAll = true;
   @property({ type: Boolean })
-  extraOptions = false;
+  accessor drawLine = false;
   @property({ type: Boolean })
-  drawLine = false;
+  accessor filterOn = false;
   @property({ type: Boolean })
-  filterOn = false;
-  @property({ type: Boolean })
-  hoverCursorChange = true;
+  accessor hoverCursorChange = true;
   //TODO: Use this attribute to change the cursor to a hand with a pointing finger
   @property({ type: Boolean })
-  hoverCursorToMove = false;
+  accessor hoverCursorToMove = false;
   @property({ type: Boolean })
-  hoverCursorToPointer = false;
+  accessor hoverCursorToPointer = false;
 
   constructor(optionsDefinition = OptionDefinition) {
     super();
-    this.options = optionsDefinition;
+    this.sharedState.chart.optionDefinition = optionsDefinition;
     this.sharedState.chart.options = Object.entries(optionsDefinition).reduce(
       (acc, [key, value]) => {
         acc[key] = this.sharedState.chart.options[key] ?? value.default;
@@ -130,6 +126,13 @@ export class ScatterplotChart extends SharedTestStateMixin(
       {} as any
     ) as ChartOptions<OptionDefinition>;
   }
+  // TODO: Fix this problem when moving lines
+  /*protected willUpdate(_changedProperties: PropertyValues) {
+    // if no properties changes it probably was a force update -> called by state library -> this.sharedState changed
+    if (_changedProperties.size === 0) {
+      this.updateScatterplot();
+    }
+  }*/
 
   render() {
     const firstSelectedDataset =
@@ -155,22 +158,64 @@ export class ScatterplotChart extends SharedTestStateMixin(
           ? html`<div class="no-axis">Please select one or more datasets</div>`
           : html``}
         <div class="button-container">
-          <sl-popup placement="bottom" strategy="fixed" .active=${this.addNode}>
-            <sl-button
-              slot="anchor"
-              variant="default"
-              size="small"
-              circle
-              id="add-point-button"
-              @click=${(e) => {
-                this.addNode = true;
-                e.target.focus();
-              }}
-              .disabled=${this.options.animation}
-              @blur=${() => (this.addNode = false)}
-            >
-              <sl-icon src=${IconFileBarGraph} label="Data"></sl-icon>
-            </sl-button>
+          <sl-popup
+            placement="bottom"
+            strategy="fixed"
+            .active="${this.addNode}"
+            distance="7"
+          >
+            <span slot="anchor">
+              <sl-tooltip
+                hoist
+                placement="top-center"
+                content=${this.sharedState.chart.options.animation
+                  ? "To use this option, you must first disable the animation"
+                  : this.totalDataLength === 0
+                  ? "To use this option, you must first add at least one data point to the selected dataset table(s)"
+                  : this.sharedState.scatterDatasets.selected.dataset_indexes
+                      .length === 1 &&
+                    (firstSelectedDataset.typeOfEachData[
+                      firstSelectedDataset.labels.indexOf(
+                        this.sharedState.scatterDatasets.selected.axis.x
+                      )
+                    ] !== "number" ||
+                      firstSelectedDataset.typeOfEachData[
+                        firstSelectedDataset.labels.indexOf(
+                          this.sharedState.scatterDatasets.selected.axis.y
+                        )
+                      ] !== "number")
+                  ? "The x and y axis must be numbers to use this draw line option"
+                  : "Add a new data point"}
+              >
+                <sl-button
+                  variant="default"
+                  size="small"
+                  circle
+                  id="add-point-button"
+                  @click=${(e) => {
+                    this.addNode = true;
+                    e.target.focus();
+                  }}
+                  .disabled=${this.sharedState.chart.options.animation ||
+                  this.totalDataLength === 0 ||
+                  (this.sharedState.scatterDatasets.selected.dataset_indexes
+                    .length === 1 &&
+                    (firstSelectedDataset.typeOfEachData[
+                      firstSelectedDataset.labels.indexOf(
+                        this.sharedState.scatterDatasets.selected.axis.x
+                      )
+                    ] !== "number" ||
+                      firstSelectedDataset.typeOfEachData[
+                        firstSelectedDataset.labels.indexOf(
+                          this.sharedState.scatterDatasets.selected.axis.y
+                        )
+                      ] !== "number"))}
+                  @blur=${() => (this.addNode = false)}
+                >
+                  <sl-icon src=${IconFileBarGraph} label="Data"></sl-icon>
+                </sl-button>
+              </sl-tooltip>
+            </span>
             <div class="popup-content">
               ${this.sharedState.scatterDatasets.selected.dataset_indexes.map(
                 (dataset_index, i) => {
@@ -195,22 +240,35 @@ export class ScatterplotChart extends SharedTestStateMixin(
             placement="bottom"
             strategy="fixed"
             .active=${this.selectNode}
+            distance="7"
           >
-            <sl-button
-              slot="anchor"
-              variant="default"
-              size="small"
-              circle
-              id="select-point-button"
-              .disabled=${this.totalDataLength === 0 || this.options.animation}
-              @click=${(e) => {
-                this.selectNode = true;
-                e.target.focus();
-              }}
-              @blur=${() => (this.selectNode = false)}
-            >
-              <sl-icon src=${IconHandIndex} label="Selection"></sl-icon>
-            </sl-button>
+            <span slot="anchor">
+              <sl-tooltip
+                hoist
+                placement="top-center"
+                content=${this.sharedState.chart.options.animation
+                  ? "To use this option, you must first disable the animation"
+                  : this.totalDataLength === 0
+                  ? "To use this option, you must first add at least one data point to the selected dataset table(s)"
+                  : "(De)select data points"}
+              >
+                <sl-button
+                  variant="default"
+                  size="small"
+                  circle
+                  id="select-point-button"
+                  .disabled=${this.totalDataLength === 0 ||
+                  this.sharedState.chart.options.animation}
+                  @click=${(e) => {
+                    this.selectNode = true;
+                    e.target.focus();
+                  }}
+                  @blur=${() => (this.selectNode = false)}
+                >
+                  <sl-icon src=${IconHandIndex} label="Selection"></sl-icon>
+                </sl-button>
+              </sl-tooltip>
+            </span>
             <div class="popup-content">
               <sl-button
                 id="select-by-clicking"
@@ -272,22 +330,38 @@ export class ScatterplotChart extends SharedTestStateMixin(
             placement="bottom"
             strategy="fixed"
             .active=${this.editShowing}
+            distance="7"
           >
-            <sl-button
-              slot="anchor"
-              variant="default"
-              size="small"
-              circle
-              id="edit-button"
-              .disabled=${this.totalDataLength === 0 || this.options.animation}
-              @click=${(e) => {
-                this.editShowing = true;
-                e.target.focus();
-              }}
-              @blur=${() => (this.editShowing = false)}
-            >
-              <sl-icon src=${IconEye} label="View"></sl-icon>
-            </sl-button>
+            <span slot="anchor">
+              <sl-tooltip
+                hoist
+                placement=${this.sharedState.chart.options.animation ||
+                this.totalDataLength === 0
+                  ? "top-end"
+                  : "top-center"}
+                content=${this.sharedState.chart.options.animation
+                  ? "To use this option, you must first disable the animation"
+                  : this.totalDataLength === 0
+                  ? "To use this option, you must first add at least one data point to the selected dataset table(s)"
+                  : "Show data points"}
+              >
+                <sl-button
+                  variant="default"
+                  size="small"
+                  circle
+                  id="edit-button"
+                  .disabled=${this.totalDataLength === 0 ||
+                  this.sharedState.chart.options.animation}
+                  @click=${(e) => {
+                    this.editShowing = true;
+                    e.target.focus();
+                  }}
+                  @blur=${() => (this.editShowing = false)}
+                >
+                  <sl-icon src=${IconEye} label="View"></sl-icon>
+                </sl-button>
+              </sl-tooltip>
+            </span>
             <div class="popup-content">
               <sl-menu-item
                 type="checkbox"
@@ -341,18 +415,26 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   if (e.button !== 0) return;
                   this.deleteSelected = !this.deleteSelected;
                   if (this.deleteSelected) {
-                    this.sharedState.scatterDatasets.sets.forEach((dataset) => {
-                      for (
-                        let i = dataset.dimensional_data.length - 1;
-                        i >= 0;
-                        i--
-                      ) {
-                        if (dataset.dimensional_data[i].selected) {
-                          dataset.dimensional_data.splice(i, 1);
-                          dataset.ids.splice(i, 1);
+                    this.sharedState.scatterDatasets.sets.forEach(
+                      (dataset, index) => {
+                        for (
+                          let i = dataset.dimensional_data.length - 1;
+                          i >= 0;
+                          i--
+                        ) {
+                          if (
+                            this.sharedState.scatterDatasets.selected.dataset_indexes.includes(
+                              index
+                            )
+                          ) {
+                            if (dataset.dimensional_data[i].selected) {
+                              dataset.dimensional_data.splice(i, 1);
+                              dataset.ids.splice(i, 1);
+                            }
+                          }
                         }
                       }
-                    });
+                    );
                   }
                   this.updateScatterplot();
                 }}
@@ -366,18 +448,26 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   if (e.button !== 0) return;
                   this.deleteUnselected = !this.deleteUnselected;
                   if (this.deleteUnselected) {
-                    this.sharedState.scatterDatasets.sets.forEach((dataset) => {
-                      for (
-                        let i = dataset.dimensional_data.length - 1;
-                        i >= 0;
-                        i--
-                      ) {
-                        if (!dataset.dimensional_data[i].selected) {
-                          dataset.dimensional_data.splice(i, 1);
-                          dataset.ids.splice(i, 1);
+                    this.sharedState.scatterDatasets.sets.forEach(
+                      (dataset, index) => {
+                        for (
+                          let i = dataset.dimensional_data.length - 1;
+                          i >= 0;
+                          i--
+                        ) {
+                          if (
+                            this.sharedState.scatterDatasets.selected.dataset_indexes.includes(
+                              index
+                            )
+                          ) {
+                            if (!dataset.dimensional_data[i].selected) {
+                              dataset.dimensional_data.splice(i, 1);
+                              dataset.ids.splice(i, 1);
+                            }
+                          }
                         }
                       }
-                    });
+                    );
                   }
                   this.updateScatterplot();
                 }}
@@ -386,38 +476,74 @@ export class ScatterplotChart extends SharedTestStateMixin(
             </div>
           </sl-popup>
 
-          <sl-popup
-            placement="bottom"
-            strategy="fixed"
-            .active=${this.extraOptions}
-          >
-            <sl-button
-              slot="anchor"
-              variant="default"
-              size="small"
-              circle
-              id="add-point-button"
-              @click=${(e) => {
-                this.extraOptions = true;
-                e.target.focus();
-              }}
-              .disabled=${this.options.animation}
-              @blur=${() => (this.extraOptions = false)}
+          <span slot="anchor">
+            <sl-tooltip
+              hoist
+              placement=${this.sharedState.chart.options.animation ||
+              (this.sharedState.scatterDatasets.selected.dataset_indexes
+                .length === 1 &&
+                (firstSelectedDataset.typeOfEachData[
+                  firstSelectedDataset.labels.indexOf(
+                    this.sharedState.scatterDatasets.selected.axis.x
+                  )
+                ] !== "number" ||
+                  firstSelectedDataset.typeOfEachData[
+                    firstSelectedDataset.labels.indexOf(
+                      this.sharedState.scatterDatasets.selected.axis.y
+                    )
+                  ] !== "number")) ||
+              this.totalDataLength === 0
+                ? "top-end"
+                : "top-center"}
+              content=${this.sharedState.chart.options.animation
+                ? "To use this option, you must first disable the animation"
+                : this.totalDataLength === 0
+                ? "To use this option, you must first add at least one data point to the selected dataset table(s)"
+                : this.sharedState.scatterDatasets.selected.dataset_indexes
+                    .length === 1 &&
+                  (firstSelectedDataset.typeOfEachData[
+                    firstSelectedDataset.labels.indexOf(
+                      this.sharedState.scatterDatasets.selected.axis.x
+                    )
+                  ] !== "number" ||
+                    firstSelectedDataset.typeOfEachData[
+                      firstSelectedDataset.labels.indexOf(
+                        this.sharedState.scatterDatasets.selected.axis.y
+                      )
+                    ] !== "number")
+                ? "The x and y axis must be numbers to use this draw line option"
+                : "Draw a line in the scatterplot"}
             >
-              <sl-icon src=${IconPencil} label="Draw"></sl-icon>
-            </sl-button>
-            <div class="popup-content">
               <sl-button
-                @mousedown=${(e: MouseEvent) => {
+                variant="default"
+                size="small"
+                circle
+                id="add-point-button"
+                @click=${(e) => {
                   if (e.button !== 0) return;
                   this.drawLine = true;
                   this.updateScatterplot();
                 }}
+                .disabled=${this.sharedState.chart.options.animation ||
+                (this.sharedState.scatterDatasets.selected.dataset_indexes
+                  .length === 1 &&
+                  (firstSelectedDataset.typeOfEachData[
+                    firstSelectedDataset.labels.indexOf(
+                      this.sharedState.scatterDatasets.selected.axis.x
+                    )
+                  ] !== "number" ||
+                    firstSelectedDataset.typeOfEachData[
+                      firstSelectedDataset.labels.indexOf(
+                        this.sharedState.scatterDatasets.selected.axis.y
+                      )
+                    ] !== "number")) ||
+                this.totalDataLength === 0}
               >
-                Draw Line
+                <sl-icon src=${IconPencil} label="Draw"></sl-icon>
               </sl-button>
-            </div>
-          </sl-popup>
+            </sl-tooltip>
+          </span>
+
           <sl-popup
             placement="bottom"
             strategy="fixed"
@@ -427,10 +553,19 @@ export class ScatterplotChart extends SharedTestStateMixin(
             <span slot="anchor">
               <sl-tooltip
                 hoist
-                placement="top-end"
-                content=${this.sharedState.scatterDatasets.selected
-                  .dataset_indexes.length !== 1
-                  ? "You must select exactly one dataset to use the filter"
+                placement=${this.sharedState.chart.options.animation ||
+                this.sharedState.scatterDatasets.selected.dataset_indexes
+                  .length !== 1 ||
+                this.totalDataLength === 0
+                  ? "top-end"
+                  : "top-center"}
+                content=${this.sharedState.chart.options.animation
+                  ? "To use this option, you must first disable the animation"
+                  : this.sharedState.scatterDatasets.selected.dataset_indexes
+                      .length !== 1
+                  ? "To use this option, you must first select only one dataset"
+                  : this.totalDataLength === 0
+                  ? "To use this option, you must first add at least one data point to the dataset table"
                   : "Filter data points"}
               >
                 <sl-button
@@ -442,9 +577,10 @@ export class ScatterplotChart extends SharedTestStateMixin(
                     this.filterOn = true;
                     e.target.focus();
                   }}
-                  .disabled=${this.options.animation ||
+                  .disabled=${this.sharedState.chart.options.animation ||
                   this.sharedState.scatterDatasets.selected.dataset_indexes
-                    .length !== 1}
+                    .length !== 1 ||
+                  this.totalDataLength === 0}
                   @blur=${() => (this.filterOn = false)}
                 >
                   <sl-icon src=${IconFilter} label="Filter"></sl-icon>
@@ -525,7 +661,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
               <tbody class="color-formulas"></tbody>
             </table>
           </div>
-          ${this.options.animation
+          ${this.sharedState.chart.options.animation
             ? html`<sl-range
                 id="animationRange"
                 .value=${this.definition.animationTime}
@@ -545,8 +681,12 @@ export class ScatterplotChart extends SharedTestStateMixin(
   }
   get totalDataLength() {
     let length = 0;
-    this.sharedState.scatterDatasets.sets.forEach(
-      (dataset) => (length += dataset.dimensional_data.length)
+    this.sharedState.scatterDatasets.selected.dataset_indexes.forEach(
+      (dataset_index) => {
+        length +=
+          this.sharedState.scatterDatasets.sets[dataset_index].dimensional_data
+            .length;
+      }
     );
     return length;
   }
@@ -588,7 +728,6 @@ export class ScatterplotChart extends SharedTestStateMixin(
     this.deleteUnselected = false;
     this.showAll = true;
     this.editShowing = false;
-    this.extraOptions = false;
     this.drawLine = false;
     this.filterOn = false;
     this.hoverCursorChange = true;
@@ -604,14 +743,12 @@ export class ScatterplotChart extends SharedTestStateMixin(
     });
   }
   //updatePlot for new animation time
-  // TODO: Fix the focus problem
+  //TODO: Add margin right for bigger numbers and margin top
   // TODO: Add name for scatterplot, maybe use the text feld?
   // TODO: Name for each dataset unter the scatterplot
   // TODO: Table for statistics: r, regression folrmula, mean, etc.
   // TODO: Fix buttons convert and download image
   // TODO: Given x and calculate y (geogbra)
-  // TODO: Temporary delete some dataset
-  // TODO: Delete outliers to study the rest
   // TODO: Show all regression line when cut
   // TODO: see friendly error message and user drag, delete, add points from automa (WR)
   // TODO: Fix edit button
@@ -718,10 +855,11 @@ export class ScatterplotChart extends SharedTestStateMixin(
         datasets,
         axisLabels,
         {
-          hoverTooltip: this.options.hoverTooltip,
-          showOutliers: this.options.showOutliers,
+          hoverTooltip: this.sharedState.chart.options.hoverTooltip,
+          showOutliers: this.sharedState.chart.options.showOutliers,
           hoverCursorChange: this.hoverCursorChange,
-        } as any
+        } as any,
+        this.sharedState.lineDatasets
       );
 
       let animationTime = Number(this.definition.animationTime);
@@ -872,7 +1010,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
       }
 
       // Draw a line in scatter plot
-      if (this.extraOptions && this.drawLine) {
+      if (this.drawLine) {
         // change cursor to pencil
 
         // Define the pencil SVG as a string
@@ -892,6 +1030,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
           this.sharedState.lineDatasets.sets.push({ data: line });
           this.updateScatterplot();
         });
+        this.drawLine = false;
       }
 
       //TODO: Limit the line to the scatterplot area
@@ -1141,7 +1280,9 @@ export class ScatterplotChart extends SharedTestStateMixin(
       });
       // For line formulas
       const lineFormulaRoot = this.shadowRoot.querySelector(".line-formulas");
-      [...lineFormulaRoot.children].forEach((child) => child.remove());
+      lineFormulaRoot.children
+        ? [...lineFormulaRoot.children].forEach((child) => child.remove())
+        : null;
       this.sharedState.lineDatasets.sets.forEach((dataset) => {
         const tr = document.createElement("tr");
         const td = document.createElement("td");
@@ -1160,6 +1301,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
         ).toFixed(2)}`;
         lineSpan.innerText = lineFormula;
       });
+
       // For scatter plot with regression
       const regressionFormulaRoot = this.shadowRoot.querySelector(
         ".regression-formulas"
@@ -1197,7 +1339,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
           }
         }
 
-        if (this.options.showCorrelation) {
+        if (this.sharedState.chart.options.showCorrelation) {
           // calculate the correlation coefficient for each dataset
           const correlation = calculateCorrelation(dataset);
           correlationSpan.innerText = (
@@ -1211,7 +1353,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
       // For each point appears with a tooltip
       //TODO: See the papers about teaching scatterplot for the animation
       //TODO: Fix the regression line?
-      if (this.options.animation) {
+      if (this.sharedState.chart.options.animation) {
         scatter
           .selectAll("circle")
           .classed("selected", false)
@@ -1221,7 +1363,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
           .transition()
           .delay((_, i: number) => i * animationTime) // Important: d can be deleted
           .duration(300)
-          .style("opacity", 0.5)
+          .style("opacity", 1)
           .on("start", (event: { x: number; y: number; i: number }) => {
             setTimeout(() => {
               const coords = {
@@ -1263,7 +1405,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
           });
       }
       // Add grid
-      if (this.options.showGrid) {
+      if (this.sharedState.chart.options.showGrid) {
         addGridListeners(svg, scales, dimensions);
       }
       const colorFormulaRoot = this.shadowRoot.querySelector(".color-formulas");
@@ -1565,7 +1707,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
         bandwidth_result,
         {
           hoverCursorChange: this.hoverCursorChange,
-          hoverTooltip: this.options.hoverTooltip,
+          hoverTooltip: this.sharedState.chart.options.hoverTooltip,
         } as any,
         axisLabels
       );

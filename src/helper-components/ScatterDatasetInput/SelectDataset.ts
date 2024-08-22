@@ -12,7 +12,7 @@ export class SelectDataset extends SharedTestStateMixin(
   LitElementWw as unknown as LitElementWw &
     Parameters<typeof SharedTestStateMixin>[0]
 ) {
-  @state() open = false;
+  @state() accessor open = false;
 
   render() {
     const selectedDatasets = this.sharedState.scatterDatasets.sets.filter(
