@@ -65,14 +65,8 @@ export class WwChart extends SharedTestStateMixin(
   }}*/
   //@query("wwci-dataset-input") private datasetInput!: Select;
   //@query("#chart") private chartElement!: HTMLElement;
-  tabIndex: number;
   connectedCallback() {
-    this.tabIndex = -1;
     super.connectedCallback();
-    this.getAttributeNames().forEach((n) =>
-      this.setAttribute(n, this.getAttribute(n))
-    );
-
     const storedState = this.getAttribute("lit_sm_storage");
     if (storedState) {
       try {
@@ -93,7 +87,9 @@ export class WwChart extends SharedTestStateMixin(
   ): void {
     //this.addEventListener("click", (ev) => this.focus());
     this.initializeDefaultOptions();
+    this.tabIndex = -1
   }
+
 
   initializeDefaultOptions() {
     this.showChart = true;
@@ -155,6 +151,9 @@ export class WwChart extends SharedTestStateMixin(
 
     return html` <div
       id="main"
+      @selectstart=${(e: any) => {e.stopPropagation()}}
+      @dragstart=${(e: any) => {e.stopPropagation()}}
+      @click=${() => this.dispatchEvent(new FocusEvent("focus", {bubbles: true}))}
       class=${this.sharedState.printable ||
       (!this.sharedState.editable &&
         !this.sharedState.teacherOptions.showOptions)
