@@ -1559,10 +1559,6 @@ function drawScatterplot_singleDataset(
     dimensions.max.y,
     axisLabels
   );
-  console.log(
-    "Wnn" + bandwidth_result.x_bandwidth + bandwidth_result.y_bandwidth
-  );
-
   return { svg, scales, dimensions, bandwidth_result };
 }
 function drawScatterplot_singleDataset2(
@@ -1627,6 +1623,7 @@ function drawScatterplot_singleDataset2(
           // Show tooltip
           if (options.hoverTooltip) {
             tooltip
+              .attr("class", "tooltip")
               .style("opacity", 1)
               .html(
                 "ID: " +
@@ -1818,7 +1815,7 @@ function drawScatterplot_singleDataset2(
         });
     });
   }
-  return scatter;
+  return { scatter, tooltip };
 }
 export {
   drawScatterplot,

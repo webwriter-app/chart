@@ -805,6 +805,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
           ];
 
     const root = this.shadowRoot.querySelector(".scatterplot-svg");
+    let animationTime = Number(this.definition.animationTime);
     if (x_axis_type === "number" && y_axis_type === "number") {
       const axisLabels = {
         x: this.sharedState.scatterDatasets.selected.axis.x,
@@ -862,7 +863,6 @@ export class ScatterplotChart extends SharedTestStateMixin(
         this.sharedState.lineDatasets
       );
 
-      let animationTime = Number(this.definition.animationTime);
       // Handle recht click to remove point
       datasets.forEach((_, index) => {
         svg.selectAll(`circle.dataset-${index}`).on("contextmenu", (event) => {
@@ -953,7 +953,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
       // Dragging points to change their position
       //TODO: Fix the problem with yelow marks when dragging (maybe focus problem)
       //TODO: yellow marks appear after (eg. selectwith brush). The setting disappears
-      if (!(this.selectNode || this.selectByClicking)) {
+      if (!(this.selectNode || this.selectByClicking || this.addNode)) {
         addDragingPointListeners(
           svg,
           scatter,
@@ -1353,18 +1353,14 @@ export class ScatterplotChart extends SharedTestStateMixin(
       // For each point appears with a tooltip
       //TODO: See the papers about teaching scatterplot for the animation
       //TODO: Fix the regression line?
+      // TODO: Consider to deactivate the draging and deleting points during the animation
+      // TODO: Fix the problem when during animation the user want to choose regression line by deactivate the regression line?
       if (this.sharedState.chart.options.animation) {
         scatter
           .selectAll("circle")
           .classed("selected", false)
           .style("opacity", 0)
-          .attr("cx", (d: PointOnlyNumbers) => scales.x(d.x))
-          .attr("cy", (d: PointOnlyNumbers) => scales.y(d.y))
-          .transition()
-          .delay((_, i: number) => i * animationTime) // Important: d can be deleted
-          .duration(300)
-          .style("opacity", 1)
-          .on("start", (event: { x: number; y: number; i: number }) => {
+          .each((d: PointOnlyNumbers, i: number) => {
             setTimeout(() => {
               const coords = {
                 x: 0,
@@ -1372,37 +1368,87 @@ export class ScatterplotChart extends SharedTestStateMixin(
               };
 
               const circle = this.shadowRoot.querySelector(
-                `svg circle[cx="${scales.x(event.x)}"][cy="${scales.y(
-                  event.y
-                )}"]`
+                `svg circle[cx="${scales.x(d.x)}"][cy="${scales.y(d.y)}"]`
               ) as SVGCircleElement;
 
               if (circle) {
-                // get the position of the circle on the page
                 const rect = circle.getBoundingClientRect();
                 coords.x = rect.x + rect.width / 2;
                 coords.y = rect.y + rect.height / 2;
               }
 
-              tooltip
-                .style("opacity", 1)
-                .html(
-                  axisLabels.x +
-                    ": " +
-                    event.x +
-                    " " +
-                    axisLabels.y +
-                    ": " +
-                    event.y
-                )
-                .style("left", coords.x + 10 + "px")
-                .style("top", coords.y + 10 + "px");
+              // Draw the x-line first
+              svg
+                .append("line")
+                .attr("x1", scales.x(d.x))
+                .attr("y1", dimensions.height)
+                .attr("x2", scales.x(d.x))
+                .attr("y2", dimensions.height) // Start with y2 equal to y1
+                .attr("stroke", "black")
+                .attr("stroke-width", 2)
+                .attr("stroke-dasharray", "4")
+                .transition() // Start the transition
+                .duration(animationTime / 4) // Duration of the drawing effect in milliseconds
+                .attr("y2", scales.y(d.y)) // Animate y2 to the desired value
+                .attr("class", `line-x-${i}`);
+
+              // Draw the y-line after the x-line has been drawn
+              svg
+                .append("line")
+                .attr("x1", 0)
+                .attr("y1", scales.y(d.y))
+                .attr("x2", 0) // Start with x2 equal to x1
+                .attr("y2", scales.y(d.y))
+                .attr("stroke", "black")
+                .attr("stroke-width", 2)
+                .attr("stroke-dasharray", "4")
+                .transition() // Start the transition
+                .delay(animationTime / 4 + animationTime * 0.075) // Delay the start of the transition to wait for the x-line
+                .duration(animationTime / 4) // Duration of the drawing effect in milliseconds
+                .attr("x2", scales.x(d.x)) // Animate x2 to the desired value
+                .attr("class", `line-y-${i}`);
 
               setTimeout(() => {
-                tooltip.style("opacity", 0);
-              }, animationTime / 2); // Show the tooltip for 1000ms
-            }, event.i * animationTime); // This ensures the tooltip appears after the transition delay
+                // Show the tooltip after the lines are drawn
+                tooltip
+                  .style("opacity", 1)
+                  .html(
+                    axisLabels.x + ": " + d.x + " " + axisLabels.y + ": " + d.y
+                  )
+                  .style("left", coords.x + 10 + "px")
+                  .style("top", coords.y + 10 + "px");
+
+                setTimeout(
+                  () => {
+                    tooltip
+                      .transition()
+                      .duration(animationTime > 2000 ? 100 : 0)
+                      .style("opacity", 0);
+                  },
+                  animationTime > 2000
+                    ? animationTime / 2 - animationTime * 0.15 - 400
+                    : animationTime / 2 - animationTime * 0.15 - 200
+                ); // Show the tooltip for ms
+
+                // Fade in the circle after the lines are drawn
+                scatter
+                  .select(
+                    `circle[cx="${scales.x(d.x)}"][cy="${scales.y(d.y)}"]`
+                  )
+                  .transition()
+                  .duration(300)
+                  .style("opacity", 1);
+              }, animationTime / 2 + animationTime * 0.15); // Total delay for drawing both lines
+            }, i * animationTime); // This ensures the entire process is delayed for each point
           });
+
+        // After animation delete the lines
+        setTimeout(() => {
+          for (let i = 0; i < this.totalDataLength; i++) {
+            svg.select(`.line-x-${i}`).remove();
+            svg.select(`.line-y-${i}`).remove();
+          }
+        }, this.totalDataLength * animationTime + 500);
       }
       // Add grid
       if (this.sharedState.chart.options.showGrid) {
@@ -1695,7 +1741,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
 
         return distance;
       }
-      const scatter = drawScatterplot_singleDataset2(
+      const { scatter, tooltip } = drawScatterplot_singleDataset2(
         root,
         svg,
         x_axis_type,
@@ -1729,296 +1775,6 @@ export class ScatterplotChart extends SharedTestStateMixin(
         });
       }
 
-      // Dragging points to change their position along the axis
-      if (!(this.selectNode || this.selectByClicking)) {
-        let minDistance = Infinity;
-        let minDistance_band = Infinity;
-        let index = -1;
-        let newX = 0;
-        let newY = 0;
-        let count = 0;
-        let index_set: number[] = [];
-        const drag = (axis: "x" | "y" | "xy_xnum_ystr" | "xy_xstr_ynum") => {
-          return d3
-            .drag()
-            .on("start", (event) => {
-              const [clickX, clickY] = d3.pointer(event, svg.node());
-              const oldX =
-                axis === "x" || axis === "xy_xnum_ystr"
-                  ? scales.x_num.invert(clickX)
-                  : scales.x_none.invert(clickX);
-              const oldY =
-                axis === "x" || axis === "xy_xnum_ystr"
-                  ? scales.y_none.invert(clickY)
-                  : scales.y_num.invert(clickY);
-              if (axis === "x" || axis === "y") {
-                for (let i = 0; i < singeledatasets.length; i++) {
-                  if (
-                    Math.abs(
-                      (singeledatasets[i].p as number) -
-                        (axis === "x" ? oldX : oldY)
-                    ) < minDistance
-                  ) {
-                    index = i;
-                    minDistance = Math.abs(
-                      (singeledatasets[i].p as number) -
-                        (axis === "x" ? oldX : oldY)
-                    );
-                  }
-                }
-                for (let i = 0; i < singeledatasets.length; i++) {
-                  if (
-                    Math.abs(
-                      (singeledatasets[i].p as number) -
-                        (axis === "x" ? oldX : oldY)
-                    ) === minDistance
-                  ) {
-                    index_set.push(i);
-                    count++;
-                  }
-                }
-                if (count > 1) {
-                  for (let i = 0; i < index_set.length; i++) {
-                    if (
-                      Math.abs(
-                        (axis === "x" ? oldY : oldX) -
-                          (singeledatasets[index_set[i]].offset + 6)
-                      ) < minDistance_band
-                    ) {
-                      index = index_set[i];
-                      minDistance_band = Math.abs(
-                        (axis === "x" ? oldY : oldX) -
-                          (singeledatasets[index_set[i]].offset + 6)
-                      );
-                    }
-                  }
-                }
-              } else {
-                for (let i = 0; i < datasets.length; i++) {
-                  if (
-                    axis === "xy_xnum_ystr"
-                      ? Math.abs((datasets[i].x as number) - oldX) < minDistance
-                      : Math.abs((datasets[i].y as number) - oldY) < minDistance
-                  ) {
-                    index = i;
-                    minDistance =
-                      axis === "xy_xnum_ystr"
-                        ? Math.abs((datasets[i].x as number) - oldX)
-                        : Math.abs((datasets[i].y as number) - oldY);
-                  }
-                }
-                for (let i = 0; i < datasets.length; i++) {
-                  if (
-                    axis === "xy_xnum_ystr"
-                      ? Math.abs((datasets[i].x as number) - oldX) ===
-                        minDistance
-                      : Math.abs((datasets[i].y as number) - oldY) ===
-                        minDistance
-                  ) {
-                    index_set.push(i);
-                    count++;
-                  }
-                }
-                if (count > 1) {
-                  for (let i = 0; i < index_set.length; i++) {
-                    if (
-                      axis === "xy_xnum_ystr"
-                        ? Math.abs(
-                            oldY -
-                              (listofstringsforlabels_y_axis.indexOf(
-                                datasets[index_set[i]].y as string
-                              ) *
-                                bandwidth_result.y_bandwidth +
-                                datasets[index_set[i]].offset +
-                                6)
-                          ) < minDistance_band
-                        : Math.abs(
-                            oldX -
-                              (listofstringsforlabels_x_axis.indexOf(
-                                datasets[index_set[i]].x as string
-                              ) *
-                                bandwidth_result.x_bandwidth +
-                                datasets[index_set[i]].offset +
-                                6)
-                          ) < minDistance_band
-                    ) {
-                      index = index_set[i];
-                      minDistance_band =
-                        axis === "xy_xnum_ystr"
-                          ? Math.abs(
-                              oldY -
-                                (listofstringsforlabels_y_axis.indexOf(
-                                  datasets[index_set[i]].y as string
-                                ) *
-                                  bandwidth_result.y_bandwidth +
-                                  datasets[index_set[i]].offset +
-                                  6)
-                            )
-                          : Math.abs(
-                              oldX -
-                                (listofstringsforlabels_x_axis.indexOf(
-                                  datasets[index_set[i]].x as string
-                                ) *
-                                  bandwidth_result.x_bandwidth +
-                                  datasets[index_set[i]].offset +
-                                  6)
-                            );
-                    }
-                  }
-                }
-              }
-              if (index !== -1) {
-                svg
-                  .select(
-                    axis === "xy_xnum_ystr" || axis === "xy_xstr_ynum"
-                      ? `.dataset-${index}`
-                      : axis === "x"
-                      ? `.single-x-${index}`
-                      : axis === "y"
-                      ? `.single-y-${index}`
-                      : null
-                  )
-                  .classed("selected", true);
-              }
-            })
-            .on("drag", (event) => {
-              const [clickX, clickY] = d3.pointer(event, svg.node());
-              newX = scales.x_num.invert(clickX);
-              newY = scales.y_num.invert(clickY);
-              // Update the visual position of the circle
-              singeledatasets.forEach((_, i) => {
-                svg
-                  .select(
-                    axis === "x"
-                      ? `.single-x-${i}`
-                      : axis === "y"
-                      ? `.single-y-${i}`
-                      : null
-                  )
-                  .each(function () {
-                    d3.select(this)
-                      .attr(
-                        "cx",
-                        i === index && axis === "x"
-                          ? scales.x_num(newX)
-                          : i === index && axis === "y"
-                          ? 6
-                          : d3.select(this).attr("cx")
-                      )
-                      .attr(
-                        "cy",
-                        i === index && axis === "y"
-                          ? scales.y_num(newY)
-                          : i === index && axis === "x"
-                          ? -6 + dimensions.height
-                          : d3.select(this).attr("cy")
-                      );
-                  });
-              });
-              datasets.forEach((d, i) => {
-                svg
-                  .select(
-                    axis === "xy_xnum_ystr" || axis === "xy_xstr_ynum"
-                      ? `.dataset-${i}`
-                      : null
-                  )
-                  .each(function () {
-                    d3.select(this)
-                      .attr(
-                        "cx",
-                        i === index && axis === "xy_xstr_ynum"
-                          ? scales.x_band(d.x as string) + 6
-                          : i === index && axis === "xy_xnum_ystr"
-                          ? scales.x_num(newX)
-                          : d3.select(this).attr("cx")
-                      )
-                      .attr(
-                        "cy",
-                        i === index && axis === "xy_xnum_ystr"
-                          ? scales.y_band(d.y as string) -
-                              6 +
-                              bandwidth_result.y_bandwidth
-                          : i === index && axis === "xy_xstr_ynum"
-                          ? scales.y_num(newY)
-                          : d3.select(this).attr("cy")
-                      );
-                  });
-              });
-              const updatedSingledataset = singeledatasets.map((d, i) => {
-                if (index === i) {
-                  return {
-                    ...d,
-                    p: axis === "x" ? newX : newY,
-                  };
-                }
-                return d;
-              });
-              const mean = d3.mean(updatedSingledataset, (d) => Number(d.p));
-              // Update the visual postion of the mean line
-              svg
-                .select(`.mean-line-${axis}`)
-                .attr("x1", axis === "x" ? scales.x_num(mean) : 0)
-                .attr("y1", axis === "y" ? scales.y_num(mean) : 0)
-                .attr(
-                  "x2",
-                  axis === "x" ? scales.x_num(mean) : dimensions.width
-                )
-                .attr(
-                  "y2",
-                  axis === "y" ? scales.y_num(mean) : dimensions.height
-                );
-            })
-            .on("end", (_) => {
-              count = 0;
-              // Update the data of the circle (this is true)
-              if (index !== -1) {
-                axis === "x" || axis === "xy_xnum_ystr"
-                  ? (selectedDataset.dimensional_data[index].data[
-                      selectedDataset.labels.indexOf(axisLabels.x)
-                    ] = Number(newX) as number)
-                  : (selectedDataset.dimensional_data[index].data[
-                      selectedDataset.labels.indexOf(axisLabels.y)
-                    ] = Number(newY) as number);
-                this.updateScatterplot();
-                if (
-                  this.sharedState.scatterDatasets.selected.axis.x ===
-                    selectedDataset.filter.label &&
-                  selectedDataset.filter.type === "number" &&
-                  (axis === "x" || axis === "xy_xnum_ystr")
-                ) {
-                  updateColorForFilter(
-                    selectedDataset.labels.indexOf(axisLabels.x),
-                    "number",
-                    selectedDataset
-                  );
-                  this.updateScatterplot();
-                } else if (
-                  this.sharedState.scatterDatasets.selected.axis.y ===
-                    selectedDataset.filter.label &&
-                  selectedDataset.filter.type === "number" &&
-                  (axis === "y" || axis === "xy_xstr_ynum")
-                ) {
-                  updateColorForFilter(
-                    selectedDataset.labels.indexOf(axisLabels.y),
-                    "number",
-                    selectedDataset
-                  );
-                  this.updateScatterplot();
-                }
-              }
-            });
-        };
-
-        singeledatasets.forEach((_, i) => {
-          svg.select(`.single-x-${i}`).call(drag("x"));
-          svg.select(`.single-y-${i}`).call(drag("y"));
-        });
-        datasets.forEach((_, i) => {
-          x_axis_type === "number" && y_axis_type === "string"
-            ? svg.select(`.dataset-${i}`).call(drag("xy_xnum_ystr"))
-            : svg.select(`.dataset-${i}`).call(drag("xy_xstr_ynum"));
-        });
-      }
       // Brushing for select or deselect points
       const select_deselect =
         this.selectByBrushing === true
@@ -2600,17 +2356,25 @@ export class ScatterplotChart extends SharedTestStateMixin(
       }
 
       // Draw line for mean of x or y data
-      //TODO: When hide, the mean line should be updated
       //TODO: Pos. of the tooltip and the mean line
-
-      if (x_axis_type === "number" || y_axis_type === "number") {
-        const meanLine = (axis: "x" | "y") => {
+      if (
+        (x_axis_type === "number" || y_axis_type === "number") &&
+        this.sharedState.chart.options.showMeanLine
+      ) {
+        const meanLine = (
+          axis: "x" | "y" | "xy_xnum_ystr" | "xy_xstr_ynum"
+        ) => {
           const data =
-            axis === "x" ? data_for_x_axis_copy : data_for_y_axis_copy;
-          const mean = d3.mean(data, (d) => Number(axis === "x" ? d.x : d.y));
-          if (x_axis_type === "none" || y_axis_type === "none") {
+            axis === "x" || axis === "xy_xnum_ystr"
+              ? data_for_x_axis_copy
+              : data_for_y_axis_copy;
+          const mean = d3.mean(data, (d) =>
+            Number(axis === "x" || axis === "xy_xnum_ystr" ? d.x : d.y)
+          );
+          if (axis === "x" || axis === "y") {
             svg
               .append("line")
+              .attr("class", `mean-line-${axis}`)
               .attr("x1", axis === "x" ? scales.x_num(mean) : 0)
               .attr("y1", axis === "y" ? scales.y_num(mean) : 0)
               .attr("x2", axis === "x" ? scales.x_num(mean) : dimensions.width)
@@ -2618,28 +2382,44 @@ export class ScatterplotChart extends SharedTestStateMixin(
               .attr("stroke", "black")
               .attr("stroke-width", 2)
               .attr("stroke-dasharray", "4")
-              .attr("class", `mean-line-${axis}`);
+              .style("opacity", 1);
             //Make the mean line label on the left side of the line
             svg
               .append("text")
               .attr("class", "line label")
               .text(`m = ${mean.toFixed(2)}`)
               .attr("fill", "red");
-            if (y_axis_type === "none") {
+            if (axis === "x") {
               svg
                 .select(".line.label")
                 .attr("text-anchor", "start")
-                .attr("x", axis === "x" ? scales.x_num(mean) + 5 : 0)
-                .attr("y", axis === "y" ? scales.y_num(mean) : 10);
+                .attr("x", scales.x_num(mean) + 5)
+                .attr("y", 10);
             } else {
               svg
                 .select(".line.label")
                 .attr("text-anchor", "end")
-                .attr("x", axis === "x" ? scales.x_num(mean) : dimensions.width)
-                .attr("y", axis === "y" ? scales.y_num(mean) - 5 : 0);
+                .attr("x", dimensions.width)
+                .attr("y", scales.y_num(mean) - 5);
+            }
+            if (this.sharedState.chart.options.animation) {
+              svg
+                .select(`.mean-line-${axis}`)
+                .style("opacity", 0)
+                .transition()
+                .delay(singeledatasets.length * animationTime + 150)
+                .duration(300)
+                .style("opacity", 1);
+              svg
+                .select(".line.label")
+                .style("opacity", 0)
+                .transition()
+                .delay(singeledatasets.length * animationTime + 200)
+                .duration(300)
+                .style("opacity", 1);
             }
           } else {
-            if (axis === "x") {
+            if (axis === "xy_xnum_ystr") {
               listofstringsforlabels_y_axis.map((l, i) => {
                 const mean_i = d3.mean(
                   datasets_copy.filter((d) => d.y === l),
@@ -2663,7 +2443,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   .attr("class", `mean-line-${axis}-${i}`);
                 svg
                   .append("text")
-                  .attr("class", "line label")
+                  .attr("class", `line-label-${i}`)
                   .attr("text-anchor", "end")
                   .attr("x", scales.x_num(mean_i) - 5)
                   .attr(
@@ -2674,6 +2454,22 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   )
                   .text(`m = ${mean_i.toFixed(2)}`)
                   .attr("fill", "red");
+                if (this.sharedState.chart.options.animation) {
+                  svg
+                    .select(`.mean-line-${axis}-${i}`)
+                    .style("opacity", 0)
+                    .transition()
+                    .delay(datasets.length * animationTime + 150 * (i + 1))
+                    .duration(300)
+                    .style("opacity", 1);
+                  svg
+                    .select(`.line-label-${i}`)
+                    .style("opacity", 0)
+                    .transition()
+                    .delay(datasets.length * animationTime + 150 * (i + 1))
+                    .duration(300)
+                    .style("opacity", 1);
+                }
               });
             } else {
               listofstringsforlabels_x_axis.map((l, i) => {
@@ -2693,24 +2489,705 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   .attr("class", `mean-line-${axis}-${i}`);
                 svg
                   .append("text")
-                  .attr("class", "line label")
+                  .attr("class", `line-label-${i}`)
                   .attr("text-anchor", "end")
                   .attr("x", (i + 1) * bandwidth_result.x_bandwidth)
                   .attr("y", scales.y_num(mean_i) - 5)
                   .text(`m = ${mean_i.toFixed(2)}`)
                   .attr("fill", "red");
+                if (this.sharedState.chart.options.animation) {
+                  svg
+                    .select(`.mean-line-${axis}-${i}`)
+                    .style("opacity", 0)
+                    .transition()
+                    .delay(datasets.length * animationTime + 150 * (i + 1))
+                    .duration(300)
+                    .style("opacity", 1);
+                  svg
+                    .select(`.line-label-${i}`)
+                    .style("opacity", 0)
+                    .transition()
+                    .delay(datasets.length * animationTime + 150 * (i + 1))
+                    .duration(300)
+                    .style("opacity", 1);
+                }
               });
             }
           }
         };
 
-        if (x_axis_type === "number") {
+        if (x_axis_type === "number" && y_axis_type === "none") {
           meanLine("x");
         }
-        if (y_axis_type === "number") {
+        if (y_axis_type === "number" && x_axis_type === "none") {
           meanLine("y");
         }
+        if (x_axis_type === "number" && y_axis_type === "string") {
+          meanLine("xy_xnum_ystr");
+        }
+        if (y_axis_type === "number" && x_axis_type === "string") {
+          meanLine("xy_xstr_ynum");
+        }
       }
+
+      // Dragging points to change their position along the axis
+      if (!(this.selectNode || this.selectByClicking)) {
+        let minDistance = Infinity;
+        let minDistance_band = Infinity;
+        let index = -1;
+        let newX = 0;
+        let newY = 0;
+        let count = 0;
+        let index_set: number[] = [];
+        const drag = (axis: "x" | "y" | "xy_xnum_ystr" | "xy_xstr_ynum") => {
+          return d3
+            .drag()
+            .on("start", (event) => {
+              const [clickX, clickY] = d3.pointer(event, svg.node());
+              const oldX =
+                axis === "x" || axis === "xy_xnum_ystr"
+                  ? scales.x_num.invert(clickX)
+                  : scales.x_none.invert(clickX);
+              const oldY =
+                axis === "x" || axis === "xy_xnum_ystr"
+                  ? scales.y_none.invert(clickY)
+                  : scales.y_num.invert(clickY);
+              if (axis === "x" || axis === "y") {
+                for (let i = 0; i < singeledatasets.length; i++) {
+                  if (
+                    Math.abs(
+                      (singeledatasets[i].p as number) -
+                        (axis === "x" ? oldX : oldY)
+                    ) < minDistance
+                  ) {
+                    index = i;
+                    minDistance = Math.abs(
+                      (singeledatasets[i].p as number) -
+                        (axis === "x" ? oldX : oldY)
+                    );
+                  }
+                }
+                for (let i = 0; i < singeledatasets.length; i++) {
+                  if (
+                    Math.abs(
+                      (singeledatasets[i].p as number) -
+                        (axis === "x" ? oldX : oldY)
+                    ) === minDistance
+                  ) {
+                    index_set.push(i);
+                    count++;
+                  }
+                }
+                if (count > 1) {
+                  for (let i = 0; i < index_set.length; i++) {
+                    if (
+                      Math.abs(
+                        (axis === "x" ? oldY : oldX) -
+                          (singeledatasets[index_set[i]].offset + 6)
+                      ) < minDistance_band
+                    ) {
+                      index = index_set[i];
+                      minDistance_band = Math.abs(
+                        (axis === "x" ? oldY : oldX) -
+                          (singeledatasets[index_set[i]].offset + 6)
+                      );
+                    }
+                  }
+                }
+              } else {
+                for (let i = 0; i < datasets.length; i++) {
+                  if (
+                    axis === "xy_xnum_ystr"
+                      ? Math.abs((datasets[i].x as number) - oldX) < minDistance
+                      : Math.abs((datasets[i].y as number) - oldY) < minDistance
+                  ) {
+                    index = i;
+                    minDistance =
+                      axis === "xy_xnum_ystr"
+                        ? Math.abs((datasets[i].x as number) - oldX)
+                        : Math.abs((datasets[i].y as number) - oldY);
+                  }
+                }
+                for (let i = 0; i < datasets.length; i++) {
+                  if (
+                    axis === "xy_xnum_ystr"
+                      ? Math.abs((datasets[i].x as number) - oldX) ===
+                        minDistance
+                      : Math.abs((datasets[i].y as number) - oldY) ===
+                        minDistance
+                  ) {
+                    index_set.push(i);
+                    count++;
+                  }
+                }
+                if (count > 1) {
+                  for (let i = 0; i < index_set.length; i++) {
+                    if (
+                      axis === "xy_xnum_ystr"
+                        ? Math.abs(
+                            oldY -
+                              (listofstringsforlabels_y_axis.indexOf(
+                                datasets[index_set[i]].y as string
+                              ) *
+                                bandwidth_result.y_bandwidth +
+                                datasets[index_set[i]].offset +
+                                6)
+                          ) < minDistance_band
+                        : Math.abs(
+                            oldX -
+                              (listofstringsforlabels_x_axis.indexOf(
+                                datasets[index_set[i]].x as string
+                              ) *
+                                bandwidth_result.x_bandwidth +
+                                datasets[index_set[i]].offset +
+                                6)
+                          ) < minDistance_band
+                    ) {
+                      index = index_set[i];
+                      minDistance_band =
+                        axis === "xy_xnum_ystr"
+                          ? Math.abs(
+                              oldY -
+                                (listofstringsforlabels_y_axis.indexOf(
+                                  datasets[index_set[i]].y as string
+                                ) *
+                                  bandwidth_result.y_bandwidth +
+                                  datasets[index_set[i]].offset +
+                                  6)
+                            )
+                          : Math.abs(
+                              oldX -
+                                (listofstringsforlabels_x_axis.indexOf(
+                                  datasets[index_set[i]].x as string
+                                ) *
+                                  bandwidth_result.x_bandwidth +
+                                  datasets[index_set[i]].offset +
+                                  6)
+                            );
+                    }
+                  }
+                }
+              }
+              if (index !== -1) {
+                svg
+                  .select(
+                    axis === "xy_xnum_ystr" || axis === "xy_xstr_ynum"
+                      ? `.dataset-${index}`
+                      : axis === "x"
+                      ? `.single-x-${index}`
+                      : axis === "y"
+                      ? `.single-y-${index}`
+                      : null
+                  )
+                  .classed("selected", true);
+              }
+            })
+            .on("drag", (event) => {
+              const [clickX, clickY] = d3.pointer(event, svg.node());
+              newX = scales.x_num.invert(clickX);
+              newY = scales.y_num.invert(clickY);
+              // Update the visual position of the circle
+              singeledatasets.forEach((_, i) => {
+                svg
+                  .select(
+                    axis === "x"
+                      ? `.single-x-${i}`
+                      : axis === "y"
+                      ? `.single-y-${i}`
+                      : null
+                  )
+                  .each(function () {
+                    d3.select(this)
+                      .attr(
+                        "cx",
+                        i === index && axis === "x"
+                          ? scales.x_num(newX)
+                          : i === index && axis === "y"
+                          ? 6
+                          : d3.select(this).attr("cx")
+                      )
+                      .attr(
+                        "cy",
+                        i === index && axis === "y"
+                          ? scales.y_num(newY)
+                          : i === index && axis === "x"
+                          ? -6 + dimensions.height
+                          : d3.select(this).attr("cy")
+                      );
+                  });
+              });
+              datasets.forEach((d, i) => {
+                svg
+                  .select(
+                    axis === "xy_xnum_ystr" || axis === "xy_xstr_ynum"
+                      ? `.dataset-${i}`
+                      : null
+                  )
+                  .each(function () {
+                    d3.select(this)
+                      .attr(
+                        "cx",
+                        i === index && axis === "xy_xstr_ynum"
+                          ? scales.x_band(d.x as string) + 6
+                          : i === index && axis === "xy_xnum_ystr"
+                          ? scales.x_num(newX)
+                          : d3.select(this).attr("cx")
+                      )
+                      .attr(
+                        "cy",
+                        i === index && axis === "xy_xnum_ystr"
+                          ? scales.y_band(d.y as string) -
+                              6 +
+                              bandwidth_result.y_bandwidth
+                          : i === index && axis === "xy_xstr_ynum"
+                          ? scales.y_num(newY)
+                          : d3.select(this).attr("cy")
+                      );
+                  });
+              });
+              const updatedSingledataset = singeledatasets.map((d, i) => {
+                if (index === i) {
+                  return {
+                    ...d,
+                    p: axis === "x" ? newX : newY,
+                  };
+                }
+                return d;
+              });
+              const updatedDataset = datasets.map((d, i) => {
+                if (index === i) {
+                  return {
+                    ...d,
+                    x: axis === "xy_xnum_ystr" ? newX : d.x,
+                    y: axis === "xy_xstr_ynum" ? newY : d.y,
+                  };
+                }
+                return d;
+              });
+              if (
+                (x_axis_type === "number" || y_axis_type === "number") &&
+                this.sharedState.chart.options.showMeanLine
+              ) {
+                if (axis === "x" || axis === "y") {
+                  const mean_singledataset = d3.mean(
+                    updatedSingledataset,
+                    (d) => Number(d.p)
+                  );
+                  // Update the visual postion of the mean line
+                  svg
+                    .select(`.mean-line-${axis}`)
+                    .attr(
+                      "x1",
+                      axis === "x" ? scales.x_num(mean_singledataset) : 0
+                    )
+                    .attr(
+                      "y1",
+                      axis === "y" ? scales.y_num(mean_singledataset) : 0
+                    )
+                    .attr(
+                      "x2",
+                      axis === "x"
+                        ? scales.x_num(mean_singledataset)
+                        : dimensions.width
+                    )
+                    .attr(
+                      "y2",
+                      axis === "y"
+                        ? scales.y_num(mean_singledataset)
+                        : dimensions.height
+                    );
+                  // Update the visual postion of the mean label
+                  if (axis === "x") {
+                    svg
+                      .select(".line.label")
+                      .text(`m = ${mean_singledataset.toFixed(2)}`)
+                      .attr("text-anchor", "start")
+                      .attr("x", scales.x_num(mean_singledataset) + 5)
+                      .attr("y", 10);
+                  } else {
+                    svg
+                      .select(".line.label")
+                      .text(`m = ${mean_singledataset.toFixed(2)}`)
+                      .attr("text-anchor", "end")
+                      .attr("x", dimensions.width)
+                      .attr("y", scales.y_num(mean_singledataset) - 5);
+                  }
+                } else if (axis === "xy_xnum_ystr") {
+                  listofstringsforlabels_y_axis.map((l, i) => {
+                    if ((datasets[index].y as string) === l) {
+                      const mean_i = d3.mean(
+                        updatedDataset.filter((d) => d.y === l),
+                        (d) => Number(d.x)
+                      );
+                      svg
+                        .select(`.mean-line-${axis}-${i}`)
+                        .attr("x1", scales.x_num(mean_i))
+                        .attr(
+                          "y1",
+                          dimensions.height - i * bandwidth_result.y_bandwidth
+                        )
+                        .attr("x2", scales.x_num(mean_i))
+                        .attr(
+                          "y2",
+                          dimensions.height -
+                            (i + 1) * bandwidth_result.y_bandwidth
+                        );
+                      // Update the visual postion of the mean label
+                      svg
+                        .select(`.line-label-${i}`)
+                        .attr("x", scales.x_num(mean_i) - 5)
+                        .attr(
+                          "y",
+                          dimensions.height -
+                            (i + 1) * bandwidth_result.y_bandwidth +
+                            10
+                        )
+                        .text(`m = ${mean_i.toFixed(2)}`);
+                    }
+                  });
+                } else if (axis === "xy_xstr_ynum") {
+                  listofstringsforlabels_x_axis.map((l, i) => {
+                    if ((datasets[index].x as string) === l) {
+                      const mean_i = d3.mean(
+                        updatedDataset.filter((d) => d.x === l),
+                        (d) => Number(d.y)
+                      );
+                      svg
+                        .select(`.mean-line-${axis}-${i}`)
+                        .attr("x1", i * bandwidth_result.x_bandwidth)
+                        .attr("y1", scales.y_num(mean_i))
+                        .attr("x2", (i + 1) * bandwidth_result.x_bandwidth)
+                        .attr("y2", scales.y_num(mean_i));
+                      // Update the visual postion of the mean label
+                      svg
+                        .select(`.line-label-${i}`)
+                        .attr("x", (i + 1) * bandwidth_result.x_bandwidth)
+                        .attr("y", scales.y_num(mean_i) - 5)
+                        .text(`m = ${mean_i.toFixed(2)}`);
+                    }
+                  });
+                }
+              }
+            })
+            .on("end", (_) => {
+              count = 0;
+              // Update the data of the circle (this is true)
+              if (index !== -1) {
+                axis === "x" || axis === "xy_xnum_ystr"
+                  ? (selectedDataset.dimensional_data[index].data[
+                      selectedDataset.labels.indexOf(axisLabels.x)
+                    ] = Number(newX) as number)
+                  : (selectedDataset.dimensional_data[index].data[
+                      selectedDataset.labels.indexOf(axisLabels.y)
+                    ] = Number(newY) as number);
+                this.updateScatterplot();
+                if (
+                  this.sharedState.scatterDatasets.selected.axis.x ===
+                    selectedDataset.filter.label &&
+                  selectedDataset.filter.type === "number" &&
+                  (axis === "x" || axis === "xy_xnum_ystr")
+                ) {
+                  updateColorForFilter(
+                    selectedDataset.labels.indexOf(axisLabels.x),
+                    "number",
+                    selectedDataset
+                  );
+                  this.updateScatterplot();
+                } else if (
+                  this.sharedState.scatterDatasets.selected.axis.y ===
+                    selectedDataset.filter.label &&
+                  selectedDataset.filter.type === "number" &&
+                  (axis === "y" || axis === "xy_xstr_ynum")
+                ) {
+                  updateColorForFilter(
+                    selectedDataset.labels.indexOf(axisLabels.y),
+                    "number",
+                    selectedDataset
+                  );
+                  this.updateScatterplot();
+                }
+              }
+            });
+        };
+
+        singeledatasets.forEach((_, i) => {
+          x_axis_type === "number" && y_axis_type === "none"
+            ? svg.select(`.single-x-${i}`).call(drag("x"))
+            : x_axis_type === "none" && y_axis_type === "number"
+            ? svg.select(`.single-y-${i}`).call(drag("y"))
+            : null;
+        });
+        datasets.forEach((_, i) => {
+          x_axis_type === "number" && y_axis_type === "string"
+            ? svg.select(`.dataset-${i}`).call(drag("xy_xnum_ystr"))
+            : x_axis_type === "string" && y_axis_type === "number"
+            ? svg.select(`.dataset-${i}`).call(drag("xy_xstr_ynum"))
+            : null;
+        });
+      }
+      // animation of the scatter plot
+      if (this.sharedState.chart.options.animation) {
+        if (!(x_axis_type === "none") && !(y_axis_type === "none")) {
+          scatter
+            .selectAll("circle")
+            .classed("selected", false)
+            .style("opacity", 0)
+            .transition()
+            .delay((_, i: number) => i * animationTime) // Important: d can be deleted
+            .duration(300)
+            .style("opacity", 1)
+            .each((_, i: number) => {
+              setTimeout(() => {
+                const coords = {
+                  x: 0,
+                  y: 0,
+                };
+                const circle = this.shadowRoot.querySelector(
+                  `svg circle[cx="${
+                    x_axis_type === "number"
+                      ? scales.x_num(datasets[i].x as number)
+                      : y_axis_type === "number"
+                      ? scales.x_band(datasets[i].x as string) +
+                        6 +
+                        datasets[i].offset
+                      : scales.x_band(datasets[i].x as string) +
+                        bandwidth_result.x_bandwidth / 2
+                  }"][cy="${
+                    y_axis_type === "number"
+                      ? scales.y_num(datasets[i].y as number)
+                      : scales.y_band(datasets[i].y as string) -
+                        6 -
+                        datasets[i].offset +
+                        bandwidth_result.y_bandwidth
+                  }"]`
+                ) as SVGCircleElement;
+                if (circle) {
+                  const rect = circle.getBoundingClientRect();
+                  coords.x = rect.x + rect.width / 2;
+                  coords.y = rect.y + rect.height / 2;
+                }
+                tooltip
+                  .style("opacity", 1)
+                  .html(
+                    "ID: " +
+                      datasets[i].id +
+                      "<br>" +
+                      axisLabels.x +
+                      ": " +
+                      datasets[i].x +
+                      " " +
+                      axisLabels.y +
+                      ": " +
+                      datasets[i].y
+                  )
+                  .style("left", coords.x + 10 + "px")
+                  .style("top", coords.y + 10 + "px");
+
+                setTimeout(() => {
+                  tooltip
+                    .transition()
+                    .duration(animationTime > 2000 ? 200 : 0)
+                    .style("opacity", 0);
+                }, animationTime - 500);
+              }, i * animationTime);
+            });
+        }
+        if (x_axis_type === "none" && y_axis_type === "number") {
+          scatter
+            .selectAll("circle")
+            .classed("selected", false)
+            .style("opacity", 0)
+            .transition()
+            .delay((_, i: number) => i * animationTime) // Important: d can be deleted
+            .duration(300)
+            .style("opacity", 1)
+            .each((_, i: number) => {
+              setTimeout(() => {
+                const coords = {
+                  x: 0,
+                  y: 0,
+                };
+                const circle = this.shadowRoot.querySelector(
+                  `svg circle[cx="${
+                    6 + singeledatasets[i].offset
+                  }"][cy="${scales.y_num(singeledatasets[i].p as number)}"]`
+                ) as SVGCircleElement;
+                if (circle) {
+                  const rect = circle.getBoundingClientRect();
+                  coords.x = rect.x + rect.width / 2;
+                  coords.y = rect.y + rect.height / 2;
+                }
+                tooltip
+                  .style("opacity", 1)
+                  .html(
+                    "ID: " +
+                      singeledatasets[i].id +
+                      "<br>" +
+                      axisLabels.y +
+                      ": " +
+                      singeledatasets[i].p
+                  )
+                  .style("left", coords.x + 10 + "px")
+                  .style("top", coords.y + 10 + "px");
+
+                setTimeout(() => {
+                  tooltip
+                    .transition()
+                    .duration(animationTime > 2000 ? 200 : 0)
+                    .style("opacity", 0);
+                }, animationTime - 400);
+              }, i * animationTime);
+            });
+        }
+        if (x_axis_type === "none" && y_axis_type === "string") {
+          scatter
+            .selectAll("circle")
+            .classed("selected", false)
+            .style("opacity", 0)
+            .transition()
+            .delay((_, i: number) => i * animationTime) // Important: d can be deleted
+            .duration(300)
+            .style("opacity", 1)
+            .each((_, i: number) => {
+              setTimeout(() => {
+                const coords = {
+                  x: 0,
+                  y: 0,
+                };
+                const circle = this.shadowRoot.querySelector(
+                  `svg circle[cx="${6 + singeledatasets[i].offset}"][cy="${
+                    scales.y_band(singeledatasets[i].p as string) +
+                    bandwidth_result.y_bandwidth / 2
+                  }"]`
+                ) as SVGCircleElement;
+                if (circle) {
+                  const rect = circle.getBoundingClientRect();
+                  coords.x = rect.x + rect.width / 2;
+                  coords.y = rect.y + rect.height / 2;
+                }
+                tooltip
+                  .style("opacity", 1)
+                  .html(
+                    "ID: " +
+                      singeledatasets[i].id +
+                      "<br>" +
+                      axisLabels.y +
+                      ": " +
+                      singeledatasets[i].p
+                  )
+                  .style("left", coords.x + 10 + "px")
+                  .style("top", coords.y + 10 + "px");
+
+                setTimeout(() => {
+                  tooltip
+                    .transition()
+                    .duration(animationTime > 2000 ? 200 : 0)
+                    .style("opacity", 0);
+                }, animationTime - 400);
+              }, i * animationTime);
+            });
+        }
+        if (x_axis_type === "number" && y_axis_type === "none") {
+          scatter
+            .selectAll("circle")
+            .classed("selected", false)
+            .style("opacity", 0)
+            .transition()
+            .delay((_, i: number) => i * animationTime) // Important: d can be deleted
+            .duration(300)
+            .style("opacity", 1)
+            .each((_, i: number) => {
+              setTimeout(() => {
+                const coords = {
+                  x: 0,
+                  y: 0,
+                };
+                const circle = this.shadowRoot.querySelector(
+                  `svg circle[cx="${scales.x_num(
+                    singeledatasets[i].p as number
+                  )}"][cy="${
+                    -6 + dimensions.height - singeledatasets[i].offset
+                  }"]`
+                ) as SVGCircleElement;
+                if (circle) {
+                  const rect = circle.getBoundingClientRect();
+                  coords.x = rect.x + rect.width / 2;
+                  coords.y = rect.y + rect.height / 2;
+                }
+                tooltip
+                  .style("opacity", 1)
+                  .html(
+                    "ID: " +
+                      singeledatasets[i].id +
+                      "<br>" +
+                      axisLabels.x +
+                      ": " +
+                      singeledatasets[i].p
+                  )
+                  .style("left", coords.x + 10 + "px")
+                  .style("top", coords.y + 10 + "px");
+
+                setTimeout(() => {
+                  tooltip
+                    .transition()
+                    .duration(animationTime > 2000 ? 200 : 0)
+                    .style("opacity", 0);
+                }, animationTime - 400);
+              }, i * animationTime);
+            });
+        }
+        if (x_axis_type === "string" && y_axis_type === "none") {
+          scatter
+            .selectAll("circle")
+            .classed("selected", false)
+            .style("opacity", 0)
+            .transition()
+            .delay((_, i: number) => i * animationTime) // Important: d can be deleted
+            .duration(300)
+            .style("opacity", 1)
+            .each((_, i: number) => {
+              setTimeout(() => {
+                const coords = {
+                  x: 0,
+                  y: 0,
+                };
+                const circle = this.shadowRoot.querySelector(
+                  `svg circle[cx="${
+                    scales.x_band(singeledatasets[i].p as string) +
+                    bandwidth_result.x_bandwidth / 2
+                  }"][cy="${
+                    -6 + dimensions.height - singeledatasets[i].offset
+                  }"]`
+                ) as SVGCircleElement;
+                if (circle) {
+                  const rect = circle.getBoundingClientRect();
+                  coords.x = rect.x + rect.width / 2;
+                  coords.y = rect.y + rect.height / 2;
+                }
+                tooltip
+                  .style("opacity", 1)
+                  .html(
+                    "ID: " +
+                      singeledatasets[i].id +
+                      "<br>" +
+                      axisLabels.x +
+                      ": " +
+                      singeledatasets[i].p
+                  )
+                  .style("left", coords.x + 10 + "px")
+                  .style("top", coords.y + 10 + "px");
+
+                setTimeout(() => {
+                  tooltip
+                    .transition()
+                    .duration(animationTime > 2000 ? 200 : 0)
+                    .style("opacity", 0);
+                }, animationTime - 400);
+              }, i * animationTime);
+            });
+        }
+      }
+
       // Select the color table body
       const colorFormulaRoot = this.shadowRoot.querySelector(".color-formulas");
       if (

@@ -87,9 +87,8 @@ export class WwChart extends SharedTestStateMixin(
   ): void {
     //this.addEventListener("click", (ev) => this.focus());
     this.initializeDefaultOptions();
-    this.tabIndex = -1
+    this.tabIndex = -1;
   }
-
 
   initializeDefaultOptions() {
     this.showChart = true;
@@ -150,73 +149,97 @@ export class WwChart extends SharedTestStateMixin(
     */
 
     return html` <div
-      id="main"
-      @selectstart=${(e: any) => {e.stopPropagation()}}
-      @dragstart=${(e: any) => {e.stopPropagation()}}
-      @click=${() => this.dispatchEvent(new FocusEvent("focus", {bubbles: true}))}
-      class=${this.sharedState.printable ||
-      (!this.sharedState.editable &&
-        !this.sharedState.teacherOptions.showOptions)
-        ? "print"
-        : ""}
-    >
-      <!-- <div id="button-group"> -->
-      <sl-tab-group>
-        <sl-tab
-          slot="nav"
-          panel="chart"
-          @click=${() => {
-            this.showChart = true;
-            this.showData = false;
-            this.showTeacherOptions = false;
+        part="options"
+        id="settings"
+        style=${this.isContentEditable ? "" : "display: none;"}
+      >
+        <div id="settings-wrapper">
+          <h2>Setting</h2>
+          <!-- <sl-checkbox
+            id="Editable"
+            ?checked=${this.sharedState.editable}
+            @sl-change=${() => {
+            this.editable = !this.editable;
+            this.sharedState.editable = this.editable;
           }}
-          .active=${this.showChart}
-          >Show Chart</sl-tab
-        >
-        <sl-tab
-          slot="nav"
-          panel="data"
-          @click=${() => {
-            this.changeShowData();
-            this.showTeacherOptions = false;
-          }}
-          >Show Data</sl-tab
-        >
-        <sl-tab
-          slot="nav"
-          panel="teacher-options"
-          ?disabled=${!this.isContentEditable}
-          @click=${() => {
-            this.changeShowTeacherOptions();
-            this.showData = false;
-          }}
-          >Teacher Options</sl-tab
-        >
-      </sl-tab-group>
-      <!-- </div> -->
-      ${this.showData &&
-      (this.sharedState.editable || this.sharedState.teacherOptions.showData)
-        ? html`<div id="data-panel">
-            ${this.sharedState.chart.selectedType === "Scatterplot"
-              ? html`<wwci-scatterdataset-input></wwci-scatterdataset-input>`
-              : html`<wwci-dataset-input></wwci-dataset-input>`}
-          </div>`
-        : this.showTeacherOptions && this.sharedState.editable
-        ? html`<div id="teacher-options-panel">
-            <wwci-teacher-options
-              style="display: contents;"
-            ></wwci-teacher-options>
-          </div>`
-        : html` <div id="display-chart">
-            ${getChart(
-              this.sharedState.chart.selectedType,
-              this.sharedState.chart.datasets,
-              this.sharedState.chart.title,
-              this.sharedState.chart.options,
-              this.sharedState.teacherOptions
-            )}
-          </div>`}
-    </div>`;
+            >Editable</sl-checkbox
+          > -->
+          <wwci-chart-settings style="display: contents;"></wwci-chart-settings>
+        </div>
+      </div>
+      <div
+        id="main"
+        @selectstart=${(e: any) => {
+          e.stopPropagation();
+        }}
+        @dragstart=${(e: any) => {
+          e.stopPropagation();
+        }}
+        @click=${() =>
+          this.dispatchEvent(new FocusEvent("focus", { bubbles: true }))}
+        class=${this.sharedState.printable ||
+        (!this.sharedState.editable &&
+          !this.sharedState.teacherOptions.showOptions)
+          ? "print"
+          : ""}
+      >
+        <!-- <div id="button-group"> -->
+        <sl-tab-group>
+          <sl-tab
+            slot="nav"
+            panel="chart"
+            @click=${() => {
+              this.showChart = true;
+              this.showData = false;
+              this.showTeacherOptions = false;
+            }}
+            .active=${this.showChart}
+            >Show Chart</sl-tab
+          >
+          <sl-tab
+            slot="nav"
+            panel="data"
+            @click=${() => {
+              this.changeShowData();
+              this.showTeacherOptions = false;
+            }}
+            >Show Data</sl-tab
+          >
+          <sl-tab
+            slot="nav"
+            panel="teacher-options"
+            ?disabled=${!this.isContentEditable}
+            @click=${() => {
+              this.changeShowTeacherOptions();
+              this.showData = false;
+            }}
+            >Teacher Options</sl-tab
+          >
+        </sl-tab-group>
+        <!-- </div> -->
+        ${this.showData &&
+        (this.sharedState.editable || this.sharedState.teacherOptions.showData)
+          ? html`<div id="data-panel">
+              ${this.sharedState.chart.selectedType === "Scatterplot"
+                ? html`<wwci-scatterdataset-input></wwci-scatterdataset-input>`
+                : html`<wwci-dataset-input></wwci-dataset-input>`}
+            </div>`
+          : this.showTeacherOptions && this.sharedState.editable
+          ? html`<div id="teacher-options-panel">
+              <wwci-teacher-options
+                style="display: contents;"
+              ></wwci-teacher-options>
+            </div>`
+          : html` <div id="display-chart">
+              ${getChart(
+                this.sharedState.chart.selectedType,
+                this.sharedState.chart.datasets,
+                this.sharedState.chart.title,
+                this.sharedState.chart.options,
+                this.sharedState.teacherOptions
+              )}
+            </div>`}
+      </div>`;
   }
 
   updateData(e: CustomEvent) {

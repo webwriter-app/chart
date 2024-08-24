@@ -6,9 +6,11 @@ export const OptionDefinition = {
   listRegressionLine: chartOption("array", false, "Regression Model"),
   hoverTooltip: chartOption("boolean", false, "Hover Tooltip"),
   showGrid: chartOption("boolean", false, "Show Grid"),
-  animation: chartOption("boolean", false, "Animation"),
+  animation: chartOption("boolean", true, "Animation"),
   showCorrelation: chartOption("boolean", false, "Show Correlation"),
   showOutliers: chartOption("boolean", false, "Show Outliers"),
+  showMeanLine: chartOption("boolean", true, "Show Mean"),
+
   /*xMin: chartOption("number", 0, "x Min", undefined, undefined),
     xMax: chartOption("number", 100, "x Max", undefined, undefined),
     yMin: chartOption("number", 0, "y Min", undefined, undefined),
