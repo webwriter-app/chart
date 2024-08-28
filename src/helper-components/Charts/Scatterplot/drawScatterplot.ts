@@ -25,6 +25,7 @@ interface Dimensions {
   };
   min: { x: number; y: number };
   max: { x: number; y: number };
+  ticks: { x: number; y: number };
 }
 
 interface Scales {
@@ -70,16 +71,115 @@ function getScatterplotDataSets(scatterdatasets: ScatterDatasets) {
   };
   return scatterplotdatasets;
 }
+function checkDatasetForScatterplot(
+  datasets: PointOnlyNumbers[][],
+  line_datasets: LineDataSets
+) {
+  let x_axis_data:
+    | "only_positive"
+    | "only_negative"
+    | "both"
+    | "no_data"
+    | undefined = undefined;
+  let y_axis_data:
+    | "only_positive"
+    | "only_negative"
+    | "both"
+    | "no_data"
+    | undefined = undefined;
+  if (datasets.length === 0) {
+    x_axis_data = "no_data";
+    y_axis_data = "no_data";
+  }
+
+  for (let i = 0; i < datasets.length; i++) {
+    const dataset = datasets[i];
+    for (let j = 0; j < dataset.length; j++) {
+      const x = dataset[j].x;
+      const y = dataset[j].y;
+
+      // Check x-axis
+      if (x < 0) {
+        if (x_axis_data === undefined) {
+          x_axis_data = "only_negative";
+        } else if (x_axis_data === "only_positive") {
+          x_axis_data = "both";
+        }
+      } else if (x > 0) {
+        if (x_axis_data === undefined) {
+          x_axis_data = "only_positive";
+        } else if (x_axis_data === "only_negative") {
+          x_axis_data = "both";
+        }
+      }
+
+      // Check y-axis
+      if (y < 0) {
+        if (y_axis_data === undefined) {
+          y_axis_data = "only_negative";
+        } else if (y_axis_data === "only_positive") {
+          y_axis_data = "both";
+        }
+      } else if (y > 0) {
+        if (y_axis_data === undefined) {
+          y_axis_data = "only_positive";
+        } else if (y_axis_data === "only_negative") {
+          y_axis_data = "both";
+        }
+      }
+    }
+  }
+
+  // Check line datasets
+  line_datasets.sets.forEach((line_dataset) => {
+    line_dataset.data.forEach((d) => {
+      const x = d.x;
+      const y = d.y;
+
+      // Check x-axis
+      if (x < 0) {
+        if (x_axis_data === undefined) {
+          x_axis_data = "only_negative";
+        } else if (x_axis_data === "only_positive") {
+          x_axis_data = "both";
+        }
+      } else if (x > 0) {
+        if (x_axis_data === undefined) {
+          x_axis_data = "only_positive";
+        } else if (x_axis_data === "only_negative") {
+          x_axis_data = "both";
+        }
+      }
+
+      // Check y-axis
+      if (y < 0) {
+        if (y_axis_data === undefined) {
+          y_axis_data = "only_negative";
+        } else if (y_axis_data === "only_positive") {
+          y_axis_data = "both";
+        }
+      } else if (y > 0) {
+        if (y_axis_data === undefined) {
+          y_axis_data = "only_positive";
+        } else if (y_axis_data === "only_negative") {
+          y_axis_data = "both";
+        }
+      }
+    });
+  });
+  return { x_axis_data, y_axis_data };
+}
 
 function calculateSVGDimensions(
   data: PointOnlyNumbers[][],
   line_datasets: LineDataSets
 ): Dimensions {
-  // get the max value of the dataset
   let maxX = 0;
   let maxY = 0;
   let minX = 0;
   let minY = 0;
+  let result = checkDatasetForScatterplot(data, line_datasets);
+
   data.forEach((dataset) => {
     maxX = Math.max(...dataset.map((d) => d.x), maxX);
     maxY = Math.max(...dataset.map((d) => d.y), maxY);
@@ -93,34 +193,114 @@ function calculateSVGDimensions(
     minX = Math.min(...line_dataset.data.map((d) => d.x), minX);
     minY = Math.min(...line_dataset.data.map((d) => d.y), minY);
   });
-
-  const roundingFactorX = 10 ** Math.floor(Math.log10(maxX));
-  maxX = Math.ceil(maxX / roundingFactorX) * roundingFactorX;
-
-  const roundingFactorY = 10 ** Math.floor(Math.log10(maxY));
-  maxY = Math.ceil(maxY / roundingFactorY) * roundingFactorY;
+  if (maxX > 0) {
+    const roundingFactorX = 10 ** Math.floor(Math.log10(maxX));
+    maxX = Math.ceil(maxX / roundingFactorX) * roundingFactorX;
+  }
+  if (maxY > 0) {
+    const roundingFactorY = 10 ** Math.floor(Math.log10(maxY));
+    maxY = Math.ceil(maxY / roundingFactorY) * roundingFactorY;
+  }
   // Round the min if the min is negative
 
-  const roundingFactorMinX = 10 ** Math.floor(Math.log10(Math.abs(minX)));
-
-  const roundingFactorMinY = 10 ** Math.floor(Math.log10(Math.abs(minY)));
-  minX < 0
-    ? (minX = Math.floor(minX / roundingFactorMinX) * roundingFactorMinX)
-    : null;
-  minY < 0
-    ? (minY = Math.floor(minY / roundingFactorMinY) * roundingFactorMinY)
-    : null;
+  if (minX < 0) {
+    const roundingFactorX = 10 ** Math.floor(Math.log10(Math.abs(minX)));
+    minX = Math.ceil(Math.abs(minX) / roundingFactorX) * roundingFactorX * -1;
+  }
+  if (minY < 0) {
+    const roundingFactorY = 10 ** Math.floor(Math.log10(Math.abs(minY)));
+    minY = Math.ceil(Math.abs(minY) / roundingFactorY) * roundingFactorY * -1;
+  }
 
   // set the dimensions and margins of the graph
-  const margin = { top: 10, right: 30, bottom: 50, left: 70 },
-    width = 550 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+  const margin = { top: 20, right: 55, bottom: 50, left: 70 },
+    width = 575 - margin.left - margin.right,
+    height = 420 - margin.top - margin.bottom;
+  let tick_x = -1;
+  let tick_y = -1;
+
+  if (result.x_axis_data === "only_negative") {
+    const scales_x = d3.scaleLinear().domain([minX, maxX]).range([0, width]);
+    let tickValues: number[] = scales_x.ticks();
+    if (minX < -1 * 10 ** 3 && minX > -1 * 10 ** 7) {
+      tick_x = 5;
+      tickValues = scales_x.ticks(tick_x);
+    } else if (minX <= -1 * 10 ** 7 && minX > -1 * 10 ** 100) {
+      tick_x = 6;
+      tickValues = scales_x.ticks(tick_x);
+    } else if (minX <= -1 * 10 ** 100) {
+      tick_x = 5;
+      tickValues = scales_x.ticks(tick_x);
+    }
+    // Find the biggest tick value that is not 0
+    const maxTickValue = tickValues.filter((d) => d !== 0).pop();
+    if (maxTickValue !== undefined && maxTickValue < 0) {
+      maxX = maxTickValue * -1;
+    }
+  }
+  if (result.x_axis_data === "only_positive") {
+    if (maxX > 10 ** 3 && maxX < 10 ** 7) {
+      tick_x = 5;
+    } else if (maxX >= 10 ** 7 && maxX < 10 ** 100) {
+      tick_x = 6;
+    } else if (maxX >= 10 ** 100) {
+      tick_x = 5;
+    }
+  }
+  if (result.x_axis_data === "both") {
+    if (maxX - minX > 10 ** 3 && maxX - minX < 10 ** 7) {
+      tick_x = 5;
+    } else if (maxX - minX >= 10 ** 7 && maxX - minX < 10 ** 100) {
+      tick_x = 6;
+    } else if (maxX - minX >= 10 ** 100) {
+      tick_x = 5;
+    }
+  }
+
+  if (result.y_axis_data === "only_negative") {
+    const scales_y = d3.scaleLinear().domain([minY, maxY]).range([height, 0]);
+    let tickValues: number[] = scales_y.ticks();
+    if (minY < -1 * 10 ** 3 && minY > -1 * 10 ** 5) {
+      tick_y = 5;
+      tickValues = scales_y.ticks(tick_y);
+    } else if (minY <= -1 * 10 ** 5 && minY > -1 * 10 ** 100) {
+      tick_y = 6;
+      tickValues = scales_y.ticks(tick_y);
+    } else if (minY <= -1 * 10 ** 100) {
+      tick_y = 5;
+      tickValues = scales_y.ticks(tick_y);
+    }
+    // Find the biggest tick value that is not 0
+    const maxTickValue = tickValues.filter((d) => d !== 0).pop();
+    if (maxTickValue !== undefined && maxTickValue < 0) {
+      maxY = maxTickValue * -1;
+    }
+  }
+  if (result.y_axis_data === "only_positive") {
+    if (maxY > 10 ** 3 && maxY < 10 ** 5) {
+      tick_y = 5;
+    } else if (maxY >= 10 ** 5 && maxY < 10 ** 100) {
+      tick_y = 6;
+    } else if (maxY >= 10 ** 100) {
+      tick_y = 5;
+    }
+  }
+  if (result.y_axis_data === "both") {
+    if (maxY - minY > 10 ** 3 && maxY - minY < 10 ** 5) {
+      tick_y = 5;
+    } else if (maxY - minY >= 10 ** 5 && maxY - minY < 10 ** 100) {
+      tick_y = 6;
+    } else if (maxY - minY >= 10 ** 100) {
+      tick_y = 5;
+    }
+  }
   return {
     height,
     width,
     margin,
     min: { x: minX, y: minY },
     max: { x: maxX, y: maxY },
+    ticks: { x: tick_x, y: tick_y },
   };
 }
 
@@ -162,6 +342,17 @@ function createSVG(
 
   return svg;
 }
+// Custom tick format for x-axis when the max value > 10^7 or min value < -10^7
+// Custom tick format for y-axis when the max value > 10^5 or min value < -10^5
+function customTickFormatForAxis(d) {
+  if (d !== 0) {
+    const exponent = Math.floor(Math.log10(Math.abs(d)));
+    const mantissa = (d / Math.pow(10, exponent)).toFixed(1); // 1 decimal places
+    return `${mantissa}e${exponent}`;
+  } else {
+    return d;
+  }
+}
 
 function drawAxis(
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -175,72 +366,187 @@ function drawAxis(
   maxX: number,
   maxY: number,
   minX: number,
-  minY: number
+  minY: number,
+  ticksX: number,
+  ticksY: number,
+  datasets_count: number,
+  lineDatasets_count: number,
+  x_axis_type: string,
+  y_axis_type: string
 ) {
-  // Add X axis
-  // 3: < 10^12
-  // 4: from 10^6 to 8*10^9
-  // 5: from 10^3 to 10^6
-  let s_x = -1;
-  //TODO: idea for y axis
-  let gx = svg.append("g").attr("transform", "translate(0," + height + ")");
-  if (maxX - minX > 10 ** 3 && maxX - minX <= 10 ** 4) {
-    s_x = 5;
-  } else if (maxX - minX > 10 ** 4 && maxX - minX <= 8 * 10 ** 9) {
-    s_x = 4;
-  } else if (maxX - minX > 8 * 10 ** 9 && maxX - minX <= 10 ** 12) {
-    s_x = 3;
-  } else if (maxX - minX > 10 ** 12 && maxX - minX <= 4 * 10 ** 16) {
-    s_x = 2;
-  } else if (maxX - minX > 4 * 10 ** 16 && maxX - minX <= 10 ** 17) {
-    s_x = 1;
-  } else if (maxX - minX > 10 ** 17 && maxX - minX <= 10 ** 18) {
-    s_x = 2;
-  } else if (maxX - minX > 10 ** 18) {
-    s_x = 1.5;
-  }
-  s_x === -1
-    ? gx.call(d3.axisBottom(scales.x))
-    : gx.call(d3.axisBottom(scales.x).tickArguments([s_x]));
+  const gx = svg
+    .append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .style("color", "#a29e9e");
+  const gy = svg.append("g").style("color", "#a29e9e");
+  // count the points in datasets
+  if (
+    x_axis_type === "noSelectedDataset" &&
+    y_axis_type === "noSelectedDataset" &&
+    lineDatasets_count === 0
+  ) {
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", height / 2)
+      .attr("text-anchor", "middle")
+      .text("Please select at least one dataset");
+  } else if (
+    (x_axis_type === "none" || y_axis_type === "none") &&
+    lineDatasets_count === 0
+  ) {
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", height / 2)
+      .attr("text-anchor", "middle")
+      .text("Please select x and y axis");
+  } else if (datasets_count === 0 && lineDatasets_count === 0) {
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", height / 2)
+      .attr("text-anchor", "middle")
+      .text("Please add data to the selected dataset(s)");
+  } else {
+    // Get the ticks from the scale directly
+    const tickValues_x =
+      ticksX === -1 ? scales.x.ticks() : scales.x.ticks(ticksX);
+    // Case only negative values or both
+    if (minX < 0 && maxX >= 0) {
+      // Ensure 0 is in the tick values
 
-  svg
-    .append("text")
-    .attr("class", "x label")
-    .attr("text-anchor", "middle")
-    .attr("x", width / 2)
-    .attr("y", height + 40)
-    .attr("style", "text-align: center;")
-    .text(axisLabels.x);
+      // Ensure 0 is included in the tick values
+      if (!tickValues_x.includes(0)) {
+        tickValues_x.push(0);
+      }
 
-  // Add Y axis
-  const gy = svg.append("g");
-  let s_y = -1;
-  if (maxY - minY > 10 ** 3 && maxY - minY <= 10 ** 4) {
-    s_y = 5;
-  } else if (maxY - minY > 10 ** 4 && maxY - minY <= 8 * 10 ** 9) {
-    s_y = 4;
-  } else if (maxY - minY > 8 * 10 ** 9 && maxY - minY <= 10 ** 12) {
-    s_y = 3;
-  } else if (maxY - minY > 10 ** 12 && maxY - minY <= 4 * 10 ** 16) {
-    s_y = 2;
-  } else if (maxY - minY > 4 * 10 ** 16 && maxY - minY <= 10 ** 17) {
-    s_y = 1;
-  } else if (maxY - minY > 10 ** 17 && maxY - minY <= 10 ** 18) {
-    s_y = 2;
-  } else if (maxY - minY > 10 ** 18) {
-    s_y = 1.5;
+      // Sort the tick values to maintain the correct order
+      tickValues_x.sort((a, b) => a - b);
+      if (maxX === 0) {
+        // Apply the axis with the custom tick values
+        minX >= -1 * 10 ** 7
+          ? gx.call(d3.axisBottom(scales.x).tickValues(tickValues_x))
+          : gx.call(
+              d3
+                .axisBottom(scales.x)
+                .tickFormat(customTickFormatForAxis)
+                .tickValues(tickValues_x)
+            ); // Use the custom tick format
+      } else {
+        // Apply the axis with the custom tick values
+        maxX - minX < 1 * 10 ** 7
+          ? gx.call(d3.axisBottom(scales.x).tickValues(tickValues_x))
+          : gx.call(
+              d3
+                .axisBottom(scales.x)
+                .tickFormat(customTickFormatForAxis)
+                .tickValues(tickValues_x)
+            ); // Use the custom tick format
+      }
+      svg
+        .append("line")
+        .attr("x1", scales.x(0))
+        .attr("y1", scales.y(minY))
+        .attr("x2", scales.x(0))
+        .attr("y2", scales.y(maxY))
+        .attr("class", "line-x")
+        .style("stroke", "#000000")
+        .style("stroke-width", 0.7)
+        .style("opacity", 1);
+    } else if (minX === 0 && maxX > 0) {
+      // only positive values
+      maxX < 10 ** 7
+        ? gx.call(d3.axisBottom(scales.x).tickValues(tickValues_x))
+        : gx.call(
+            d3
+              .axisBottom(scales.x)
+              .tickFormat(customTickFormatForAxis)
+              .tickValues(tickValues_x)
+          ); // Use the custom tick format
+    } else if (minX === 0 && maxX === 0) {
+      // only 0
+      gx.call(d3.axisBottom(scales.x));
+    }
+    svg
+      .append("text")
+      .attr("class", "x label")
+      .attr("text-anchor", "middle")
+      .attr("x", width / 2)
+      .attr("y", height + 40)
+      .attr("style", "text-align: center;")
+      .text(axisLabels.x ? axisLabels.x : "X-axis");
+
+    // Add Y axis
+
+    // Get the ticks from the scale directly
+    const tickValues_y =
+      ticksY === -1 ? scales.y.ticks() : scales.y.ticks(ticksY);
+    // Case only negative values or both
+    if (minY < 0 && maxY >= 0) {
+      // Ensure 0 is in the tick values
+
+      // Ensure 0 is included in the tick values
+      if (!tickValues_y.includes(0)) {
+        tickValues_y.push(0);
+      }
+
+      // Sort the tick values to maintain the correct order
+      tickValues_y.sort((a, b) => a - b);
+      if (maxY === 0) {
+        // Apply the axis with the custom tick values
+        minY >= -1 * 10 ** 5
+          ? gy.call(d3.axisLeft(scales.y).tickValues(tickValues_y))
+          : gy.call(
+              d3
+                .axisLeft(scales.y)
+                .tickFormat(customTickFormatForAxis)
+                .tickValues(tickValues_y)
+            ); // Use the custom tick format
+      } else {
+        // Apply the axis with the custom tick values
+        maxY - minY < 1 * 10 ** 5
+          ? gy.call(d3.axisLeft(scales.y).tickValues(tickValues_y))
+          : gy.call(
+              d3
+                .axisLeft(scales.y)
+                .tickFormat(customTickFormatForAxis)
+                .tickValues(tickValues_y)
+            ); // Use the custom tick format
+      }
+      svg
+        .append("line")
+        .attr("x1", scales.x(minX))
+        .attr("y1", scales.y(0))
+        .attr("x2", scales.x(maxX))
+        .attr("y2", scales.y(0))
+        .attr("class", "line-y")
+        .style("stroke", "#080808")
+        .style("stroke-width", 0.7)
+        .style("opacity", 1);
+    } else if (minY === 0 && maxY > 0) {
+      // only positive values
+      maxY < 10 ** 5
+        ? gy.call(d3.axisLeft(scales.y).tickValues(tickValues_y))
+        : gy.call(
+            d3
+              .axisLeft(scales.y)
+              .tickFormat(customTickFormatForAxis)
+              .tickValues(tickValues_y)
+          ); // Use the custom tick format
+    } else if (minY === 0 && maxY === 0) {
+      // only 0
+      gy.call(d3.axisLeft(scales.y));
+    }
+    svg
+      .append("text")
+      .attr("class", "y label")
+      .attr("text-anchor", "middle")
+      .attr("x", -((height + margin.bottom) / 2)) // to my x axis
+      .attr("y", maxY - minY <= 1999 ? -50 : maxY - minY <= 9999 ? -52 : -57) // to my y axis
+      .attr("transform", "rotate(-90)")
+      .text(axisLabels.y ? axisLabels.y : "Y-axis");
   }
-  s_y === -1
-    ? gy.call(d3.axisLeft(scales.y))
-    : gy.call(d3.axisLeft(scales.y).tickArguments([s_y]));
-  svg
-    .append("text")
-    .attr("class", "y label")
-    .attr("text-anchor", "middle")
-    .attr("x", -((height + margin.bottom) / 2)) // to my x axis
-    .attr("y", -40) // to my y axis
-    .attr("transform", "rotate(-90)")
-    .text(axisLabels.y);
   return { gx, gy };
 }
 
@@ -259,6 +565,17 @@ function createTooltip(parent: Element) {
     .style("padding", "10px");
 }
 
+// Custom tick format for x-axis when the max value > 10^7 or min value < -10^7
+function customFormatForBigNumber(d, decimal: number) {
+  if (d !== 0) {
+    const exponent = Math.floor(Math.log10(Math.abs(d)));
+    const mantissa = roundNumber(d / Math.pow(10, exponent), decimal); // 4 decimal places
+    return `${mantissa}e${exponent}`;
+  } else {
+    return d;
+  }
+}
+
 function drawScatterplot(
   root: Element,
   datasets: PointOnlyNumbers[][],
@@ -268,7 +585,11 @@ function drawScatterplot(
     showOutliers: boolean;
     hoverCursorChange: boolean;
   },
-  line_datasets: LineDataSets
+  line_datasets: LineDataSets,
+  datasets_count: number,
+  lineDatasets_count: number,
+  x_axis_type: string,
+  y_axis_type: string
 ) {
   const dimensions = calculateSVGDimensions(datasets, line_datasets);
   const svg = createSVG(
@@ -297,107 +618,130 @@ function drawScatterplot(
     dimensions.max.x,
     dimensions.max.y,
     dimensions.min.x,
-    dimensions.min.y
+    dimensions.min.y,
+    dimensions.ticks.x,
+    dimensions.ticks.y,
+    datasets_count,
+    lineDatasets_count,
+    x_axis_type,
+    y_axis_type
   );
   const tooltip = createTooltip(root);
-
   // For normal scatter plot
   const scatter = svg.append("g");
+
   // Draw points in the scatter plot
-  for (let i = 0; i < datasets.length; i++) {
-    const dataset = datasets[i];
-    drawPoints(scatter, dataset, i, scales);
-    // Hover points to make them bigger and show tooltip
-    scatter
-      .selectAll(`circle.dataset-${i}`)
-      .on("mouseover", function (_e, d: PointOnlyNumbers) {
-        if (options.hoverCursorChange) {
-          d3.select(this).attr("r", 8);
-          // Change the cursor to move
-          d3.select(this).style("cursor", "move");
-        }
-        // Show tooltip
-        if (options.hoverTooltip) {
-          tooltip
-            .style("opacity", 1)
-            .html(
-              "ID: " +
-                d.id +
-                "<br/>" +
-                axisLabels.x +
-                ": " +
-                d.x +
-                " " +
-                axisLabels.y +
-                ": " +
-                d.y
-            );
-        }
-      })
-      .on("mousemove", (e) => {
-        tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
-      })
-      .on("mouseleave", function () {
-        d3.select(this).attr("r", 7);
-        // Change the cursor back to normal
-        d3.select(this).style("cursor", "default");
-        // Hide tooltip
-        tooltip.transition().duration(200).style("opacity", 0);
-      });
-
-    // Show outliers for each dataset
-    if (options.showOutliers) {
-      const datasetLabel = dataset[0].scatter_titel;
-      // Find outliers using the IQR method
-      const q1_y = d3.quantile(
-        dataset.map((d) => d.y).sort(d3.ascending),
-        0.25
-      );
-      const q3_y = d3.quantile(
-        dataset.map((d) => d.y).sort(d3.ascending),
-        0.75
-      );
-      const iqr_y = q3_y - q1_y;
-      const min_y = q1_y - 1.5 * iqr_y;
-      const max_y = q3_y + 1.5 * iqr_y;
-      const outliers_y = dataset.filter((d) => d.y < min_y || d.y > max_y);
-
-      const q1_x = d3.quantile(
-        dataset.map((d) => d.x).sort(d3.ascending),
-        0.25
-      );
-      const q3_x = d3.quantile(
-        dataset.map((d) => d.x).sort(d3.ascending),
-        0.75
-      );
-      const iqr_x = q3_x - q1_x;
-      const min_x = q1_x - 1.5 * iqr_x;
-      const max_x = q3_x + 1.5 * iqr_x;
-      const outliers_x = dataset.filter((d) => d.x < min_x || d.x > max_x);
-
-      const outliers = outliers_x.concat(outliers_y);
+  if (datasets_count > 0 && x_axis_type !== "none" && y_axis_type !== "none") {
+    for (let i = 0; i < datasets.length; i++) {
+      const dataset = datasets[i];
+      drawPoints(scatter, dataset, i, scales);
+      // Hover points to make them bigger and show tooltip
       scatter
         .selectAll(`circle.dataset-${i}`)
-        .data(outliers, (d: PointOnlyNumbers) => `${d.x}-${d.y}`) // Assuming x and y uniquely identify each circle
-        .style("fill", "#f9080c")
-        .style("opacity", 1)
-        .on("mouseover", (event, d) => {
-          tooltip
-            .style("opacity", 1)
-            .html(
-              `${datasetLabel ? "Outlier of " + datasetLabel : "Outlier"}<br>${
-                axisLabels.x
-              }: ${d.x} ${axisLabels.y}: ${d.y}`
-            )
-            .style("left", `${event.pageX + 10}px`)
-            .style("top", `${event.pageY + 10}px`);
+        .on("mouseover", function (_e, d: PointOnlyNumbers) {
+          if (options.hoverCursorChange) {
+            d3.select(this).attr("r", 8);
+            // Change the cursor to move
+            d3.select(this).style("cursor", "move");
+          }
+          const dx: number =
+            Math.abs(d.x) < 10 ** 7
+              ? roundNumber(d.x, 4)
+              : customFormatForBigNumber(d.x, 4);
+          const dy: number =
+            Math.abs(d.y) < 10 ** 5
+              ? roundNumber(d.y, 4)
+              : customFormatForBigNumber(d.y, 4);
+          // Show tooltip
+          if (options.hoverTooltip) {
+            tooltip
+              .style("opacity", 1)
+              .html(
+                "ID: " +
+                  d.id +
+                  "<br/>" +
+                  axisLabels.x +
+                  ": " +
+                  dx +
+                  " " +
+                  axisLabels.y +
+                  ": " +
+                  dy
+              );
+          }
         })
-        .on("mouseleave", () => {
+        .on("mousemove", (e) => {
+          tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
+        })
+        .on("mouseleave", function () {
+          d3.select(this).attr("r", 7);
+          // Change the cursor back to normal
+          d3.select(this).style("cursor", "default");
+          // Hide tooltip
           tooltip.transition().duration(200).style("opacity", 0);
         });
+
+      // Show outliers for each dataset
+      if (options.showOutliers) {
+        const datasetLabel = dataset[0].scatter_titel;
+        // Find outliers using the IQR method
+        const q1_y = d3.quantile(
+          dataset.map((d) => d.y).sort(d3.ascending),
+          0.25
+        );
+        const q3_y = d3.quantile(
+          dataset.map((d) => d.y).sort(d3.ascending),
+          0.75
+        );
+        const iqr_y = q3_y - q1_y;
+        const min_y = q1_y - 1.5 * iqr_y;
+        const max_y = q3_y + 1.5 * iqr_y;
+        const outliers_y = dataset.filter((d) => d.y < min_y || d.y > max_y);
+
+        const q1_x = d3.quantile(
+          dataset.map((d) => d.x).sort(d3.ascending),
+          0.25
+        );
+        const q3_x = d3.quantile(
+          dataset.map((d) => d.x).sort(d3.ascending),
+          0.75
+        );
+        const iqr_x = q3_x - q1_x;
+        const min_x = q1_x - 1.5 * iqr_x;
+        const max_x = q3_x + 1.5 * iqr_x;
+        const outliers_x = dataset.filter((d) => d.x < min_x || d.x > max_x);
+
+        const outliers = outliers_x.concat(outliers_y);
+        scatter
+          .selectAll(`circle.dataset-${i}`)
+          .data(outliers, (d: PointOnlyNumbers) => `${d.x}-${d.y}`) // Assuming x and y uniquely identify each circle
+          .style("fill", "#f9080c")
+          .style("opacity", 1)
+          .on("mouseover", (event, d) => {
+            const dx: number =
+              Math.abs(d.x) < 10 ** 7
+                ? roundNumber(d.x, 4)
+                : customFormatForBigNumber(d.x, 4);
+            const dy: number =
+              Math.abs(d.y) < 10 ** 5
+                ? roundNumber(d.y, 4)
+                : customFormatForBigNumber(d.y, 4);
+            tooltip
+              .style("opacity", 1)
+              .html(
+                `${
+                  datasetLabel ? "Outlier of " + datasetLabel : "Outlier"
+                }<br>${axisLabels.x}: ${dx} ${axisLabels.y}: ${dy}`
+              )
+              .style("left", `${event.pageX + 10}px`)
+              .style("top", `${event.pageY + 10}px`);
+          })
+          .on("mouseleave", () => {
+            tooltip.transition().duration(200).style("opacity", 0);
+          });
+      }
     }
   }
-
   return { svg, scales, scatter, dimensions, tooltip };
 }
 function findIndexForPoint(
@@ -626,8 +970,10 @@ function findTheLastMatchIndexInSPDatasets(
   for (let i = datasets.sets.length - 1; i >= 0; i--) {
     const dataset = datasets.sets[i];
     if (
-      dataset.scatter_titel === closestPoint.scatter_titel &&
-      dataset.ids.includes(closestPoint.id) &&
+      (closestPoint.scatter_titel !== ""
+        ? dataset.scatter_titel === closestPoint.scatter_titel
+        : true) &&
+      (closestPoint.id ? dataset.ids.includes(closestPoint.id) : true) &&
       dataset.dimensional_data.some(
         (point) =>
           point.x === closestPoint.x &&
@@ -744,29 +1090,45 @@ function addGridListeners(
   grid_x.selectAll(".domain").remove(); // Important, since the activities on point are not working
   grid_y.selectAll(".domain").remove();
 }
-//TODO: Fix any type
+function roundNumber(num: number, decimal: number): number {
+  // if the number with less than 4 decimal places, return the number
+  const [_, decimalPart] = num.toString().split(".");
+
+  // If there is no decimal part or it's length is less than or equal to 4, return the original number
+  if (!decimalPart || decimalPart.length <= 4) {
+    return num;
+  }
+  // else fix the number to .. decimal places
+  return (num.toFixed(decimal) as unknown as number) > 0
+    ? Math.abs(num.toFixed(decimal) as unknown as number)
+    : -Math.abs(num.toFixed(decimal) as unknown as number);
+}
+//TODO: Must delete the exponential form scince the library is not working correctly
+//TODO: Research for the regression model, which one is important
 function addRegressionLine(
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   scales: Scales,
   dataset: PointOnlyNumbers[],
-  regressionType: string
-) {
-  let regression;
+  regressionType: string,
+  color: string
+): { regressionFormula: string; regressionError: boolean } {
+  let regression: d3regression.Regression | undefined;
   let regressionFormula = "";
   let regressionError = false;
+  let requiredPoints = 2; // Default to 2 for most regression types
+
   switch (regressionType) {
     case "none":
-      break;
+      return { regressionFormula, regressionError };
     case "linear":
       regression = d3regression.regressionLinear();
       break;
     case "quadratic":
+      requiredPoints = 3;
       regression = d3regression.regressionQuad();
       break;
-    case "exponential":
-      regression = d3regression.regressionExp();
-      break;
-    case "polynomial":
+    /*case "polynomial":
+      requiredPoints = 4;
       regression = d3regression.regressionPoly().order(3);
       break;
     case "logarithmic":
@@ -774,106 +1136,122 @@ function addRegressionLine(
       break;
     case "power":
       regression = d3regression.regressionPow();
-      break;
+      break;*/
     case "loess":
       regression = d3regression.regressionLoess().bandwidth(0.2);
       break;
   }
+
+  if (!regression || dataset.length < requiredPoints) {
+    regressionError = true;
+    regressionFormula = `Cannot perform ${regressionType} regression: Insufficient data points.`;
+    return { regressionFormula, regressionError };
+  }
+
   regression = regression.x((d) => d.x).y((d) => d.y);
+
+  // Render the regression line
   const line = d3
     .line()
     .x((d) => scales.x(d[0]))
     .y((d) => scales.y(d[1]));
+
+  const regressionData = regression(dataset);
+
   svg
     .append("path")
-    .datum(regression(dataset))
+    .datum(regressionData)
     .attr("fill", "none")
-    .attr("stroke", dataset[0]?.color ?? "#69b3a2")
+    .attr("stroke", color)
     .attr("stroke-width", 1.5)
     .attr("d", line);
 
-  const regressionData = regression(dataset);
-  if (regressionData) {
-    switch (regressionType) {
-      case "none":
-        break;
-      case "linear":
-        regressionError = dataset.length < 2;
-        if (regressionError)
-          regressionFormula =
-            "Cannot perform linear regression: Insufficient data points.";
-        else
-          regressionFormula = `y = ${regressionData.a.toFixed(
-            2
-          )}x + ${regressionData.b.toFixed(2)}`;
-        break;
-      case "quadratic":
-        regressionError = dataset.length < 3;
-        if (regressionError)
-          regressionFormula =
-            "Cannot perform quadratic regression: Insufficient data points.";
-        else
-          regressionFormula = `y = ${regressionData.a.toFixed(
-            2
-          )}x^2 + ${regressionData.b.toFixed(2)}x + ${regressionData.c.toFixed(
-            2
-          )}`;
-        break;
-      case "exponential":
-        regressionError = dataset.length < 2;
-        if (regressionError)
-          regressionFormula =
-            "Cannot perform exponential regression: Insufficient data points.";
-        else
-          regressionFormula = `y = ${regressionData.a.toFixed(
-            2
-          )}e^(${regressionData.b.toFixed(2)}x)`;
-        break;
-      case "polynomial":
-        regressionError = dataset.length < 4;
-        if (regressionError) {
-          regressionFormula =
-            "Cannot perform polynomial regression: Insufficient data points.";
-          break;
-        }
-        let coeffients = regressionData.coefficients;
-        let formula = "y = ";
-        for (let i = 0; i < coeffients.length; i++) {
-          formula += coeffients[i].toFixed(2) + "x^" + (3 - i) + " + ";
-        }
-        regressionFormula = formula.slice(0, -2);
-        break;
-      case "logarithmic":
-        regressionError = dataset.length < 2;
-        if (regressionError)
-          regressionFormula =
-            "Cannot perform logarithmic regression: Insufficient data points.";
-        else
-          regressionFormula = `y = ${regressionData.a.toFixed(
-            2
-          )}ln(x) + ${regressionData.b.toFixed(2)}`;
-        break;
-      case "power":
-        regressionError = dataset.length < 2;
-        if (regressionError)
-          regressionFormula =
-            "Cannot perform power regression: Insufficient data points.";
-        else
-          regressionFormula = `y = ${regressionData.a.toFixed(
-            2
-          )}x^${regressionData.b.toFixed(2)}`;
-        break;
-      case "loess":
-        regressionError = dataset.length < 2;
-        if (regressionError)
-          regressionFormula =
-            "Cannot perform loess regression: Insufficient data points.";
-        else regressionFormula = `LOESS curve`;
-        break;
-    }
+  // Generate the regression formula string
+  switch (regressionType) {
+    case "linear":
+      regressionFormula = `y = ${
+        Math.abs(regressionData.a) > 10 ** 7
+          ? customFormatForBigNumber(regressionData.a, 4)
+          : roundNumber(regressionData.a, 4)
+      }x  ${
+        roundNumber(regressionData.b, 4) > 0
+          ? ` + ${
+              Math.abs(regressionData.b) > 10 ** 7
+                ? customFormatForBigNumber(regressionData.b, 4)
+                : roundNumber(regressionData.b, 4)
+            }`
+          : ` - ${
+              Math.abs(regressionData.b) > 10 ** 7
+                ? customFormatForBigNumber(Math.abs(regressionData.b), 4)
+                : roundNumber(Math.abs(regressionData.b), 4)
+            }`
+      }`;
+      break;
+    /*case "quadratic":
+      regressionFormula = `y = ${roundNumber(regressionData.a, 4)}x^2 ${
+        roundNumber(regressionData.b, 4) > 0
+          ? ` + ${roundNumber(regressionData.b, 4)}x`
+          : ` - ${Math.abs(roundNumber(regressionData.b, 4))}x`
+      } ${
+        roundNumber(regressionData.c, 4) > 0
+          ? ` + ${roundNumber(regressionData.c, 4)}`
+          : ` - ${Math.abs(roundNumber(regressionData.c, 4))}`
+      }`;
+
+      break;
+    case "polynomial":
+      regressionFormula = regressionData.coefficients
+        .reverse()
+        .map((coeff, i) => {
+          const sign = coeff >= 0 ? "+" : "-";
+          const formattedCoeff = Math.abs(roundNumber(coeff, 4)); // Use absolute value for the coefficient
+          const exponent = 3 - i;
+          if (i < 3) {
+            // Construct the term with the correct sign
+            return ` ${exponent === 3 ? "" : sign} ${
+              exponent === 3 ? roundNumber(coeff, 4) : formattedCoeff
+            }x^${exponent}`;
+          } else {
+            return `${sign} ${formattedCoeff}`;
+          }
+        })
+        .join(" ");
+      regressionFormula = `y = ${regressionFormula}`;
+
+      break;
+    case "logarithmic":
+      if (
+        roundNumber(regressionData.a, 4) &&
+        roundNumber(regressionData.b, 4)
+      ) {
+        regressionFormula = `y = ${roundNumber(regressionData.a, 4)} ln(x) ${
+          roundNumber(regressionData.b, 4) > 0
+            ? ` + ${roundNumber(regressionData.b, 4)}`
+            : ` - ${Math.abs(roundNumber(regressionData.b, 4))}`
+        }`;
+      } else {
+        regressionFormula = `y = ? ln(x) + ?`;
+      }
+
+      break;
+    case "power":
+      if (regressionData.a && regressionData.b) {
+        regressionFormula = `y = ${roundNumber(
+          regressionData.a,
+          4
+        )} x^${roundNumber(regressionData.b, 4)}`;
+      } else {
+        regressionFormula = `y = ? x^?`;
+      }
+      break;*/
+    case "loess":
+      regressionFormula = `LOESS curve`;
+      break;
   }
+
   return { regressionFormula, regressionError };
 }
+
 function calculateCorrelation(dataset: PointOnlyNumbers[]) {
   const n = dataset.length;
   const x_mean = d3.mean(dataset.map((d) => d.x));
@@ -1268,6 +1646,69 @@ function updateColorForFilter(
   }
 }
 /*  */
+function checkDatasetForScatterplot_singleDataset(
+  data_for_x_axis_copy: { x: number | string; y: number | string }[],
+  data_for_y_axis_copy: { x: number | string; y: number | string }[],
+  x_axis_type: string,
+  y_axis_type: string
+) {
+  let x_axis_data:
+    | "only_positive"
+    | "only_negative"
+    | "both"
+    | "no_data"
+    | undefined = undefined;
+  let y_axis_data:
+    | "only_positive"
+    | "only_negative"
+    | "both"
+    | "no_data"
+    | undefined = undefined;
+  if (data_for_x_axis_copy.length === 0) {
+    x_axis_data = "no_data";
+  }
+  if (data_for_y_axis_copy.length === 0) {
+    y_axis_data = "no_data";
+  }
+  if (x_axis_type === "number") {
+    data_for_x_axis_copy.forEach((dataset) => {
+      if (Number(dataset.x) > 0) {
+        if (x_axis_data === undefined) {
+          x_axis_data = "only_positive";
+        } else if (x_axis_data === "only_negative") {
+          x_axis_data = "both";
+        }
+      }
+      if (Number(dataset.x) < 0) {
+        if (x_axis_data === undefined) {
+          x_axis_data = "only_negative";
+        } else if (x_axis_data === "only_positive") {
+          x_axis_data = "both";
+        }
+      }
+    });
+  }
+  if (y_axis_type === "number") {
+    data_for_y_axis_copy.forEach((dataset) => {
+      if (Number(dataset.y) > 0) {
+        if (y_axis_data === undefined) {
+          y_axis_data = "only_positive";
+        } else if (y_axis_data === "only_negative") {
+          y_axis_data = "both";
+        }
+      }
+      if (Number(dataset.y) < 0) {
+        if (y_axis_data === undefined) {
+          y_axis_data = "only_negative";
+        } else if (y_axis_data === "only_positive") {
+          y_axis_data = "both";
+        }
+      }
+    });
+  }
+  return { x_axis_data, y_axis_data };
+}
+
 //  get the max value of the dataset
 function calculateSVGDimensions_singleDataset(
   data_for_x_axis_copy: { x: number | string; y: number | string }[],
@@ -1279,6 +1720,12 @@ function calculateSVGDimensions_singleDataset(
   let maxY = 0;
   let minX = 0;
   let minY = 0;
+  const result = checkDatasetForScatterplot_singleDataset(
+    data_for_x_axis_copy,
+    data_for_y_axis_copy,
+    x_axis_type,
+    y_axis_type
+  );
   if (x_axis_type === "number") {
     data_for_x_axis_copy.forEach((dataset) => {
       maxX = Math.max(maxX, Number(dataset.x));
@@ -1292,30 +1739,112 @@ function calculateSVGDimensions_singleDataset(
       minY = Math.min(minY, Number(dataset.y));
     });
   }
-  const roundingFactorX = 10 ** Math.floor(Math.log10(maxX));
-  maxX = Math.ceil(maxX / roundingFactorX) * roundingFactorX;
-
-  const roundingFactorY = 10 ** Math.floor(Math.log10(maxY));
-  maxY = Math.ceil(maxY / roundingFactorY) * roundingFactorY;
+  if (maxX > 0) {
+    const roundingFactorX = 10 ** Math.floor(Math.log10(maxX));
+    maxX = Math.ceil(maxX / roundingFactorX) * roundingFactorX;
+  }
+  if (maxY > 0) {
+    const roundingFactorY = 10 ** Math.floor(Math.log10(maxY));
+    maxY = Math.ceil(maxY / roundingFactorY) * roundingFactorY;
+  }
   // Round the min if the min is negative
-  const roundingFactorMinX = 10 ** Math.floor(Math.log10(Math.abs(minX)));
-  const roundingFactorMinY = 10 ** Math.floor(Math.log10(Math.abs(minY)));
-  minX < 0
-    ? (minX = Math.floor(minX / roundingFactorMinX) * roundingFactorMinX)
-    : null;
-  minY < 0
-    ? (minY = Math.floor(minY / roundingFactorMinY) * roundingFactorMinY)
-    : null;
+  if (minX < 0) {
+    const roundingFactorX = 10 ** Math.floor(Math.log10(Math.abs(minX)));
+    minX = Math.ceil(Math.abs(minX) / roundingFactorX) * roundingFactorX * -1;
+  }
+  if (minY < 0) {
+    const roundingFactorY = 10 ** Math.floor(Math.log10(Math.abs(minY)));
+    minY = Math.ceil(Math.abs(minY) / roundingFactorY) * roundingFactorY * -1;
+  }
   // set the dimensions and margins of the graph
-  const margin = { top: 10, right: 30, bottom: 50, left: 70 },
-    width = 550 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+  const margin = { top: 20, right: 55, bottom: 50, left: 70 },
+    width = 575 - margin.left - margin.right,
+    height = 420 - margin.top - margin.bottom;
+  let tick_x = -1;
+  let tick_y = -1;
+  if (result.x_axis_data === "only_negative") {
+    const scales_x = d3.scaleLinear().domain([minX, maxX]).range([0, width]);
+    let tickValues: number[] = scales_x.ticks();
+    if (minX < -1 * 10 ** 3 && minX > -1 * 10 ** 7) {
+      tick_x = 5;
+      tickValues = scales_x.ticks(tick_x);
+    } else if (minX <= -1 * 10 ** 7 && minX > -1 * 10 ** 100) {
+      tick_x = 6;
+      tickValues = scales_x.ticks(tick_x);
+    } else if (minX <= -1 * 10 ** 100) {
+      tick_x = 5;
+      tickValues = scales_x.ticks(tick_x);
+    }
+    // Find the biggest tick value that is not 0
+    const maxTickValue = tickValues.filter((d) => d !== 0).pop();
+    if (maxTickValue !== undefined && maxTickValue < 0) {
+      maxX = maxTickValue * -1;
+    }
+  }
+  if (result.x_axis_data === "only_positive") {
+    if (maxX > 10 ** 3 && maxX < 10 ** 7) {
+      tick_x = 5;
+    } else if (maxX >= 10 ** 7 && maxX < 10 ** 100) {
+      tick_x = 6;
+    } else if (maxX >= 10 ** 100) {
+      tick_x = 5;
+    }
+  }
+  if (result.x_axis_data === "both") {
+    if (maxX - minX > 10 ** 3 && maxX - minX < 10 ** 7) {
+      tick_x = 5;
+    } else if (maxX - minX >= 10 ** 7 && maxX - minX < 10 ** 100) {
+      tick_x = 6;
+    } else if (maxX - minX >= 10 ** 100) {
+      tick_x = 5;
+    }
+  }
+
+  if (result.y_axis_data === "only_negative") {
+    const scales_y = d3.scaleLinear().domain([minY, maxY]).range([height, 0]);
+    let tickValues: number[] = scales_y.ticks();
+    if (minY < -1 * 10 ** 3 && minY > -1 * 10 ** 5) {
+      tick_y = 5;
+      tickValues = scales_y.ticks(tick_y);
+    } else if (minY <= -1 * 10 ** 5 && minY > -1 * 10 ** 100) {
+      tick_y = 6;
+      tickValues = scales_y.ticks(tick_y);
+    } else if (minY <= -1 * 10 ** 100) {
+      tick_y = 5;
+      tickValues = scales_y.ticks(tick_y);
+    }
+    // Find the biggest tick value that is not 0
+    const maxTickValue = tickValues.filter((d) => d !== 0).pop();
+    if (maxTickValue !== undefined && maxTickValue < 0) {
+      maxY = maxTickValue * -1;
+    }
+  }
+  if (result.y_axis_data === "only_positive") {
+    if (maxY > 10 ** 3 && maxY < 10 ** 5) {
+      tick_y = 5;
+    } else if (maxY >= 10 ** 5 && maxY < 10 ** 100) {
+      tick_y = 6;
+    } else if (maxY >= 10 ** 100) {
+      tick_y = 5;
+    }
+  }
+  if (result.y_axis_data === "both") {
+    if (maxY - minY > 10 ** 3 && maxY - minY < 10 ** 5) {
+      tick_y = 5;
+    } else if (maxY - minY >= 10 ** 5 && maxY - minY < 10 ** 100) {
+      tick_y = 6;
+    } else if (maxY - minY >= 10 ** 100) {
+      tick_y = 5;
+    }
+  }
+
   return {
     height,
     width,
     margin,
     min: { x: minX, y: minY },
     max: { x: maxX, y: maxY },
+    ticks: { x: tick_x, y: tick_y },
   };
 }
 function createSVG_SingleDataset(
@@ -1364,7 +1893,11 @@ function drawAxis_singleDataset(
   minY: number,
   maxX: number,
   maxY: number,
-  axisLabels: { x: string; y: string }
+  axisLabels: { x: string; y: string },
+  scales_x_num: d3.ScaleLinear<number, number>,
+  scales_y_num: d3.ScaleLinear<number, number>,
+  tick_x: number,
+  tick_y: number
 ) {
   // Add Gridlines
   const addGrid = (axis, scale, dimension, transform, offset) => {
@@ -1388,24 +1921,68 @@ function drawAxis_singleDataset(
   // Add X axis
   let x_bandwidth = 0;
   let y_bandwidth = 0;
-  let x;
   if (x_axis_type !== "none" && data_for_x_axis_copy.length > 0) {
-    x =
-      x_axis_type === "number"
-        ? d3.scaleLinear().domain([minX, maxX]).range([0, width])
-        : d3
-            .scaleBand()
-            .domain(data_for_x_axis_copy.map((d) => d.x as string))
-            .range([0, width])
-            .align(0)
-            .paddingOuter(0)
-            .paddingInner(0);
     if (x_axis_type === "number") {
-      svg
+      const tickValues_x =
+        tick_x === -1 ? scales_x_num.ticks() : scales_x_num.ticks(tick_x);
+      const gx = svg
         .append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+        .attr("transform", "translate(0," + height + ")");
+      // Case only negative values or both
+      if (minX < 0 && maxX >= 0) {
+        // Ensure 0 is in the tick values
+
+        // Ensure 0 is included in the tick values
+        if (!tickValues_x.includes(0)) {
+          tickValues_x.push(0);
+        }
+
+        // Sort the tick values to maintain the correct order
+        tickValues_x.sort((a, b) => a - b);
+        if (maxX === 0) {
+          // Apply the axis with the custom tick values
+          minX >= -1 * 10 ** 7
+            ? gx.call(d3.axisBottom(scales_x_num).tickValues(tickValues_x))
+            : gx.call(
+                d3
+                  .axisBottom(scales_x_num)
+                  .tickFormat(customTickFormatForAxis)
+                  .tickValues(tickValues_x)
+              ); // Use the custom tick format
+        } else {
+          // Apply the axis with the custom tick values
+          maxX - minX < 1 * 10 ** 7
+            ? gx.call(d3.axisBottom(scales_x_num).tickValues(tickValues_x))
+            : gx.call(
+                d3
+                  .axisBottom(scales_x_num)
+                  .tickFormat(customTickFormatForAxis)
+                  .tickValues(tickValues_x)
+              ); // Use the custom tick format
+        }
+      } else if (minX === 0 && maxX > 0) {
+        // only positive values
+        maxX < 10 ** 7
+          ? gx.call(d3.axisBottom(scales_x_num).tickValues(tickValues_x))
+          : gx.call(
+              d3
+                .axisBottom(scales_x_num)
+                .tickFormat(customTickFormatForAxis)
+                .tickValues(tickValues_x)
+            ); // Use the custom tick format
+      } else if (minX === 0 && maxX === 0) {
+        // only 0
+        gx.call(d3.axisBottom(scales_x_num));
+      }
     } else {
+      // x_axis_type === "string"
+      let x = d3
+        .scaleBand()
+        .domain(data_for_x_axis_copy.map((d) => d.x as string))
+        .range([0, width])
+        .align(0)
+        .paddingOuter(0)
+        .paddingInner(0);
       let axis_x = svg
         .append("g")
         .attr("transform", "translate(0," + height + ")")
@@ -1419,6 +1996,14 @@ function drawAxis_singleDataset(
           svg.selectAll(".tick line").remove();
         }
       }
+      // Add Gridlines
+      addGrid(
+        d3.axisBottom,
+        x,
+        height,
+        `translate(0, ${height})`,
+        `${-x.bandwidth() / 2}, 0`
+      );
     }
     svg
       .append("text")
@@ -1428,32 +2013,76 @@ function drawAxis_singleDataset(
       .attr("y", height + 40)
       .attr("style", "text-align: center;")
       .text(axisLabels.x);
-    // Add Gridlines
-    if (!(x_axis_type === "number")) {
-      addGrid(
-        d3.axisBottom,
-        x,
-        height,
-        `translate(0, ${height})`,
-        `${-x.bandwidth() / 2}, 0`
-      );
-    }
   }
   // Add Y axis
-  let y;
-  if (!(y_axis_type === "none") && data_for_y_axis_copy.length > 0) {
-    y =
-      y_axis_type === "number"
-        ? d3.scaleLinear().domain([minY, maxY]).range([height, 0])
-        : d3
-            .scaleBand()
-            .domain(data_for_y_axis_copy.map((d) => d.y as string))
-            .range([height, 0])
-            .padding(0)
-            .paddingOuter(0);
+
+  if (y_axis_type !== "none" && data_for_y_axis_copy.length > 0) {
     if (y_axis_type === "number") {
-      svg.append("g").call(d3.axisLeft(y));
+      const tickValues_y =
+        tick_y === -1 ? scales_y_num.ticks() : scales_y_num.ticks(tick_y);
+      const gy = svg.append("g");
+      // Case only negative values or both
+      if (minY < 0 && maxY >= 0) {
+        // Ensure 0 is in the tick values
+
+        // Ensure 0 is included in the tick values
+        if (!tickValues_y.includes(0)) {
+          tickValues_y.push(0);
+        }
+
+        // Sort the tick values to maintain the correct order
+        tickValues_y.sort((a, b) => a - b);
+        if (maxY === 0) {
+          // Apply the axis with the custom tick values
+          minY >= -1 * 10 ** 5
+            ? gy.call(d3.axisLeft(scales_y_num).tickValues(tickValues_y))
+            : gy.call(
+                d3
+                  .axisLeft(scales_y_num)
+                  .tickFormat(customTickFormatForAxis)
+                  .tickValues(tickValues_y)
+              ); // Use the custom tick format
+        } else {
+          // Apply the axis with the custom tick values
+          maxY - minY < 1 * 10 ** 5
+            ? gy.call(d3.axisLeft(scales_y_num).tickValues(tickValues_y))
+            : gy.call(
+                d3
+                  .axisLeft(scales_y_num)
+                  .tickFormat(customTickFormatForAxis)
+                  .tickValues(tickValues_y)
+              ); // Use the custom tick format
+        }
+      } else if (minY === 0 && maxY > 0) {
+        // only positive values
+        maxY < 10 ** 5
+          ? gy.call(d3.axisLeft(scales_y_num).tickValues(tickValues_y))
+          : gy.call(
+              d3
+                .axisLeft(scales_y_num)
+                .tickFormat(customTickFormatForAxis)
+                .tickValues(tickValues_y)
+            ); // Use the custom tick format
+      } else if (minY === 0 && maxY === 0) {
+        // only 0
+        gy.call(d3.axisLeft(scales_y_num));
+      }
+      svg
+        .append("text")
+        .attr("class", "y label")
+        .attr("text-anchor", "middle")
+        .attr("x", -((height + margin.bottom) / 2)) // to my x axis
+        .attr("y", maxY - minY <= 1999 ? -50 : maxY - minY <= 9999 ? -52 : -57) // to my y axis
+        .attr("transform", "rotate(-90)")
+        .text(axisLabels.y);
     } else {
+      // y_axis_type === "string"
+      let y = d3
+        .scaleBand()
+        .domain(data_for_y_axis_copy.map((d) => d.y as string))
+        .range([height, 0])
+        .padding(0)
+        .paddingOuter(0);
       let axis_y = svg.append("g").call(d3.axisLeft(y));
       y_bandwidth = y.bandwidth();
 
@@ -1463,36 +2092,53 @@ function drawAxis_singleDataset(
           .attr("transform", `translate( 0, ${y.bandwidth() / 2})`);
         svg.selectAll(".tick line").remove();
       }
+      // Add Gridlines
+      addGrid(d3.axisLeft, y, width, null, `0, ${y.bandwidth() / 2}`);
+      svg
+        .append("text")
+        .attr("class", "y label")
+        .attr("text-anchor", "middle")
+        .attr("x", -((height + margin.bottom) / 2)) // to my x axis
+        .attr("y", -57) // to my y axis
+        .attr("transform", "rotate(-90)")
+        .text(axisLabels.y);
     }
+  }
+  if (x_axis_type === "none" && y_axis_type === "none") {
     svg
       .append("text")
-      .attr("class", "y label")
+      .attr("x", width / 2)
+      .attr("y", height / 2)
       .attr("text-anchor", "middle")
-      .attr("x", -((height + margin.bottom) / 2)) // to my x axis
-      .attr("y", -40) // to my y axis
-      .attr("transform", "rotate(-90)")
-      .text(axisLabels.y);
-    // Add Gridlines
-    if (!(y_axis_type === "number")) {
-      addGrid(d3.axisLeft, y, width, null, `0, ${y.bandwidth() / 2}`);
-    }
+      .text("Please select x or y axis");
   }
-
-  if (!(x_axis_type === "none") && !(y_axis_type === "none")) {
-    if (y_axis_type === "string" && x_axis_type === "string") {
-      x_bandwidth = x.bandwidth();
-      y_bandwidth = y.bandwidth();
-      addGrid(d3.axisLeft, y, width, null, `0, ${y.bandwidth() / 2}`);
-      addGrid(
-        d3.axisBottom,
-        x,
-        height,
-        `translate(0, ${height})`,
-        `${-x.bandwidth() / 2}, 0`
-      );
-    }
+  if (
+    (x_axis_type !== "none" &&
+      y_axis_type === "none" &&
+      data_for_x_axis_copy.length === 0) ||
+    (x_axis_type === "none" &&
+      y_axis_type !== "none" &&
+      data_for_y_axis_copy.length === 0)
+  ) {
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", height / 2)
+      .attr("text-anchor", "middle")
+      .text("Please add data to the selected dataset");
   }
-
+  if (
+    x_axis_type !== "none" &&
+    y_axis_type !== "none" &&
+    (data_for_x_axis_copy.length === 0 || data_for_y_axis_copy.length === 0)
+  ) {
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", height / 2)
+      .attr("text-anchor", "middle")
+      .text("Please add data to the selected dataset");
+  }
   svg.selectAll(".domain, .tick line").attr("stroke", "lightgrey");
   return { x_bandwidth, y_bandwidth };
 }
@@ -1557,7 +2203,11 @@ function drawScatterplot_singleDataset(
     dimensions.min.y,
     dimensions.max.x,
     dimensions.max.y,
-    axisLabels
+    axisLabels,
+    scales.x_num,
+    scales.y_num,
+    dimensions.ticks.x,
+    dimensions.ticks.y
   );
   return { svg, scales, dimensions, bandwidth_result };
 }
@@ -1579,241 +2229,281 @@ function drawScatterplot_singleDataset2(
 ) {
   const tooltip = createTooltip(root);
   const scatter = svg.append("g");
-  // if one of the axis is string and there are multiple value of the other axis, those values are the same, then the circles will be on top of each other
-  if (!(x_axis_type === "none") && !(y_axis_type === "none")) {
-    datasets.forEach((d: Point, i) => {
-      scatter
-        .append("circle")
-        .attr("class", `dataset-${i}`)
-        .attr(
-          "cx",
-          x_axis_type === "number"
-            ? scales.x_num(d.x as number)
-            : y_axis_type === "number"
-            ? scales.x_band(d.x as string) + 6 + d.offset
-            : scales.x_band(d.x as string) + bandwidth_result.x_bandwidth / 2
-        ) // 6 is the radius of the circle
-        .attr(
-          "cy",
-          y_axis_type === "number"
-            ? scales.y_num(d.y as number)
-            : scales.y_band(d.y as string) -
-                6 -
-                d.offset +
-                bandwidth_result.y_bandwidth
-        )
-        .attr("r", 6)
-        .style("fill", d.color ?? "#417ca1")
-        .style("opacity", 1)
-        .style("stroke", "black")
-        .style("stroke-width", 0.5)
-        .classed("selected", d.selected ?? false);
 
-      scatter
-        .selectAll(`circle.dataset-${i}`)
-        .on("mouseover", function () {
-          if (
-            options.hoverCursorChange &&
-            !(x_axis_type === "string" && y_axis_type === "string")
-          ) {
-            d3.select(this).attr("r", 7);
-            // Change the cursor to move
-            d3.select(this).style("cursor", "move");
-          }
-          // Show tooltip
-          if (options.hoverTooltip) {
+  if (datasets.length > 0) {
+    // if one of the axis is string and there are multiple value of the other axis, those values are the same, then the circles will be on top of each other
+    if (!(x_axis_type === "none") && !(y_axis_type === "none")) {
+      datasets.forEach((d: Point, i) => {
+        scatter
+          .append("circle")
+          .attr("class", `dataset-${i}`)
+          .attr(
+            "cx",
+            x_axis_type === "number"
+              ? scales.x_num(d.x as number)
+              : y_axis_type === "number"
+              ? scales.x_band(d.x as string) + 6 + d.offset
+              : scales.x_band(d.x as string) + bandwidth_result.x_bandwidth / 2
+          ) // 6 is the radius of the circle
+          .attr(
+            "cy",
+            y_axis_type === "number"
+              ? scales.y_num(d.y as number)
+              : scales.y_band(d.y as string) -
+                  6 -
+                  d.offset +
+                  bandwidth_result.y_bandwidth
+          )
+          .attr("r", 6)
+          .style("fill", d.color ?? "#417ca1")
+          .style("opacity", 1)
+          .style("stroke", "black")
+          .style("stroke-width", 0.5)
+          .classed("selected", d.selected ?? false);
+
+        scatter
+          .selectAll(`circle.dataset-${i}`)
+          .on("mouseover", function () {
+            if (
+              options.hoverCursorChange &&
+              !(x_axis_type === "string" && y_axis_type === "string")
+            ) {
+              d3.select(this).attr("r", 7);
+              // Change the cursor to move
+              d3.select(this).style("cursor", "move");
+            }
+            let dx: number | string = d.x;
+            let dy: number | string = d.y;
+            if (x_axis_type === "number") {
+              dx =
+                Math.abs(d.x as unknown as number) < 10 ** 7
+                  ? roundNumber(d.x as unknown as number, 4)
+                  : customFormatForBigNumber(d.x as unknown as number, 4);
+            }
+            if (y_axis_type === "number") {
+              dy =
+                Math.abs(d.y as unknown as number) < 10 ** 5
+                  ? roundNumber(d.y as unknown as number, 4)
+                  : customFormatForBigNumber(d.y as unknown as number, 4);
+            }
+
+            // Show tooltip
+            if (options.hoverTooltip) {
+              tooltip
+                .attr("class", "tooltip")
+                .style("opacity", 1)
+                .html(
+                  "ID: " +
+                    d.id +
+                    "<br>" +
+                    axisLabels.x +
+                    ": " +
+                    dx +
+                    " " +
+                    axisLabels.y +
+                    ": " +
+                    dy
+                );
+            }
+          })
+          .on("mousemove", (e) => {
             tooltip
-              .attr("class", "tooltip")
-              .style("opacity", 1)
-              .html(
-                "ID: " +
-                  d.id +
-                  "<br>" +
-                  axisLabels.x +
-                  ": " +
-                  d.x +
-                  " " +
-                  axisLabels.y +
-                  ": " +
-                  d.y
-              );
-          }
-        })
-        .on("mousemove", (e) => {
-          tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
-        })
-        .on("mouseleave", function () {
-          if (
-            options.hoverCursorChange &&
-            !(x_axis_type === "string" && y_axis_type === "string")
-          ) {
+              .style("left", e.x + 10 + "px")
+              .style("top", e.y + 10 + "px");
+          })
+          .on("mouseleave", function () {
+            if (
+              options.hoverCursorChange &&
+              !(x_axis_type === "string" && y_axis_type === "string")
+            ) {
+              d3.select(this).attr("r", 6);
+              // Change the cursor back to normal
+              d3.select(this).style("cursor", "default");
+            }
+            // Hide tooltip
+            tooltip.transition().duration(200).style("opacity", 0);
+          });
+      });
+    }
+  }
+  if (singeledatasets.length > 0) {
+    if (x_axis_type === "none" && y_axis_type === "number") {
+      singeledatasets.forEach((d: OneDimentionalNumberPoint, i) => {
+        scatter
+          .append("circle")
+          .attr("class", `single-y-${i}`)
+          .attr("cx", 6 + d.offset)
+          .attr("cy", scales.y_num(d.p as number))
+          .attr("r", 6)
+          .style("fill", d.color ?? "#417ca1")
+          .style("opacity", 1)
+          .style("stroke", "black")
+          .style("stroke-width", 0.5)
+          .classed("selected", d.selected ?? false);
+        scatter
+          .selectAll(`circle.single-y-${i}`)
+          .on("mouseover", function () {
+            if (options.hoverCursorChange) {
+              d3.select(this).attr("r", 7);
+              // Change the cursor to move
+              d3.select(this).style("cursor", "move");
+            }
+            // Show tooltip
+            if (options.hoverTooltip) {
+              const dy =
+                Math.abs(d.p as unknown as number) < 10 ** 5
+                  ? roundNumber(d.p as unknown as number, 4)
+                  : customFormatForBigNumber(d.p as unknown as number, 4);
+
+              tooltip
+                .style("opacity", 1)
+                .html("ID: " + d.id + "<br>" + axisLabels.y + ": " + dy);
+            }
+          })
+          .on("mousemove", (e) => {
+            tooltip
+              .style("left", e.x + 10 + "px")
+              .style("top", e.y + 10 + "px");
+          })
+          .on("mouseleave", function () {
             d3.select(this).attr("r", 6);
             // Change the cursor back to normal
             d3.select(this).style("cursor", "default");
-          }
-          // Hide tooltip
-          tooltip.transition().duration(200).style("opacity", 0);
-        });
-    });
-  }
-  if (x_axis_type === "none" && y_axis_type === "number") {
-    singeledatasets.forEach((d: OneDimentionalNumberPoint, i) => {
-      scatter
-        .append("circle")
-        .attr("class", `single-y-${i}`)
-        .attr("cx", 6 + d.offset)
-        .attr("cy", scales.y_num(d.p as number))
-        .attr("r", 6)
-        .style("fill", d.color ?? "#417ca1")
-        .style("opacity", 1)
-        .style("stroke", "black")
-        .style("stroke-width", 0.5)
-        .classed("selected", d.selected ?? false);
-      scatter
-        .selectAll(`circle.single-y-${i}`)
-        .on("mouseover", function () {
-          if (options.hoverCursorChange) {
-            d3.select(this).attr("r", 7);
-            // Change the cursor to move
-            d3.select(this).style("cursor", "move");
-          }
-          // Show tooltip
-          if (options.hoverTooltip) {
+            // Hide tooltip
+            tooltip.transition().duration(200).style("opacity", 0);
+          });
+      });
+    }
+    if (x_axis_type === "none" && y_axis_type === "string") {
+      singeledatasets.forEach((d: OneDimentionalPoint, i) => {
+        scatter
+          .append("circle")
+          .attr("class", `single-string-y-${i}`)
+          .attr("cx", 6 + d.offset)
+          .attr(
+            "cy",
+            scales.y_band(d.p as string) + bandwidth_result.y_bandwidth / 2
+          )
+          .attr("r", 6)
+          .style("fill", d.color ?? "#417ca1")
+          .style("opacity", 1)
+          .style("stroke", "black")
+          .style("stroke-width", 0.5)
+          .classed("selected", d.selected ?? false);
+        scatter
+          .selectAll(`circle.single-string-y-${i}`)
+          .on("mouseover", function () {
+            if (options.hoverCursorChange) {
+              d3.select(this).attr("r", 7);
+            }
+            // Show tooltip
+            if (options.hoverTooltip) {
+              tooltip
+                .style("opacity", 1)
+                .html("ID: " + d.id + "<br>" + axisLabels.y + ": " + d.p);
+            }
+          })
+          .on("mousemove", (e) => {
             tooltip
-              .style("opacity", 1)
-              .html("ID: " + d.id + "<br>" + axisLabels.y + ": " + d.p);
-          }
-        })
-        .on("mousemove", (e) => {
-          tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
-        })
-        .on("mouseleave", function () {
-          d3.select(this).attr("r", 6);
-          // Change the cursor back to normal
-          d3.select(this).style("cursor", "default");
-          // Hide tooltip
-          tooltip.transition().duration(200).style("opacity", 0);
-        });
-    });
-  }
-  if (x_axis_type === "none" && y_axis_type === "string") {
-    singeledatasets.forEach((d: OneDimentionalPoint, i) => {
-      scatter
-        .append("circle")
-        .attr("class", `single-string-y-${i}`)
-        .attr("cx", 6 + d.offset)
-        .attr(
-          "cy",
-          scales.y_band(d.p as string) + bandwidth_result.y_bandwidth / 2
-        )
-        .attr("r", 6)
-        .style("fill", d.color ?? "#417ca1")
-        .style("opacity", 1)
-        .style("stroke", "black")
-        .style("stroke-width", 0.5)
-        .classed("selected", d.selected ?? false);
-      scatter
-        .selectAll(`circle.single-string-y-${i}`)
-        .on("mouseover", function () {
-          if (options.hoverCursorChange) {
-            d3.select(this).attr("r", 7);
-          }
-          // Show tooltip
-          if (options.hoverTooltip) {
-            tooltip
-              .style("opacity", 1)
-              .html("ID: " + d.id + "<br>" + axisLabels.y + ": " + d.p);
-          }
-        })
-        .on("mousemove", (e) => {
-          tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
-        })
-        .on("mouseleave", function () {
-          d3.select(this).attr("r", 6);
-          // Hide tooltip
-          tooltip.transition().duration(200).style("opacity", 0);
-        });
-    });
-  }
+              .style("left", e.x + 10 + "px")
+              .style("top", e.y + 10 + "px");
+          })
+          .on("mouseleave", function () {
+            d3.select(this).attr("r", 6);
+            // Hide tooltip
+            tooltip.transition().duration(200).style("opacity", 0);
+          });
+      });
+    }
 
-  if (x_axis_type === "number" && y_axis_type === "none") {
-    singeledatasets.forEach((d: OneDimentionalNumberPoint, i) => {
-      scatter
-        .append("circle")
-        .attr("class", `single-x-${i}`)
-        .attr("cx", scales.x_num(d.p as number))
-        .attr("cy", -6 + dimensions.height - d.offset)
-        .attr("r", 6)
-        .style("fill", d.color ?? "#417ca1")
-        .style("opacity", 1)
-        .style("stroke", "black")
-        .style("stroke-width", 0.5)
-        .classed("selected", d.selected ?? false);
-      scatter
-        .selectAll(`circle.single-x-${i}`)
-        .on("mouseover", function () {
-          if (options.hoverCursorChange) {
-            d3.select(this).attr("r", 7);
-            // Change the cursor to move
-            d3.select(this).style("cursor", "move");
-          }
-          // Show tooltip
-          if (options.hoverTooltip) {
+    if (x_axis_type === "number" && y_axis_type === "none") {
+      singeledatasets.forEach((d: OneDimentionalNumberPoint, i) => {
+        scatter
+          .append("circle")
+          .attr("class", `single-x-${i}`)
+          .attr("cx", scales.x_num(d.p as number))
+          .attr("cy", -6 + dimensions.height - d.offset)
+          .attr("r", 6)
+          .style("fill", d.color ?? "#417ca1")
+          .style("opacity", 1)
+          .style("stroke", "black")
+          .style("stroke-width", 0.5)
+          .classed("selected", d.selected ?? false);
+        scatter
+          .selectAll(`circle.single-x-${i}`)
+          .on("mouseover", function () {
+            if (options.hoverCursorChange) {
+              d3.select(this).attr("r", 7);
+              // Change the cursor to move
+              d3.select(this).style("cursor", "move");
+            }
+            // Show tooltip
+            if (options.hoverTooltip) {
+              const dx =
+                Math.abs(d.p as unknown as number) < 10 ** 7
+                  ? roundNumber(d.p as unknown as number, 4)
+                  : customFormatForBigNumber(d.p as unknown as number, 4);
+
+              tooltip
+                .style("opacity", 1)
+                .html("ID: " + d.id + "<br>" + axisLabels.x + ": " + dx);
+            }
+          })
+          .on("mousemove", (e) => {
             tooltip
-              .style("opacity", 1)
-              .html("ID: " + d.id + "<br>" + axisLabels.x + ": " + d.p);
-          }
-        })
-        .on("mousemove", (e) => {
-          tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
-        })
-        .on("mouseleave", function () {
-          d3.select(this).attr("r", 6);
-          // Change the cursor back to normal
-          d3.select(this).style("cursor", "default");
-          // Hide tooltip
-          tooltip.transition().duration(200).style("opacity", 0);
-        });
-    });
-  }
-  if (x_axis_type === "string" && y_axis_type === "none") {
-    singeledatasets.forEach((d: OneDimentionalPoint, i) => {
-      scatter
-        .append("circle")
-        .attr("class", `single-string-x-${i}`)
-        .attr(
-          "cx",
-          scales.x_band(d.p as string) + bandwidth_result.x_bandwidth / 2
-        )
-        .attr("cy", -6 + dimensions.height - d.offset)
-        .attr("r", 6)
-        .style("fill", d.color ?? "#417ca1")
-        .style("opacity", 1)
-        .style("stroke", "black")
-        .style("stroke-width", 0.5)
-        .classed("selected", d.selected ?? false);
-      scatter
-        .selectAll(`circle.single-string-x-${i}`)
-        .on("mouseover", function () {
-          if (options.hoverCursorChange) {
-            d3.select(this).attr("r", 7);
-          }
-          // Show tooltip
-          if (options.hoverTooltip) {
+              .style("left", e.x + 10 + "px")
+              .style("top", e.y + 10 + "px");
+          })
+          .on("mouseleave", function () {
+            d3.select(this).attr("r", 6);
+            // Change the cursor back to normal
+            d3.select(this).style("cursor", "default");
+            // Hide tooltip
+            tooltip.transition().duration(200).style("opacity", 0);
+          });
+      });
+    }
+    if (x_axis_type === "string" && y_axis_type === "none") {
+      singeledatasets.forEach((d: OneDimentionalPoint, i) => {
+        scatter
+          .append("circle")
+          .attr("class", `single-string-x-${i}`)
+          .attr(
+            "cx",
+            scales.x_band(d.p as string) + bandwidth_result.x_bandwidth / 2
+          )
+          .attr("cy", -6 + dimensions.height - d.offset)
+          .attr("r", 6)
+          .style("fill", d.color ?? "#417ca1")
+          .style("opacity", 1)
+          .style("stroke", "black")
+          .style("stroke-width", 0.5)
+          .classed("selected", d.selected ?? false);
+        scatter
+          .selectAll(`circle.single-string-x-${i}`)
+          .on("mouseover", function () {
+            if (options.hoverCursorChange) {
+              d3.select(this).attr("r", 7);
+            }
+            // Show tooltip
+            if (options.hoverTooltip) {
+              tooltip
+                .style("opacity", 1)
+                .html("ID: " + d.id + "<br>" + axisLabels.x + ": " + d.p);
+            }
+          })
+          .on("mousemove", (e) => {
             tooltip
-              .style("opacity", 1)
-              .html("ID: " + d.id + "<br>" + axisLabels.x + ": " + d.p);
-          }
-        })
-        .on("mousemove", (e) => {
-          tooltip.style("left", e.x + 10 + "px").style("top", e.y + 10 + "px");
-        })
-        .on("mouseleave", function () {
-          d3.select(this).attr("r", 6);
-          // Hide tooltip
-          tooltip.transition().duration(200).style("opacity", 0);
-        });
-    });
+              .style("left", e.x + 10 + "px")
+              .style("top", e.y + 10 + "px");
+          })
+          .on("mouseleave", function () {
+            d3.select(this).attr("r", 6);
+            // Hide tooltip
+            tooltip.transition().duration(200).style("opacity", 0);
+          });
+      });
+    }
   }
   return { scatter, tooltip };
 }
@@ -1838,4 +2528,7 @@ export {
   updateColorForFilter,
   drawScatterplot_singleDataset,
   drawScatterplot_singleDataset2,
+  checkDatasetForScatterplot,
+  customFormatForBigNumber,
+  roundNumber,
 };

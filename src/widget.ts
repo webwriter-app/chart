@@ -59,12 +59,6 @@ export class WwChart extends SharedTestStateMixin(
   // TODO: printable option (delete?)
   // TODO: Focus on the chart element when it is clicked
   // TODO: Button show Data and show Chart wechseln when clicked
-  /*@click=${() => {
-    this.requestUpdate();
-    this.chartElement.focus();
-  }}*/
-  //@query("wwci-dataset-input") private datasetInput!: Select;
-  //@query("#chart") private chartElement!: HTMLElement;
   connectedCallback() {
     super.connectedCallback();
     const storedState = this.getAttribute("lit_sm_storage");

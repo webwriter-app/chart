@@ -31,13 +31,50 @@ export default css`
   sl-input::part(base) {
     border: 0;
   }
-  sl-input.input-lightgreen::part(base) {
-    border: 0;
-    background: lightgreen;
+  .table-cell-number {
+    background: #e0f2ff;
   }
-  sl-input.input-yellow::part(base) {
-    border: 0;
-    background: yellow;
+  .table-cell-name {
+    background: #75b4f2;
+  }
+  .table-cell-id {
+    background: #f3f9ff;
+  }
+  .table-cell-category {
+    background: #bcdcf8;
+  }
+  .table-cell-id sl-input::part(base),
+  .table-cell-number sl-input::part(base),
+  .table-cell-category sl-input::part(base),
+  .table-cell-name sl-input::part(base) {
+    background: #ffffff00;
+  }
+
+  .button-datatype-category,
+  .button-datatype-category::part(label) {
+    text-align: left;
+  }
+  .button-datatype-category::part(suffix)::after {
+    content: "";
+    background: #bcdcf8;
+    border-radius: 50%;
+    height: 1.25rem;
+    width: 1.25rem;
+    vertical-align: middle;
+    margin-left: 0.5em;
+  }
+  .button-datatype-number,
+  .button-datatype-number::part(label) {
+    text-align: left;
+  }
+  .button-datatype-number::part(suffix)::after {
+    content: "";
+    background: #e0f2ff;
+    border-radius: 50%;
+    height: 1.25rem;
+    width: 1.25rem;
+    vertical-align: middle;
+    margin-left: 0.5em;
   }
 
   .container {
@@ -105,5 +142,6 @@ export default css`
     background: white;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    text-align: left;
   }
 `;

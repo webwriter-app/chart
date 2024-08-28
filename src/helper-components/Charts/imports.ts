@@ -25,16 +25,7 @@ const charts = [Pie, Doughnut, Bar, Line, PolarArea, Radar, Scatterplot];
 //@end-auto-generated
 
 export const availableCharts = charts.map((chart) => chart.Name);
-export const availableRegressions = [
-  "none",
-  "linear",
-  "quadratic",
-  "exponential",
-  "polynomial",
-  "logarithmic",
-  "power",
-  "loess",
-];
+export const availableRegressions = ["none", "linear", "loess"];
 export type RegressionType = (typeof availableRegressions)[number];
 
 export type ChartType = (typeof availableCharts)[number];

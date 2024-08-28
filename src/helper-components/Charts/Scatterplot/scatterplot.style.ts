@@ -8,16 +8,27 @@ export default css`
 }
 .scatterplot-wrapper {
   display: flex;
+  gap: 8px;
   flex-direction: row; /* Align items in a row */
-  align-items: flex-start; 
   align-items: flex-start; /* Align items to the top */
+  justify-content: flex-start; /* Align items to the start */
   height: 100%;
 }
 .scatterplot-svg {
   flex-grow: 1; /* Allow the SVG to take available space */
 }
+.right-side {
+  float: left;
+  width: 12rem;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 .button-container {
-  margin-left: 10px; /* Optional: Add some space between the SVG and the button */
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 7px;
 }
 table,
 th,
@@ -25,39 +36,59 @@ tr,
 td {
   border: 0.5px solid black;
   border-collapse: collapse;
-
+}
+th {
+font-size: 13px;
 }
 .th_regression {
-  min-width: 10rem;
-}
-.th_line {
-  min-width: 10rem;
+  min-width: 9rem;
+  max-width: 9rem;
 }
 .th_correlation {
-  min-width: 2.5rem;
+  min-width: 1.85rem;
+  max-width: 1.85rem;
+}
+.th_line {
+  min-width: 11rem;
+  max-width: 11rem;
 }
 .th_color{
-  width: 2.5rem;
+  min-width: 2.5rem;
+  max-width: 2.5rem;
 }
 .th_range{
-  min-width: 10rem;
+  min-width: 8.35rem;
+  max-width: 8.35rem;
 }
-.th_label{
-  min-width: 10rem;
+
+.table-wrapper.hidden {
+  display: none;
 }
-.table-wrapper {
-  margin-top: 20px;
+.table-wrapper.visible {
+  overflow-y: auto;
+  max-height: 6.3rem;
+  min-width: 12.47rem;
 }
+
 table {
   display: inline-table;
   background: white;
 }
+
 .regression-formulas td {
   font-size: 12px;
+  max-width: 9rem;
 }
 .color-formulas td {
   font-size: 12px;
+  overflow-wrap: break-word;
+  max-width: 8.35rem;
 }
+.line-formulas td {
+  font-size: 12px;
+}
+
+
 
 .color-span {
   width: 1rem;

@@ -19,6 +19,7 @@ export class SelectDataset extends SharedTestStateMixin(
       (_, i) =>
         this.sharedState.scatterDatasets.selected.dataset_indexes.includes(i)
     );
+    const none = ["None"];
 
     // Find common labels and ensure their data types match
     const commonLabels =
@@ -115,67 +116,57 @@ export class SelectDataset extends SharedTestStateMixin(
         </sl-popup>
         <sl-select
           style="z-index: 2"
-          value=${this.sharedState.scatterDatasets.selected.axis.x ??
-          "[[wwci-label-none]]"}
+          value=${this.sharedState.scatterDatasets.selected.axis.x}
           label="X-Axis"
           @sl-change=${(e: any) => {
-            const x_axis_value =
-              e.target.value === "[[wwci-label-none]]"
-                ? undefined
-                : e.target.value;
+            const x_axis_value = e.target.value;
 
             if (
               this.sharedState.scatterDatasets.selected.axis.x === x_axis_value
             )
-              this.sharedState.scatterDatasets.selected.axis.x = undefined;
+              this.sharedState.scatterDatasets.selected.axis.x = "None";
             else
               this.sharedState.scatterDatasets.selected.axis.x = x_axis_value;
 
             if (
               this.sharedState.scatterDatasets.selected.axis.y === x_axis_value
             ) {
-              this.sharedState.scatterDatasets.selected.axis.y = undefined;
+              this.sharedState.scatterDatasets.selected.axis.y = "None";
             }
           }}
         >
-          <sl-option value="[[wwci-label-none]]">
-            <em>None</em>
-          </sl-option>
-          ${commonLabels.map(
-            (label) => html`<sl-option value=${label}> ${label} </sl-option>`
-          )}
+          ${none
+            .concat(commonLabels)
+            .map(
+              (label) => html`<sl-option value=${label}> ${label} </sl-option>`
+            )}
         </sl-select>
         <sl-select
           style="z-index: 1"
-          value=${this.sharedState.scatterDatasets.selected.axis.y ??
-          "[[wwci-label-none]]"}
+          value=${this.sharedState.scatterDatasets.selected.axis.y}
           label="Y-Axis"
           @sl-change=${(e: any) => {
-            const y_axis_value =
-              e.target.value === "[[wwci-label-none]]"
-                ? undefined
-                : e.target.value;
+            const y_axis_value = e.target.value;
 
             if (
               this.sharedState.scatterDatasets.selected.axis.y === y_axis_value
             )
-              this.sharedState.scatterDatasets.selected.axis.y = undefined;
+              this.sharedState.scatterDatasets.selected.axis.y = "None";
             else
               this.sharedState.scatterDatasets.selected.axis.y = y_axis_value;
 
             if (
               this.sharedState.scatterDatasets.selected.axis.x === y_axis_value
             ) {
-              this.sharedState.scatterDatasets.selected.axis.x = undefined;
+              this.sharedState.scatterDatasets.selected.axis.x = "None";
             }
           }}
         >
-          <sl-option value="[[wwci-label-none]]">
-            <em>None</em>
-          </sl-option>
-          ${commonLabels.map(
-            (label) => html`<sl-option value=${label}> ${label} </sl-option>`
-          )}
+          ${none
+            .concat(commonLabels)
+            .map(
+              (label) => html`<sl-option value=${label}> ${label} </sl-option>`
+            )}
         </sl-select>
       </div>
     `;

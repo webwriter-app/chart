@@ -96,7 +96,7 @@ export default css`
   }
 
   #main {
-    height: 60vh;
+    height: 32rem;
     width: 100%;
     outline: 2px solid black;
     display: flex;
@@ -120,7 +120,7 @@ export default css`
   #data-panel {
     flex: 1;
     padding: 0;
-    background-color: #d6d4d4;
+    background-color: #eaeaea;
     outline: 2px solid darkblue;
     width: 100%;
     overflow: auto;
