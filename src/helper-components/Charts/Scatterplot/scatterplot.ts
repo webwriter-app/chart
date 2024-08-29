@@ -79,40 +79,40 @@ export class ScatterplotChart extends SharedTestStateMixin(
 ) {
   static styles = style;
 
-  @property({ type: Object })
+  @property({ type: Object, attribute: true, reflect: true })
   accessor definition = Definition;
-  @property({ type: Boolean })
-  accessor addNode = false;
-  @property({ type: Boolean })
-  accessor selectNode = false;
-  @property({ type: Boolean })
-  accessor selectByClicking = false;
-  @property({ type: Boolean })
-  accessor selectByBrushing = false;
-  @property({ type: Number })
-  accessor selectedIndextoAddNote = undefined;
-  @property({ type: Boolean })
-  accessor deselectByBrushing = false;
-  @property({ type: Boolean })
-  accessor editShowing = false;
-  @property({ type: Boolean })
-  accessor hideSelected = false;
-  @property({ type: Boolean })
-  accessor hideUnselected = false;
-  @property({ type: Boolean })
-  accessor deleteSelected = false;
-  @property({ type: Boolean })
-  accessor deleteUnselected = false;
-  @property({ type: Boolean })
-  accessor showAll = true;
-  @property({ type: Boolean })
-  accessor drawLine = false;
-  @property({ type: Boolean })
-  accessor filterOn = false;
-  @property({ type: Boolean })
-  accessor hoverCursorChange = true;
-  @property({ type: Boolean })
-  accessor isDragging = false;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor addNode: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor selectNode: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor selectByClicking: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor selectByBrushing: boolean;
+  @property({ type: Number, attribute: true, reflect: true })
+  accessor selectedIndextoAddNote: number;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor deselectByBrushing: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor editShowing: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor hideSelected: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor hideUnselected: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor deleteSelected: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor deleteUnselected: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor showAll: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor drawLine: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor filterOn: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor hoverCursorChange: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor isDragging: boolean;
 
   constructor(optionsDefinition = OptionDefinition) {
     super();
@@ -836,12 +836,12 @@ export class ScatterplotChart extends SharedTestStateMixin(
     this.isDragging = false;
     this.createScatterPlot();
     // TODO: remove event listener on unmount
-    document.addEventListener("keypress", (e) => {
+    /*document.addEventListener("keypress", (e) => {
       switch (e.key) {
         case "Backspace":
         case "Delete":
       }
-    });
+    });*/
   }
   //updatePlot for new animation time
   //TODO: Add margin right for bigger numbers and margin top

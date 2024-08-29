@@ -1,5 +1,5 @@
 import { html } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import {
   randomColor,
   //csvToDataset,
@@ -37,10 +37,14 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
   LitElementWw as unknown as LitElementWw &
     Parameters<typeof SharedTestStateMixin>[0]
 ) {
-  @state() accessor addDatasetPopupOpen = false;
-  @state() accessor addColumnPopupOpenIndex = -1;
-  @state() accessor openColumnTypePopupIndexInSet = -1;
-  @state() accessor openColumnTypePopupIndexInLabels = -1;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor addDatasetPopupOpen = false;
+  @property({ type: Number, attribute: true, reflect: true })
+  accessor addColumnPopupOpenIndex = -1;
+  @property({ type: Number, attribute: true, reflect: true })
+  accessor openColumnTypePopupIndexInSet = -1;
+  @property({ type: Number, attribute: true, reflect: true })
+  accessor openColumnTypePopupIndexInLabels = -1;
   addNewDataset() {
     this.sharedState.scatterDatasets.sets.push({
       color: randomColor(),

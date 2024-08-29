@@ -70,7 +70,7 @@ export class WwChart extends SharedTestStateMixin(
     }
   }
 
-  @property()
+  @property({ type: Object, attribute: true, reflect: true })
   accessor options: any = {};
 
   @state()
@@ -120,28 +120,6 @@ export class WwChart extends SharedTestStateMixin(
     this.sharedState.chart.optionDefinition = getOptionsDefinition(
       this.sharedState.chart.selectedType
     );
-    /*
-    <div
-        part="options"
-        id="settings"
-        style=${this.isContentEditable ? "" : "display: none;"}
-      >
-        <div id="settings-wrapper">
-          <h2>Setting</h2>
-          <!-- <sl-checkbox
-            id="Editable"
-            ?checked=${this.sharedState.editable}
-            @sl-change=${() => {
-            this.editable = !this.editable;
-            this.sharedState.editable = this.editable;
-          }}
-            >Editable</sl-checkbox
-          > -->
-          <wwci-chart-settings style="display: contents;"></wwci-chart-settings>
-        </div>
-      </div>
-    */
-
     return html` <div
         part="options"
         id="settings"
