@@ -20,6 +20,7 @@ export class Switch extends LitElementWw {
       new CustomEvent("wwci-change", {
         detail: { value: this.checked },
         composed: true,
+        bubbles: true,
       })
     );
   }

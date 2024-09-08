@@ -9,10 +9,19 @@ import { addAlphaToRGB } from "../../../functions";
 
 @customElement("doughnut-chart")
 export class DoughnutChart extends GenericChart<typeof OptionDefinition> {
-  constructor() {
-    super(OptionDefinition);
-  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.sharedState.chart.optionDefinition = OptionDefinition;
+    this.sharedState.chart.options = Object.entries(OptionDefinition).reduce(
+      (acc, [key, value]) => {
+        acc[key] = this.sharedState.chart.options[key] ?? value.default;
+        return acc;
+      },
+      {} as any
+    ) as ChartOptions<OptionDefinition>;
 
+    this.requestUpdate();
+  }
   @state()
   accessor chartHelper:
     | ChartHelper<Chart<"doughnut", number[], string>>
@@ -40,9 +49,10 @@ export class DoughnutChart extends GenericChart<typeof OptionDefinition> {
         labels: this.datasets.labels,
         datasets: datasets,
       },
+      options: {},
     });
 
-    this.chartHelper = new ChartHelper("doughnut", chart);
+    this.chartHelper = ChartHelper.create("doughnut", chart);
     this.chartHelper.setTitle(this.label);
 
     this.chartHelper.update();
@@ -61,11 +71,11 @@ export class DoughnutChart extends GenericChart<typeof OptionDefinition> {
         label: dataset.name,
         data: dataset.data,
         backgroundColor: dataset.colors.map((color) =>
-          addAlphaToRGB(color, this.options.filled ? 1 : 0.2)
+          addAlphaToRGB(color, this.sharedState.chart.options.filled ? 1 : 0.2)
         ),
         borderColor: dataset.colors,
-        borderWidth: this.options.borderWidth ?? 1,
-        borderRadius: this.options.borderRadius ?? 0,
+        borderWidth: Number(this.sharedState.chart.options.borderWidth ?? 1),
+        borderRadius: Number(this.sharedState.chart.options.borderRadius ?? 0),
       };
     });
     return result;

@@ -43,10 +43,32 @@ export class ChartHelper<T extends Chart<any, number[], string>> {
   public chart: T;
   private chartType: ChartType;
 
-  constructor(type: ChartType, chart: T) {
+  // Static method to create and initialize a ChartHelper
+  public static create<T extends Chart<any, number[], string>>(
+    type: ChartType,
+    chart: T
+  ): ChartHelper<T> {
+    const helper = new ChartHelper<T>();
+    helper.initialize(type, chart);
+    return helper;
+  } // Add the closing parenthesis here
+  // Initialize method (private to ensure it's only called internally)
+  private initialize(type: ChartType, chart: T) {
+    // Ensure the chart is not null or undefined
+    if (!chart) {
+      throw new Error("Invalid chart instance passed to ChartHelper.");
+    }
+
+    // Ensure chart options are initialized
+    if (!chart.options) {
+      throw new Error("Chart options are not initialized.");
+    }
+
+    // Initialize the chart and chartType
     this.chart = chart;
     this.chartType = type;
-    console.log(this.chartType);
+
+    console.log(`ChartHelper initialized for type: ${this.chartType}`);
   }
 
   public setTitle(title: string) {

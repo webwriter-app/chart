@@ -1,0 +1,19 @@
+import { LitElementWw } from "@webwriter/lit";
+import { property } from "lit/decorators.js";
+import { ChartState } from "./interfaces";
+
+export default class StateComponent extends LitElementWw {
+  @property({ type: Object, attribute: true, reflect: true })
+  accessor sharedState: ChartState;
+
+  dispatchStateChange() {
+    console.log("Dispatching state change with state:", this.sharedState);
+    this.dispatchEvent(
+      new CustomEvent("wwci-state-change", {
+        detail: { state: this.sharedState },
+        bubbles: true, // Ensure event bubbles up
+        composed: true, // Ensure event crosses shadow DOM boundary
+      })
+    );
+  }
+}

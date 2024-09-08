@@ -19,10 +19,9 @@ import IconTrash from "bootstrap-icons/icons/trash.svg";
 import IconPlusCircle from "bootstrap-icons/icons/plus-circle.svg";
 import IconCaretdown from "bootstrap-icons/icons/caret-down.svg";
 import "../FileUploadButton";
-import { SharedTestStateMixin } from "../../state";
-import { LitElementWw } from "@webwriter/lit";
 import { SelectDataset } from "./SelectDataset";
 import { updateColorForFilter } from "../../helper-components/Charts/Scatterplot/drawScatterplot";
+import StateComponent from "../../stateComponent";
 //TODO: Add teacher options,
 //TODO:, file upload, dispatch event, change style for plus button
 //TODO: Add margin
@@ -33,73 +32,128 @@ import { updateColorForFilter } from "../../helper-components/Charts/Scatterplot
 // Fix the button add dataset
 // Add the possibility to change the type of the column
 @customElement("wwci-scatterdataset-input")
-export class ScatterDatasetInput extends SharedTestStateMixin(
-  LitElementWw as unknown as LitElementWw &
-    Parameters<typeof SharedTestStateMixin>[0]
-) {
+export class ScatterDatasetInput extends StateComponent {
+  // Define properties with appropriate types
+
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor addDatasetPopupOpen = false;
+
   @property({ type: Number, attribute: true, reflect: true })
   accessor addColumnPopupOpenIndex = -1;
+
   @property({ type: Number, attribute: true, reflect: true })
   accessor openColumnTypePopupIndexInSet = -1;
+
   @property({ type: Number, attribute: true, reflect: true })
   accessor openColumnTypePopupIndexInLabels = -1;
+
   addNewDataset() {
-    this.sharedState.scatterDatasets.sets.push({
+    const newDataset = {
       color: randomColor(),
       name: randomString(),
-      ids: [1],
+      ids: [],
       labels: [],
       typeOfEachData: [],
-      dimensional_data: [{ data: [], selected: false }],
-      //TODO: Change "" to undefined?
+      dimensional_data: [],
       filter: { label: "", type: "none", index_in_labels: -1 },
-    });
+    };
+
+    this.sharedState = {
+      ...this.sharedState,
+      scatterDatasets: {
+        ...this.sharedState.scatterDatasets,
+        sets: [...this.sharedState.scatterDatasets.sets, newDataset],
+      },
+    };
+    this.dispatchStateChange();
   }
   addNumericColumn(index_inset: number) {
-    this.sharedState.scatterDatasets.sets[index_inset].labels.push(
-      randomString()
-    );
-    this.sharedState.scatterDatasets.sets[index_inset].typeOfEachData.push(
-      "number"
-    );
-    this.sharedState.scatterDatasets.sets[index_inset].dimensional_data.map(
-      (data) => {
-        data.data.push(randomNumber());
+    const updatedSets = this.sharedState.scatterDatasets.sets.map(
+      (dataset, i) => {
+        if (i === index_inset) {
+          return {
+            ...dataset,
+            labels: [...dataset.labels, randomString()],
+            typeOfEachData: [...dataset.typeOfEachData, "number"],
+            dimensional_data: dataset.dimensional_data.map((data) => ({
+              ...data,
+              data: [...data.data, randomNumber()],
+            })),
+          };
+        }
+        return dataset;
       }
     );
+
+    this.sharedState = {
+      ...this.sharedState,
+      scatterDatasets: {
+        ...this.sharedState.scatterDatasets,
+        sets: updatedSets,
+      },
+    };
+    this.dispatchStateChange();
   }
   addStringColumn(index_inset: number) {
-    this.sharedState.scatterDatasets.sets[index_inset].labels.push(
-      randomString()
-    );
-    this.sharedState.scatterDatasets.sets[index_inset].typeOfEachData.push(
-      "string"
-    );
-    this.sharedState.scatterDatasets.sets[index_inset].dimensional_data.map(
-      (data) => {
-        data.data.push(randomString());
+    const updatedSets = this.sharedState.scatterDatasets.sets.map(
+      (dataset, i) => {
+        if (i === index_inset) {
+          return {
+            ...dataset,
+            labels: [...dataset.labels, randomString()],
+            typeOfEachData: [...dataset.typeOfEachData, "string"],
+            dimensional_data: dataset.dimensional_data.map((data) => ({
+              ...data,
+              data: [...data.data, randomString()],
+            })),
+          };
+        }
+        return dataset;
       }
     );
+
+    this.sharedState = {
+      ...this.sharedState,
+      scatterDatasets: {
+        ...this.sharedState.scatterDatasets,
+        sets: updatedSets,
+      },
+    };
+    this.dispatchStateChange();
   }
 
   addRow(index_inset: number) {
-    this.sharedState.scatterDatasets.sets[index_inset].ids.push(
-      this.sharedState.scatterDatasets.sets[index_inset].ids.length + 1
-    );
-    this.sharedState.scatterDatasets.sets =
-      this.sharedState.scatterDatasets.sets.map((dataset, i) => {
-        i === index_inset
-          ? dataset.dimensional_data.push({
-              data: dataset.typeOfEachData.map((d) =>
-                d === "number" ? randomNumber() : randomString()
-              ),
-              selected: false,
-            })
-          : dataset;
+    const newId =
+      this.sharedState.scatterDatasets.sets[index_inset].ids.length + 1;
+    const newRow = {
+      data: this.sharedState.scatterDatasets.sets[
+        index_inset
+      ].typeOfEachData.map((d) =>
+        d === "number" ? randomNumber() : randomString()
+      ),
+      selected: false,
+    };
+
+    const updatedSets = this.sharedState.scatterDatasets.sets.map(
+      (dataset, i) => {
+        if (i === index_inset) {
+          return {
+            ...dataset,
+            ids: [...dataset.ids, newId],
+            dimensional_data: [...dataset.dimensional_data, newRow],
+          };
+        }
         return dataset;
-      });
+      }
+    );
+
+    this.sharedState = {
+      ...this.sharedState,
+      scatterDatasets: {
+        ...this.sharedState.scatterDatasets,
+        sets: updatedSets,
+      },
+    };
     if (
       this.sharedState.scatterDatasets.selected.dataset_indexes.length === 1 &&
       this.sharedState.scatterDatasets.selected.dataset_indexes[0] ===
@@ -124,54 +178,85 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
             this.sharedState.scatterDatasets.sets[index_inset]
           );
     }
+    this.dispatchStateChange();
   }
 
   deleteRow(index_inset: number, index_indata_scatterplot: number) {
-    this.sharedState.scatterDatasets.sets =
-      this.sharedState.scatterDatasets.sets.map((dataset, i) => {
-        i === index_inset
-          ? dataset.dimensional_data.splice(index_indata_scatterplot, 1) &&
-            dataset.ids.splice(index_indata_scatterplot, 1)
-          : dataset;
+    const updatedSets = this.sharedState.scatterDatasets.sets.map(
+      (dataset, i) => {
+        if (i === index_inset) {
+          return {
+            ...dataset,
+            ids: dataset.ids.filter(
+              (_, idx) => idx !== index_indata_scatterplot
+            ),
+            dimensional_data: dataset.dimensional_data.filter(
+              (_, idx) => idx !== index_indata_scatterplot
+            ),
+          };
+        }
         return dataset;
-      });
+      }
+    );
+
+    this.sharedState = {
+      ...this.sharedState,
+      scatterDatasets: {
+        ...this.sharedState.scatterDatasets,
+        sets: updatedSets,
+      },
+    };
+    this.dispatchStateChange();
   }
 
   deleteTableDataset(index_inset: number) {
-    this.sharedState.scatterDatasets.sets.splice(index_inset, 1);
-    // shift the indexes of the selected datasets
-    this.sharedState.scatterDatasets.selected.dataset_indexes =
+    const updatedSets = this.sharedState.scatterDatasets.sets.filter(
+      (_, i) => i !== index_inset
+    );
+    const updatedDatasetIndexes =
       this.sharedState.scatterDatasets.selected.dataset_indexes
-        .map((index) => {
-          if (index === index_inset) {
-            return null;
-          } else if (index > index_inset) {
-            return index - 1;
-          } else {
-            return index;
-          }
-        })
-        .filter((i) => i !== null) as number[];
+        .map((index) => (index > index_inset ? index - 1 : index))
+        .filter((index) => index !== null);
+
+    this.sharedState = {
+      ...this.sharedState,
+      scatterDatasets: {
+        ...this.sharedState.scatterDatasets,
+        sets: updatedSets,
+        selected: {
+          ...this.sharedState.scatterDatasets.selected,
+          dataset_indexes: updatedDatasetIndexes,
+        },
+      },
+    };
+    this.dispatchStateChange();
   }
   deleteColumn(index_inset: number, index_inlabels: number) {
-    this.sharedState.scatterDatasets.sets =
-      this.sharedState.scatterDatasets.sets.map((dataset, i) => {
+    const updatedSets = this.sharedState.scatterDatasets.sets.map(
+      (dataset, i) => {
         if (i === index_inset) {
-          dataset.labels.splice(index_inlabels, 1);
-          dataset.typeOfEachData.splice(index_inlabels, 1);
-          dataset.dimensional_data.map((data) => {
-            data.data.splice(index_inlabels, 1);
-          });
-          if (dataset.filter.index_in_labels === index_inlabels) {
-            dataset.filter = { label: "", type: "none", index_in_labels: -1 };
-            // Delete the color filter if the column is deleted
-            dataset.dimensional_data.map((data) => {
-              data.color = undefined;
-            });
-          }
+          return {
+            ...dataset,
+            labels: dataset.labels.filter((_, idx) => idx !== index_inlabels),
+            typeOfEachData: dataset.typeOfEachData.filter(
+              (_, idx) => idx !== index_inlabels
+            ),
+            dimensional_data: dataset.dimensional_data.map((data) => ({
+              ...data,
+              data: data.data.filter((_, idx) => idx !== index_inlabels),
+            })),
+            filter:
+              dataset.filter.index_in_labels === index_inlabels
+                ? { label: "", type: "none", index_in_labels: -1 }
+                : dataset.filter,
+          };
         }
         return dataset;
-      });
+      }
+    );
+    const updatedSelectedAxis = {
+      ...this.sharedState.scatterDatasets.selected.axis,
+    };
 
     // In case the deleted column was selected as x or y axis
     if (
@@ -191,31 +276,65 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
         if (
           this.sharedState.scatterDatasets.selected.dataset_indexes.length > 1
         ) {
-          this.sharedState.scatterDatasets.selected.dataset_indexes.forEach(
-            (index, i) => {
-              if (index === index_inset) {
-                this.sharedState.scatterDatasets.selected.dataset_indexes.splice(
-                  i,
-                  1
-                );
-              }
-            }
-          );
+          const updatedDatasetIndexes =
+            this.sharedState.scatterDatasets.selected.dataset_indexes.filter(
+              (index) => index !== index_inset
+            );
+
+          this.sharedState = {
+            ...this.sharedState,
+            scatterDatasets: {
+              ...this.sharedState.scatterDatasets,
+              selected: {
+                ...this.sharedState.scatterDatasets.selected,
+                dataset_indexes: updatedDatasetIndexes,
+              },
+            },
+          };
           // if there is only one dataset, deselect the axis
         } else {
           if (
             this.sharedState.scatterDatasets.selected.axis.x === deletedLabel
           ) {
-            this.sharedState.scatterDatasets.selected.axis.x = "None";
+            updatedSelectedAxis.x = "None";
           } else {
-            this.sharedState.scatterDatasets.selected.axis.y = "None";
+            updatedSelectedAxis.y = "None";
           }
         }
       }
     }
+    this.sharedState = {
+      ...this.sharedState,
+      scatterDatasets: {
+        ...this.sharedState.scatterDatasets,
+        sets: updatedSets,
+        selected: {
+          ...this.sharedState.scatterDatasets.selected,
+          axis: updatedSelectedAxis,
+        },
+      },
+    };
+
+    this.dispatchStateChange();
   }
   changeColor(color: string, index_inset: number) {
-    this.sharedState.scatterDatasets.sets[index_inset].color = color;
+    const updatedSets = this.sharedState.scatterDatasets.sets.map(
+      (dataset, i) => {
+        if (i === index_inset) {
+          return { ...dataset, color };
+        }
+        return dataset;
+      }
+    );
+
+    this.sharedState = {
+      ...this.sharedState,
+      scatterDatasets: {
+        ...this.sharedState.scatterDatasets,
+        sets: updatedSets,
+      },
+    };
+    this.dispatchStateChange();
   }
   // !important index_inset is the index of the dataset and index_inset = this.sharedState.scatterDatasets.sets.length - 1 - index_reverse
   render() {
@@ -235,7 +354,9 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
               : "New"}
             Dataset</sl-button
           >
-          <wwci-select-dataset></wwci-select-dataset>
+          <wwci-select-dataset
+            .sharedState=${this.sharedState}
+          ></wwci-select-dataset>
         </div>`
       : html``}
     ${this.sharedState.scatterDatasets.sets
@@ -251,19 +372,18 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                   <div
                     style="display: flex; flex-direction: row; align-items: center"
                   >
-                    ${
-                      !this.sharedState.printable
-                        ? html`
                             <sl-color-picker
                               ?disabled=${!(
                                 this.sharedState.editable ||
                                 this.sharedState.teacherOptions.changeData
                               )}
-                              value="${this.sharedState.scatterDatasets.sets[
-                                this.sharedState.scatterDatasets.sets.length -
-                                  1 -
-                                  index_reverse
-                              ].color}"
+                              value="${
+                                this.sharedState.scatterDatasets.sets[
+                                  this.sharedState.scatterDatasets.sets.length -
+                                    1 -
+                                    index_reverse
+                                ].color
+                              }"
                               @sl-input=${(e: any) =>
                                 this.changeColor(
                                   e.target.value,
@@ -294,24 +414,46 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                                 )}
                                 type="text"
                                 class="input"
-                                value="${this.sharedState.scatterDatasets.sets[
-                                  this.sharedState.scatterDatasets.sets.length -
-                                    1 -
-                                    index_reverse
-                                ].name}"
-                                @sl-input=${(e: any) => {
+                                value="${
                                   this.sharedState.scatterDatasets.sets[
                                     this.sharedState.scatterDatasets.sets
                                       .length -
                                       1 -
                                       index_reverse
-                                  ].name = String(e.target.value);
+                                  ].name
+                                }"
+                                @sl-input=${(e: any) => {
+                                  const updatedSets =
+                                    this.sharedState.scatterDatasets.sets.map(
+                                      (dataset, i) => {
+                                        if (
+                                          i ===
+                                          this.sharedState.scatterDatasets.sets
+                                            .length -
+                                            1 -
+                                            index_reverse
+                                        ) {
+                                          return {
+                                            ...dataset,
+                                            name: e.target.value,
+                                          };
+                                        }
+                                        return dataset;
+                                      }
+                                    );
+                                  this.sharedState = {
+                                    ...this.sharedState,
+                                    scatterDatasets: {
+                                      ...this.sharedState.scatterDatasets,
+                                      sets: updatedSets,
+                                    },
+                                  };
+                                  this.dispatchStateChange();
                                 }}
                               ></sl-input>
                             </div>
-                          `
-                        : html``
-                    }
+                          
+                    
                   </div>
                 </th>
                 ${this.sharedState.scatterDatasets.sets[
@@ -333,31 +475,77 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                             type="text"
                             value="${label}"
                             @sl-input=${(e: any) => {
-                              const newValue = e.target.value as string;
-                              this.sharedState.scatterDatasets.sets[
-                                this.sharedState.scatterDatasets.sets.length -
-                                  1 -
-                                  index_reverse
-                              ].labels[index_inlabels] = String(newValue);
+                              const newValue = String(e.target.value);
+                              const updatedSets =
+                                this.sharedState.scatterDatasets.sets.map(
+                                  (dataset, i) => {
+                                    const targetIndex =
+                                      this.sharedState.scatterDatasets.sets
+                                        .length -
+                                      1 -
+                                      index_reverse;
+                                    if (i === targetIndex) {
+                                      const updatedLabels = dataset.labels.map(
+                                        (label, labelIndex) =>
+                                          labelIndex === index_inlabels
+                                            ? newValue
+                                            : label
+                                      );
+                                      return {
+                                        ...dataset,
+                                        labels: updatedLabels, // Update labels immutably
+                                      };
+                                    }
+                                    return dataset;
+                                  }
+                                );
+
+                              this.sharedState = {
+                                ...this.sharedState,
+                                scatterDatasets: {
+                                  ...this.sharedState.scatterDatasets,
+                                  sets: updatedSets,
+                                },
+                              };
+                              this.dispatchStateChange();
                             }}
                             @sl-blur=${() => {
-                              const labels =
+                              const targetIndex =
+                                this.sharedState.scatterDatasets.sets.length -
+                                1 -
+                                index_reverse;
+                              const dataset =
                                 this.sharedState.scatterDatasets.sets[
-                                  this.sharedState.scatterDatasets.sets.length -
-                                    1 -
-                                    index_reverse
-                                ].labels;
+                                  targetIndex
+                                ];
+                              const labels = dataset.labels;
                               const label = labels[index_inlabels];
+
                               if (
                                 labels.some(
                                   (l, i) => l === label && i !== index_inlabels
                                 )
                               ) {
-                                this.sharedState.scatterDatasets.sets[
-                                  this.sharedState.scatterDatasets.sets.length -
-                                    1 -
-                                    index_reverse
-                                ].labels[index_inlabels] = `${label} (1)`;
+                                const updatedLabels = labels.map((l, i) =>
+                                  i === index_inlabels ? `${label} (1)` : l
+                                );
+
+                                const updatedSets =
+                                  this.sharedState.scatterDatasets.sets.map(
+                                    (set, i) =>
+                                      i === targetIndex
+                                        ? { ...set, labels: updatedLabels }
+                                        : set
+                                  );
+
+                                this.sharedState = {
+                                  ...this.sharedState,
+                                  scatterDatasets: {
+                                    ...this.sharedState.scatterDatasets,
+                                    sets: updatedSets,
+                                  },
+                                };
+                                this.dispatchStateChange();
                               }
                             }}
                           ></sl-input>
@@ -393,207 +581,222 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                           ></sl-icon-button>
 
                           <div class="dropdown-content">
-                            ${!this.sharedState.printable
-                              ? html`<sl-menu-item
-                                  @mousedown=${(e: MouseEvent) => {
-                                    if (e.button !== 0) return;
-                                    // e.preventDefault();
-                                    // e.stopPropagation();
-                                    this.deleteColumn(
-                                      this.sharedState.scatterDatasets.sets
-                                        .length -
-                                        1 -
-                                        index_reverse,
-                                      index_inlabels
-                                    );
-                                    this.openColumnTypePopupIndexInLabels = -1;
-                                    this.openColumnTypePopupIndexInSet = -1;
-                                  }}
-                                  ?disabled=${!(
-                                    this.sharedState.editable ||
-                                    this.sharedState.teacherOptions
-                                      .addRemoveData
-                                  )}
-                                >
-                                  <sl-icon-button
-                                    slot="prefix"
-                                    src=${IconTrash}
-                                    label="Settings"
-                                  ></sl-icon-button>
-                                  Delete Column
-                                </sl-menu-item>`
-                              : html``}
-                            ${!this.sharedState.printable
-                              ? html`<sl-menu-item
-                                    type="checkbox"
-                                    .checked=${this.sharedState.scatterDatasets
-                                      .sets[
-                                      this.sharedState.scatterDatasets.sets
-                                        .length -
-                                        1 -
-                                        index_reverse
-                                    ].typeOfEachData[index_inlabels] ===
-                                    "number"
-                                      ? false
-                                      : true}
-                                    @mousedown=${(e: MouseEvent) => {
-                                      if (e.button !== 0) return;
-                                      this.sharedState.scatterDatasets.sets[
-                                        this.sharedState.scatterDatasets.sets
-                                          .length -
-                                          1 -
-                                          index_reverse
-                                      ].typeOfEachData[index_inlabels] =
-                                        "string";
-                                      this.sharedState.scatterDatasets.sets[
-                                        this.sharedState.scatterDatasets.sets
-                                          .length -
-                                          1 -
-                                          index_reverse
-                                      ].dimensional_data.map((data) => {
-                                        data.data[index_inlabels] =
-                                          data.data[index_inlabels].toString();
-                                      });
+                            <sl-menu-item
+                              @mousedown=${(e: MouseEvent) => {
+                                if (e.button !== 0) return;
+                                // e.preventDefault();
+                                // e.stopPropagation();
+                                this.deleteColumn(
+                                  this.sharedState.scatterDatasets.sets.length -
+                                    1 -
+                                    index_reverse,
+                                  index_inlabels
+                                );
+                                this.openColumnTypePopupIndexInLabels = -1;
+                                this.openColumnTypePopupIndexInSet = -1;
+                              }}
+                              ?disabled=${!(
+                                this.sharedState.editable ||
+                                this.sharedState.teacherOptions.addRemoveData
+                              )}
+                            >
+                              <sl-icon-button
+                                slot="prefix"
+                                src=${IconTrash}
+                                label="Settings"
+                              ></sl-icon-button>
+                              Delete Column
+                            </sl-menu-item>
+                            <sl-menu-item
+                              type="checkbox"
+                              .checked=${this.sharedState.scatterDatasets.sets[
+                                this.sharedState.scatterDatasets.sets.length -
+                                  1 -
+                                  index_reverse
+                              ].typeOfEachData[index_inlabels] === "number"
+                                ? false
+                                : true}
+                              @mousedown=${(e: MouseEvent) => {
+                                if (e.button !== 0) return;
+                                const targetIndex =
+                                  this.sharedState.scatterDatasets.sets.length -
+                                  1 -
+                                  index_reverse;
+                                const targetDataset =
+                                  this.sharedState.scatterDatasets.sets[
+                                    targetIndex
+                                  ];
 
-                                      if (
-                                        this.sharedState.scatterDatasets
-                                          .selected.dataset_indexes.length ===
-                                          1 &&
-                                        this.sharedState.scatterDatasets
-                                          .selected.dataset_indexes[0] ===
-                                          this.sharedState.scatterDatasets.sets
-                                            .length -
-                                            1 -
-                                            index_reverse &&
-                                        this.sharedState.scatterDatasets.sets[
-                                          this.sharedState.scatterDatasets.sets
-                                            .length -
-                                            1 -
-                                            index_reverse
-                                        ].filter?.label === label &&
-                                        this.sharedState.scatterDatasets.sets[
-                                          this.sharedState.scatterDatasets.sets
-                                            .length -
-                                            1 -
-                                            index_reverse
-                                        ].filter?.index_in_labels ===
-                                          index_inlabels
-                                      ) {
-                                        this.sharedState.scatterDatasets.sets[
-                                          this.sharedState.scatterDatasets.sets
-                                            .length -
-                                            1 -
-                                            index_reverse
-                                        ].filter.type = "string";
-                                        updateColorForFilter(
-                                          this.sharedState.scatterDatasets.sets[
-                                            this.sharedState.scatterDatasets
-                                              .sets.length -
-                                              1 -
-                                              index_reverse
-                                          ].filter.index_in_labels,
-                                          "string",
-                                          this.sharedState.scatterDatasets.sets[
-                                            this.sharedState.scatterDatasets
-                                              .sets.length -
-                                              1 -
-                                              index_reverse
-                                          ]
-                                        );
-                                      }
-                                    }}
-                                    class="button-datatype-category"
-                                    >Convert column values to
-                                    categorical</sl-menu-item
-                                  >
-                                  <sl-menu-item
-                                    type="checkbox"
-                                    .checked=${this.sharedState.scatterDatasets
-                                      .sets[
-                                      this.sharedState.scatterDatasets.sets
-                                        .length -
-                                        1 -
-                                        index_reverse
-                                    ].typeOfEachData[index_inlabels] ===
-                                    "number"
-                                      ? true
-                                      : false}
-                                    @mousedown=${(e: MouseEvent) => {
-                                      if (e.button !== 0) return;
-                                      this.sharedState.scatterDatasets.sets[
-                                        this.sharedState.scatterDatasets.sets
-                                          .length -
-                                          1 -
-                                          index_reverse
-                                      ].typeOfEachData[index_inlabels] =
-                                        "number";
-                                      this.sharedState.scatterDatasets.sets[
-                                        this.sharedState.scatterDatasets.sets
-                                          .length -
-                                          1 -
-                                          index_reverse
-                                      ].dimensional_data.map((data) => {
-                                        data.data[index_inlabels] = Number(
-                                          data.data[index_inlabels]
-                                        )
-                                          ? Number(data.data[index_inlabels])
-                                          : 0;
+                                // Update the typeOfEachData array immutably
+                                const updatedTypeOfEachData =
+                                  targetDataset.typeOfEachData.map((type, i) =>
+                                    i === index_inlabels ? "string" : type
+                                  );
 
-                                        if (
-                                          this.sharedState.scatterDatasets
-                                            .selected.dataset_indexes.length ===
-                                            1 &&
-                                          this.sharedState.scatterDatasets
-                                            .selected.dataset_indexes[0] ===
-                                            this.sharedState.scatterDatasets
-                                              .sets.length -
-                                              1 -
-                                              index_reverse &&
-                                          this.sharedState.scatterDatasets.sets[
-                                            this.sharedState.scatterDatasets
-                                              .sets.length -
-                                              1 -
-                                              index_reverse
-                                          ].filter?.label === label &&
-                                          this.sharedState.scatterDatasets.sets[
-                                            this.sharedState.scatterDatasets
-                                              .sets.length -
-                                              1 -
-                                              index_reverse
-                                          ].filter?.index_in_labels ===
-                                            index_inlabels
-                                        ) {
-                                          this.sharedState.scatterDatasets.sets[
-                                            this.sharedState.scatterDatasets
-                                              .sets.length -
-                                              1 -
-                                              index_reverse
-                                          ].filter.type = "number";
-                                          updateColorForFilter(
-                                            this.sharedState.scatterDatasets
-                                              .sets[
-                                              this.sharedState.scatterDatasets
-                                                .sets.length -
-                                                1 -
-                                                index_reverse
-                                            ].filter.index_in_labels,
-                                            "number",
-                                            this.sharedState.scatterDatasets
-                                              .sets[
-                                              this.sharedState.scatterDatasets
-                                                .sets.length -
-                                                1 -
-                                                index_reverse
-                                            ]
-                                          );
-                                        }
-                                      });
-                                    }}
-                                    class="button-datatype-number"
-                                    >Convert column values to
-                                    numeric</sl-menu-item
-                                  >`
-                              : html``}
+                                // Update the dimensional_data immutably
+                                const updatedDimensionalData =
+                                  targetDataset.dimensional_data.map(
+                                    (data) => ({
+                                      ...data,
+                                      data: data.data.map((d, i) =>
+                                        i === index_inlabels ? d.toString() : d
+                                      ),
+                                    })
+                                  );
+                                let updatedFilter = targetDataset.filter;
+
+                                if (
+                                  this.sharedState.scatterDatasets.selected
+                                    .dataset_indexes.length === 1 &&
+                                  this.sharedState.scatterDatasets.selected
+                                    .dataset_indexes[0] ===
+                                    this.sharedState.scatterDatasets.sets
+                                      .length -
+                                      1 -
+                                      index_reverse &&
+                                  this.sharedState.scatterDatasets.sets[
+                                    this.sharedState.scatterDatasets.sets
+                                      .length -
+                                      1 -
+                                      index_reverse
+                                  ].filter?.label === label &&
+                                  this.sharedState.scatterDatasets.sets[
+                                    this.sharedState.scatterDatasets.sets
+                                      .length -
+                                      1 -
+                                      index_reverse
+                                  ].filter?.index_in_labels === index_inlabels
+                                ) {
+                                  updatedFilter = {
+                                    ...targetDataset.filter,
+                                    type: "string",
+                                  };
+                                  updateColorForFilter(
+                                    updatedFilter.index_in_labels,
+                                    "string",
+                                    targetDataset
+                                  );
+                                }
+                                // Update the sets array immutably
+                                const updatedSets =
+                                  this.sharedState.scatterDatasets.sets.map(
+                                    (dataset, i) =>
+                                      i === targetIndex
+                                        ? {
+                                            ...dataset,
+                                            typeOfEachData:
+                                              updatedTypeOfEachData,
+                                            dimensional_data:
+                                              updatedDimensionalData,
+                                            filter: updatedFilter,
+                                          }
+                                        : dataset
+                                  );
+
+                                this.sharedState = {
+                                  ...this.sharedState,
+                                  scatterDatasets: {
+                                    ...this.sharedState.scatterDatasets,
+                                    sets: updatedSets,
+                                  },
+                                };
+                                this.dispatchStateChange();
+                              }}
+                              class="button-datatype-category"
+                              >Convert column values to
+                              categorical</sl-menu-item
+                            >
+                            <sl-menu-item
+                              type="checkbox"
+                              .checked=${this.sharedState.scatterDatasets.sets[
+                                this.sharedState.scatterDatasets.sets.length -
+                                  1 -
+                                  index_reverse
+                              ].typeOfEachData[index_inlabels] === "number"
+                                ? true
+                                : false}
+                              @mousedown=${(e: MouseEvent) => {
+                                if (e.button !== 0) return;
+                                const targetIndex =
+                                  this.sharedState.scatterDatasets.sets.length -
+                                  1 -
+                                  index_reverse;
+                                const targetDataset =
+                                  this.sharedState.scatterDatasets.sets[
+                                    targetIndex
+                                  ];
+
+                                // Update the typeOfEachData array immutably
+                                const updatedTypeOfEachData =
+                                  targetDataset.typeOfEachData.map((type, i) =>
+                                    i === index_inlabels ? "number" : type
+                                  );
+
+                                // Update the dimensional_data immutably
+                                const updatedDimensionalData =
+                                  targetDataset.dimensional_data.map(
+                                    (data) => ({
+                                      ...data,
+                                      data: data.data.map((d, i) =>
+                                        i === index_inlabels
+                                          ? Number(d)
+                                            ? Number(d)
+                                            : 0
+                                          : d
+                                      ),
+                                    })
+                                  );
+
+                                // Check if we need to update the filter and color
+                                let updatedFilter = targetDataset.filter;
+                                if (
+                                  this.sharedState.scatterDatasets.selected
+                                    .dataset_indexes.length === 1 &&
+                                  this.sharedState.scatterDatasets.selected
+                                    .dataset_indexes[0] === targetIndex &&
+                                  targetDataset.filter?.label === label &&
+                                  targetDataset.filter?.index_in_labels ===
+                                    index_inlabels
+                                ) {
+                                  updatedFilter = {
+                                    ...targetDataset.filter,
+                                    type: "number",
+                                  };
+                                  updateColorForFilter(
+                                    updatedFilter.index_in_labels,
+                                    "number",
+                                    targetDataset
+                                  );
+                                }
+
+                                // Update the sets array immutably
+                                const updatedSets =
+                                  this.sharedState.scatterDatasets.sets.map(
+                                    (dataset, i) =>
+                                      i === targetIndex
+                                        ? {
+                                            ...dataset,
+                                            typeOfEachData:
+                                              updatedTypeOfEachData,
+                                            dimensional_data:
+                                              updatedDimensionalData,
+                                            filter: updatedFilter,
+                                          }
+                                        : dataset
+                                  );
+
+                                this.sharedState = {
+                                  ...this.sharedState,
+                                  scatterDatasets: {
+                                    ...this.sharedState.scatterDatasets,
+                                    sets: updatedSets,
+                                  },
+                                };
+                                this.dispatchStateChange();
+                              }}
+                              class="button-datatype-number"
+                              >Convert column values to numeric</sl-menu-item
+                            >
                           </div>
                         </sl-popup>
                       </div>
@@ -609,23 +812,21 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                       <div
                         style="display: flex; flex-direction: row; align-items: center"
                       >
-                        ${!this.sharedState.printable
-                          ? html` <sl-icon-button
-                              ?disabled=${!(
-                                this.sharedState.editable ||
-                                this.sharedState.teacherOptions.addRemoveData
-                              )}
-                              src=${IconTrash}
-                              label="Settings"
-                              @click=${() =>
-                                this.deleteRow(
-                                  this.sharedState.scatterDatasets.sets.length -
-                                    1 -
-                                    index_reverse,
-                                  index_inscatter
-                                )}
-                            ></sl-icon-button>`
-                          : html``}
+                        <sl-icon-button
+                          ?disabled=${!(
+                            this.sharedState.editable ||
+                            this.sharedState.teacherOptions.addRemoveData
+                          )}
+                          src=${IconTrash}
+                          label="Settings"
+                          @click=${() =>
+                            this.deleteRow(
+                              this.sharedState.scatterDatasets.sets.length -
+                                1 -
+                                index_reverse,
+                              index_inscatter
+                            )}
+                        ></sl-icon-button>
                         <div class="input-wrapper">
                           <sl-input
                             ?disabled=${!(
@@ -636,10 +837,35 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                             type="number"
                             class="input"
                             value="${each_dataset.ids[index_inscatter]}"
-                            @sl-input=${(e: any) =>
-                              (each_dataset.ids[index_inscatter] = Number(
-                                e.target.value
-                              ))}
+                            @sl-input=${(e: any) => {
+                              const targetIndex =
+                                this.sharedState.scatterDatasets.sets.length -
+                                1 -
+                                index_reverse;
+                              const updatedSets =
+                                this.sharedState.scatterDatasets.sets.map(
+                                  (dataset, i) =>
+                                    i === targetIndex
+                                      ? {
+                                          ...dataset,
+                                          ids: dataset.ids.map((id, idx) =>
+                                            idx === index_inscatter
+                                              ? Number(e.target.value)
+                                              : id
+                                          ),
+                                        }
+                                      : dataset
+                                );
+                              this.sharedState = {
+                                ...this.sharedState,
+                                scatterDatasets: {
+                                  ...this.sharedState.scatterDatasets,
+                                  sets: updatedSets,
+                                },
+                              };
+
+                              this.dispatchStateChange();
+                            }}
                           ></sl-input>
                         </div>
                       </div>
@@ -676,24 +902,41 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                                   : "text"}"
                                 value="${data}"
                                 @sl-input=${(e: any) => {
-                                  each_dataset.typeOfEachData[index_indata] ===
-                                  "number"
-                                    ? (this.sharedState.scatterDatasets.sets[
-                                        this.sharedState.scatterDatasets.sets
-                                          .length -
-                                          1 -
-                                          index_reverse
-                                      ].dimensional_data[index_inscatter].data[
-                                        index_indata
-                                      ] = Number(e.target.value))
-                                    : (this.sharedState.scatterDatasets.sets[
-                                        this.sharedState.scatterDatasets.sets
-                                          .length -
-                                          1 -
-                                          index_reverse
-                                      ].dimensional_data[index_inscatter].data[
-                                        index_indata
-                                      ] = String(e.target.value));
+                                  const targetIndex =
+                                    this.sharedState.scatterDatasets.sets
+                                      .length -
+                                    1 -
+                                    index_reverse;
+                                  const targetDataset =
+                                    this.sharedState.scatterDatasets.sets[
+                                      targetIndex
+                                    ];
+                                  const updatedDimensionalData =
+                                    targetDataset.dimensional_data.map(
+                                      (dimData, idxScatter) => {
+                                        if (idxScatter !== index_inscatter)
+                                          return dimData;
+
+                                        const updatedData = dimData.data.map(
+                                          (data, idx) =>
+                                            idx === index_indata
+                                              ? each_dataset.typeOfEachData[
+                                                  index_indata
+                                                ] === "number"
+                                                ? Number(e.target.value)
+                                                : String(e.target.value)
+                                              : data
+                                        );
+
+                                        return {
+                                          ...dimData,
+                                          data: updatedData,
+                                        };
+                                      }
+                                    );
+
+                                  let updatedFilter = targetDataset.filter;
+
                                   if (
                                     this.sharedState.scatterDatasets.selected
                                       .dataset_indexes.length === 1 &&
@@ -717,33 +960,48 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                                         index_reverse
                                     ].filter?.index_in_labels === index_indata
                                   ) {
-                                    this.sharedState.scatterDatasets.sets[
-                                      this.sharedState.scatterDatasets.sets
-                                        .length -
-                                        1 -
-                                        index_reverse
-                                    ].filter.type === "number"
-                                      ? updateColorForFilter(
-                                          index_indata,
-                                          "number",
-                                          this.sharedState.scatterDatasets.sets[
-                                            this.sharedState.scatterDatasets
-                                              .sets.length -
-                                              1 -
-                                              index_reverse
-                                          ]
-                                        )
-                                      : updateColorForFilter(
-                                          index_indata,
-                                          "string",
-                                          this.sharedState.scatterDatasets.sets[
-                                            this.sharedState.scatterDatasets
-                                              .sets.length -
-                                              1 -
-                                              index_reverse
-                                          ]
-                                        );
+                                    updatedFilter = {
+                                      ...targetDataset.filter,
+                                      type:
+                                        each_dataset.typeOfEachData[
+                                          index_indata
+                                        ] === "number"
+                                          ? "number"
+                                          : "string",
+                                    };
+
+                                    updateColorForFilter(
+                                      index_indata,
+                                      each_dataset.typeOfEachData[
+                                        index_indata
+                                      ] === "number"
+                                        ? "number"
+                                        : "string",
+                                      targetDataset
+                                    );
                                   }
+                                  const updatedSets =
+                                    this.sharedState.scatterDatasets.sets.map(
+                                      (dataset, i) =>
+                                        i === targetIndex
+                                          ? {
+                                              ...dataset,
+                                              dimensional_data:
+                                                updatedDimensionalData,
+                                              filter: updatedFilter,
+                                            }
+                                          : dataset
+                                    );
+
+                                  this.sharedState = {
+                                    ...this.sharedState,
+                                    scatterDatasets: {
+                                      ...this.sharedState.scatterDatasets,
+                                      sets: updatedSets,
+                                    },
+                                  };
+
+                                  this.dispatchStateChange();
                                 }}
                               ></sl-input>
                             </div>
@@ -758,8 +1016,7 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
           </table>
           ${
             this.sharedState.editable ||
-            (this.sharedState.teacherOptions.addRemoveData &&
-              !this.sharedState.printable)
+            this.sharedState.teacherOptions.addRemoveData
               ? html`
                   <sl-popup
                     placement="right"
@@ -780,6 +1037,7 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
                           1 -
                           index_reverse;
                         e.target.focus();
+                        this.dispatchStateChange();
                       }}
                       @blur=${() => (this.addColumnPopupOpenIndex = -1)}
                     ></sl-icon-button>
@@ -837,29 +1095,6 @@ export class ScatterDatasetInput extends SharedTestStateMixin(
       </div>
     `
       )}`;
-  }
-  dispatchUpdateEvent() {
-    this.dispatchEvent(
-      new CustomEvent("wwci-change", {
-        detail: {
-          value: this.sharedState.scatterDatasets,
-        },
-        bubbles: false,
-        composed: true,
-      })
-    );
-  }
-
-  dispatchTitleUpdateEvent(title: string) {
-    this.dispatchEvent(
-      new CustomEvent("wwci-title-change", {
-        detail: {
-          value: title,
-        },
-        bubbles: false,
-        composed: true,
-      })
-    );
   }
 
   static styles = style;

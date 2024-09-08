@@ -1,5 +1,4 @@
 import { chartOption } from "../../../functions";
-// TODO: true does not work
 export const OptionDefinition = {
   //radius: chartOption("number", 0, "Radius", 0, 10),
   //filled: chartOption("boolean", true, "Filled"),
@@ -9,7 +8,7 @@ export const OptionDefinition = {
   animation: chartOption("boolean", false, "Animation"),
   showCorrelation: chartOption("boolean", false, "Show Correlation"),
   showOutliers: chartOption("boolean", false, "Show Outliers"),
-  showMeanLine: chartOption("boolean", true, "Show Mean"),
+  showMean: chartOption("boolean", true, "Show Mean"),
 };
 export const Definition = {
   animationTime: 2000,

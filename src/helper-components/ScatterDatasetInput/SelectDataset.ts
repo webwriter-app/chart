@@ -1,39 +1,50 @@
 import { css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { SharedTestStateMixin } from "../../state";
-import { LitElementWw } from "@webwriter/lit";
 import SlButton from "@shoelace-style/shoelace/dist/components/button/button.component.js";
 import SlPopup from "@shoelace-style/shoelace/dist/components/popup/popup.component.js";
 import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item.component.js";
 import SlSelect from "@shoelace-style/shoelace/dist/components/select/select.component.js";
 import SlOption from "@shoelace-style/shoelace/dist/components/option/option.component.js";
+import StateComponent from "../../stateComponent";
+import { ScatterDataset } from "../../interfaces";
 @customElement("wwci-select-dataset")
-export class SelectDataset extends SharedTestStateMixin(
-  LitElementWw as unknown as LitElementWw &
-    Parameters<typeof SharedTestStateMixin>[0]
-) {
+export class SelectDataset extends StateComponent {
   @state() accessor open = false;
 
   render() {
-    const selectedDatasets = this.sharedState.scatterDatasets.sets.filter(
-      (_, i) =>
+    const selectedDatasets: ScatterDataset[] =
+      this.sharedState.scatterDatasets.sets.filter((_, i) =>
         this.sharedState.scatterDatasets.selected.dataset_indexes.includes(i)
-    );
+      )
+        ? JSON.parse(
+            JSON.stringify(
+              this.sharedState.scatterDatasets.sets.filter((_, i) =>
+                this.sharedState.scatterDatasets.selected.dataset_indexes.includes(
+                  i
+                )
+              )
+            )
+          )
+        : [];
+
     const none = ["None"];
 
     // Find common labels and ensure their data types match
     const commonLabels =
-      selectedDatasets.length === 1 // if only one dataset is selected, we can use number and string types
-        ? [...selectedDatasets[0].labels]
+      selectedDatasets.length === 0
+        ? []
+        : selectedDatasets.length === 1
+        ? selectedDatasets[0]?.labels ?? []
         : selectedDatasets.reduce(
             (acc, set) =>
-              // Filter out labels that are not present in the current set or have type different from "number"
-              acc.filter(
-                (label) =>
-                  set.labels.includes(label) &&
-                  set.typeOfEachData[set.labels.indexOf(label)] === "number"
-              ),
-            // Initialize with labels and their types from the first selected dataset with type "number"
+              acc.filter((label) => {
+                const labelIndex = set.labels.indexOf(label);
+                return (
+                  labelIndex !== -1 &&
+                  set.typeOfEachData[labelIndex] === "number"
+                );
+              }),
+            // Initialize with a copy of labels from the first selected dataset with type "number"
             selectedDatasets[0]?.labels?.filter(
               (_, index) =>
                 selectedDatasets[0].typeOfEachData[index] === "number"
@@ -69,20 +80,30 @@ export class SelectDataset extends SharedTestStateMixin(
                     if (e.button !== 0) return;
                     e.preventDefault();
                     e.stopPropagation();
-                    const index =
-                      this.sharedState.scatterDatasets.selected.dataset_indexes.indexOf(
-                        i
-                      );
+                    // Avoid mutating state directly, use a new array
+                    const updatedIndexes = [
+                      ...this.sharedState.scatterDatasets.selected
+                        .dataset_indexes,
+                    ];
+                    const index = updatedIndexes.indexOf(i);
                     if (index !== -1) {
-                      this.sharedState.scatterDatasets.selected.dataset_indexes.splice(
-                        index,
-                        1
-                      );
+                      updatedIndexes.splice(index, 1);
                     } else {
-                      this.sharedState.scatterDatasets.selected.dataset_indexes.push(
-                        i
-                      );
+                      updatedIndexes.push(i);
                     }
+
+                    const updatedState = {
+                      ...this.sharedState,
+                      scatterDatasets: {
+                        ...this.sharedState.scatterDatasets,
+                        selected: {
+                          ...this.sharedState.scatterDatasets.selected,
+                          dataset_indexes: updatedIndexes,
+                        },
+                      },
+                    };
+                    this.sharedState = updatedState;
+                    this.dispatchStateChange();
                   }}
                   .checked=${
                     this.sharedState.scatterDatasets.selected.dataset_indexes.indexOf(
@@ -133,6 +154,7 @@ export class SelectDataset extends SharedTestStateMixin(
             ) {
               this.sharedState.scatterDatasets.selected.axis.y = "None";
             }
+            this.dispatchStateChange();
           }}
         >
           ${none
@@ -160,6 +182,7 @@ export class SelectDataset extends SharedTestStateMixin(
             ) {
               this.sharedState.scatterDatasets.selected.axis.x = "None";
             }
+            this.dispatchStateChange();
           }}
         >
           ${none

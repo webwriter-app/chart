@@ -1,7 +1,6 @@
 import { html, PropertyValues } from "lit";
 import * as d3 from "d3";
 import { customElement, property } from "lit/decorators.js";
-import { SharedTestStateMixin } from "../../../state";
 import { OptionDefinition, Definition } from "./definition";
 import SlRange from "@shoelace-style/shoelace/dist/components/range/range.js";
 import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js";
@@ -15,7 +14,6 @@ import IconHandIndex from "bootstrap-icons/icons/hand-index.svg";
 import IconEye from "bootstrap-icons/icons/eye.svg";
 import IconPencil from "bootstrap-icons/icons/pencil.svg";
 import IconFilter from "bootstrap-icons/icons/filter.svg";
-import { LitElementWw } from "@webwriter/lit";
 import {
   addBrushingListeners,
   addDragingPointListeners,
@@ -38,6 +36,7 @@ import {
   roundNumber,
 } from "./drawScatterplot";
 import style from "./scatterplot.style";
+import StateComponent from "../../../stateComponent";
 export interface PointOnlyNumbers {
   x: number;
   y: number;
@@ -73,10 +72,7 @@ export interface OneDimentionalNumberPoint {
 }
 
 @customElement("scatterplot-chart")
-export class ScatterplotChart extends SharedTestStateMixin(
-  LitElementWw as unknown as LitElementWw &
-    Parameters<typeof SharedTestStateMixin>[0]
-) {
+export class ScatterplotChart extends StateComponent {
   static styles = style;
 
   @property({ type: Object, attribute: true, reflect: true })
@@ -90,7 +86,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor selectByBrushing: boolean;
   @property({ type: Number, attribute: true, reflect: true })
-  accessor selectedIndextoAddNote: number;
+  accessor selectedIndextoAddNode: number;
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor deselectByBrushing: boolean;
   @property({ type: Boolean, attribute: true, reflect: true })
@@ -113,11 +109,25 @@ export class ScatterplotChart extends SharedTestStateMixin(
   accessor hoverCursorChange: boolean;
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor isDragging: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor animation: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor showGrid: boolean;
+  @property({ type: String, attribute: true, reflect: true })
+  accessor showRegressionLine: string;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor showCorrelation: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor hoverTooltip: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor showOutliers: boolean;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor showMean: boolean;
 
-  constructor(optionsDefinition = OptionDefinition) {
-    super();
-    this.sharedState.chart.optionDefinition = optionsDefinition;
-    this.sharedState.chart.options = Object.entries(optionsDefinition).reduce(
+  connectedCallback() {
+    super.connectedCallback();
+    this.sharedState.chart.optionDefinition = OptionDefinition;
+    this.sharedState.chart.options = Object.entries(OptionDefinition).reduce(
       (acc, [key, value]) => {
         acc[key] = this.sharedState.chart.options[key] ?? value.default;
         return acc;
@@ -125,24 +135,41 @@ export class ScatterplotChart extends SharedTestStateMixin(
       {} as any
     ) as ChartOptions<OptionDefinition>;
   }
-  // TODO: Fix this problem when moving lines
-  protected willUpdate(_changedProperties: PropertyValues) {
-    // if no properties changes it probably was a force update -> called by state library -> this.sharedState changed
-    if (_changedProperties.size === 0) {
-      if (!this.isDragging) {
-        // Add a condition if the line is not dragged
-        this.updateScatterplot();
-      }
+
+  // Lifecycle method that gets called after the component is updated
+  protected updated(_changedProperties: PropertyValues) {
+    super.updated(_changedProperties);
+
+    // Check if sharedState or any other relevant properties have changed
+    if (
+      _changedProperties.has("animation") ||
+      _changedProperties.has("showGrid") ||
+      _changedProperties.has("showCorrelation") ||
+      _changedProperties.has("showOutliers") ||
+      _changedProperties.has("showMean") ||
+      _changedProperties.has("showRegressionLine") ||
+      _changedProperties.has("hoverTooltip")
+    ) {
+      this.updateScatterplot();
     }
   }
 
   render() {
+    this.animation = this.sharedState.chart.options.animation as boolean;
+    this.hoverTooltip = this.sharedState.chart.options.hoverTooltip as boolean;
+    this.showGrid = this.sharedState.chart.options.showGrid as boolean;
+    this.showCorrelation = this.sharedState.chart.options
+      .showCorrelation as boolean;
+    this.showOutliers = this.sharedState.chart.options.showOutliers as boolean;
+    this.showMean = this.sharedState.chart.options.showMean as boolean;
+    this.showRegressionLine = this.sharedState.regressionType;
     const firstSelectedDataset =
-      this.sharedState.scatterDatasets.sets[
-        this.sharedState.scatterDatasets.selected.dataset_indexes[0]
-      ];
-    const selectedDatasets_count =
-      this.sharedState.scatterDatasets.selected.dataset_indexes.length;
+      this.sharedState.scatterDatasets.sets.length > 0
+        ? this.sharedState.scatterDatasets.sets[
+            this.sharedState.scatterDatasets.selected.dataset_indexes[0]
+          ]
+        : undefined;
+
     const x_axis_type =
       this.sharedState.scatterDatasets.selected.axis.x === "None"
         ? "none"
@@ -164,14 +191,27 @@ export class ScatterplotChart extends SharedTestStateMixin(
       x_axis_type === "number" &&
       y_axis_type === "number";
     const regressionTableVisible =
-      this.sharedState.regressionType !== "none" &&
+      (this.sharedState.regressionType !== "none" ||
+        this.sharedState.chart.options.showCorrelation) &&
       x_axis_type === "number" &&
-      y_axis_type === "number";
+      y_axis_type === "number" &&
+      this.sharedState.scatterDatasets.sets.length !== 0 &&
+      this.selectedDatasets_length !== 0 &&
+      this.totalDataLength !== 0;
     const filterTableVisible =
       this.sharedState.scatterDatasets.selected.dataset_indexes.length === 1 &&
       firstSelectedDataset?.filter?.label !== "" &&
       firstSelectedDataset?.filter?.type !== "none" &&
       firstSelectedDataset?.filter?.index_in_labels !== -1;
+    // If the animation is on, deactivate the addNode,  selectByClicking, selectByBrushing, deselectByBrushing,  drawLine
+    if (this.animation) {
+      this.selectedIndextoAddNode = undefined;
+      this.selectByClicking = false;
+      this.selectByBrushing = false;
+      this.deselectByBrushing = false;
+      this.drawLine = false;
+      this.hoverCursorChange = true;
+    }
     return html`<div class="scatterplot-root">
       <div class="scatterplot-wrapper">
         <div class="scatterplot-svg"></div>
@@ -190,13 +230,16 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   content=${
                     this.sharedState.chart.options.animation
                       ? "To use this option, you must first disable the animation"
+                      : this.sharedState.scatterDatasets.sets.length === 0
+                      ? "To use this option, you must first add dataset"
                       : this.totalDataLength === 0 &&
-                        selectedDatasets_count === 0
+                        this.selectedDatasets_length === 0
                       ? "To use this option, you must select at least one dataset"
                       : this.totalDataLength === 0 &&
-                        selectedDatasets_count === 1
+                        this.selectedDatasets_length === 1
                       ? "To use this option, you must first add at least one data point to the selected dataset table"
-                      : this.totalDataLength === 0 && selectedDatasets_count > 1
+                      : this.totalDataLength === 0 &&
+                        this.selectedDatasets_length > 1
                       ? "To use this option, you must first add at least one data point to the selected dataset tables"
                       : x_axis_type !== "number" || y_axis_type !== "number"
                       ? "The x and y axis must be numbers to use this option"
@@ -204,12 +247,34 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   }
                 >
                   <sl-button
-                    variant="default"
+                    variant=${
+                      this.selectedIndextoAddNode >= 0 ? "primary" : "default"
+                    }
                     size="small"
                     circle
                     id="add-point-button"
                     @click=${(e) => {
-                      this.addNode = true;
+                      if (
+                        this.drawLine ||
+                        this.selectByClicking ||
+                        this.selectByBrushing ||
+                        this.deselectByBrushing
+                      ) {
+                        this.drawLine = false;
+                        this.selectByClicking = false;
+                        this.selectByBrushing = false;
+                        this.deselectByBrushing = false;
+                        this.updateScatterplot();
+                      }
+
+                      if (this.selectedIndextoAddNode >= 0) {
+                        this.selectedIndextoAddNode = undefined;
+                        this.addNode = false;
+                        this.hoverCursorChange = true;
+                        this.updateScatterplot();
+                      } else {
+                        this.addNode = !this.addNode;
+                      }
                       e.target.focus();
                     }}
                     .disabled=${
@@ -225,27 +290,37 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 </sl-tooltip>
               </span>
               <div class="popup-content">
-                ${this.sharedState.scatterDatasets.selected.dataset_indexes.map(
-                  (dataset_index, i) => {
-                    const dataset =
-                      this.sharedState.scatterDatasets.sets[dataset_index];
-                    return html`
-                      <sl-menu-item
-                        type="checkbox"
-                        @mousedown=${(e: MouseEvent) => {
-                          if (e.button !== 0) return;
+                ${
+                  this.sharedState.scatterDatasets.sets.length !== 0
+                    ? this.sharedState.scatterDatasets.selected.dataset_indexes.map(
+                        (dataset_index, i) => {
+                          const dataset =
+                            this.sharedState.scatterDatasets.sets[
+                              dataset_index
+                            ];
+                          return html`
+                            <sl-menu-item
+                              type="checkbox"
+                              @mousedown=${(e: MouseEvent) => {
+                                if (e.button !== 0) return;
 
-                          this.selectedIndextoAddNote = i;
-                          this.hoverCursorChange = false;
-                          this.updateScatterplot();
-                        }}
-                        .checked=${this.selectedIndextoAddNote === i}
-                      >
-                        Add data of ${dataset.name}
-                      </sl-menu-item>
-                    `;
-                  }
-                )}
+                                if (this.selectedIndextoAddNode === i) {
+                                  this.selectedIndextoAddNode = undefined;
+                                } else {
+                                  this.selectedIndextoAddNode = i;
+                                  this.hoverCursorChange = false;
+                                  this.updateScatterplot();
+                                }
+                              }}
+                              .checked=${this.selectedIndextoAddNode === i}
+                            >
+                              Add data of ${dataset.name}
+                            </sl-menu-item>
+                          `;
+                        }
+                      )
+                    : html``
+                }
               </div>
             </sl-popup>
 
@@ -262,21 +337,24 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   content=${
                     this.sharedState.chart.options.animation
                       ? "To use this option, you must first disable the animation"
+                      : this.sharedState.scatterDatasets.sets.length === 0
+                      ? "To use this option, you must first add dataset"
                       : this.totalDataLength === 0 &&
-                        selectedDatasets_count === 0
+                        this.selectedDatasets_length === 0
                       ? "To use this option, you must select at least one dataset"
                       : this.totalDataLength === 0 &&
-                        selectedDatasets_count === 1
+                        this.selectedDatasets_length === 1
                       ? "To use this option, you must first add at least one data point to the selected dataset table"
-                      : this.totalDataLength === 0 && selectedDatasets_count > 1
+                      : this.totalDataLength === 0 &&
+                        this.selectedDatasets_length > 1
                       ? "To use this option, you must first add at least one data point to the selected dataset tables"
                       : x_axis_type === "none" &&
                         y_axis_type === "none" &&
-                        selectedDatasets_count === 1
+                        this.selectedDatasets_length === 1
                       ? "To use this option, you must first select the x or y axis"
                       : (x_axis_type !== "number" ||
                           y_axis_type !== "number") &&
-                        selectedDatasets_count > 1
+                        this.selectedDatasets_length > 1
                       ? "The x and y axis must be numbers to use this option"
                       : "Select data points"
                   }
@@ -284,7 +362,13 @@ export class ScatterplotChart extends SharedTestStateMixin(
                     "(De)select data points"}
                 >
                   <sl-button
-                    variant="default"
+                    variant=${
+                      this.selectByBrushing ||
+                      this.selectByClicking ||
+                      this.deselectByBrushing
+                        ? "primary"
+                        : "default"
+                    }
                     size="small"
                     circle
                     id="select-point-button"
@@ -293,12 +377,30 @@ export class ScatterplotChart extends SharedTestStateMixin(
                       this.sharedState.chart.options.animation ||
                       (x_axis_type === "none" &&
                         y_axis_type === "none" &&
-                        selectedDatasets_count === 1) ||
+                        this.selectedDatasets_length === 1) ||
                       ((x_axis_type !== "number" || y_axis_type !== "number") &&
-                        selectedDatasets_count > 1)
+                        this.selectedDatasets_length > 1)
                     }
                     @click=${(e) => {
-                      this.selectNode = true;
+                      if (this.selectedIndextoAddNode >= 0 || this.drawLine) {
+                        this.selectedIndextoAddNode = undefined;
+                        this.drawLine = false;
+                        this.updateScatterplot();
+                      }
+
+                      if (
+                        this.selectByBrushing ||
+                        this.selectByClicking ||
+                        this.deselectByBrushing
+                      ) {
+                        this.selectByClicking = false;
+                        this.selectByBrushing = false;
+                        this.deselectByBrushing = false;
+                        this.selectNode = false;
+                        this.updateScatterplot();
+                      } else {
+                        this.selectNode = !this.selectNode;
+                      }
                       e.target.focus();
                     }}
                     @blur=${() => (this.selectNode = false)}
@@ -378,30 +480,33 @@ export class ScatterplotChart extends SharedTestStateMixin(
                     this.sharedState.chart.options.animation ||
                     (x_axis_type === "none" &&
                       y_axis_type === "none" &&
-                      selectedDatasets_count === 1) ||
+                      this.selectedDatasets_length === 1) ||
                     ((x_axis_type !== "number" || y_axis_type !== "number") &&
-                      selectedDatasets_count > 1)
+                      this.selectedDatasets_length > 1)
                       ? "top-end"
                       : "top-center"
                   }
                   content=${
                     this.sharedState.chart.options.animation
                       ? "To use this option, you must first disable the animation"
+                      : this.sharedState.scatterDatasets.sets.length === 0
+                      ? "To use this option, you must first add dataset"
                       : this.totalDataLength === 0 &&
-                        selectedDatasets_count === 0
+                        this.selectedDatasets_length === 0
                       ? "To use this option, you must select at least one dataset"
                       : this.totalDataLength === 0 &&
-                        selectedDatasets_count === 1
+                        this.selectedDatasets_length === 1
                       ? "To use this option, you must first add at least one data point to the selected dataset table"
-                      : this.totalDataLength === 0 && selectedDatasets_count > 1
+                      : this.totalDataLength === 0 &&
+                        this.selectedDatasets_length > 1
                       ? "To use this option, you must first add at least one data point to the selected dataset tables"
                       : x_axis_type === "none" &&
                         y_axis_type === "none" &&
-                        selectedDatasets_count === 1
+                        this.selectedDatasets_length === 1
                       ? "To use this option, you must first select the x or y axis"
                       : (x_axis_type !== "number" ||
                           y_axis_type !== "number") &&
-                        selectedDatasets_count > 1
+                        this.selectedDatasets_length > 1
                       ? "The x and y axis must be numbers to use this option"
                       : "Show data points"
                   }
@@ -416,12 +521,27 @@ export class ScatterplotChart extends SharedTestStateMixin(
                       this.sharedState.chart.options.animation ||
                       (x_axis_type === "none" &&
                         y_axis_type === "none" &&
-                        selectedDatasets_count === 1) ||
+                        this.selectedDatasets_length === 1) ||
                       ((x_axis_type !== "number" || y_axis_type !== "number") &&
-                        selectedDatasets_count > 1)
+                        this.selectedDatasets_length > 1)
                     }
                     @click=${(e) => {
-                      this.editShowing = true;
+                      if (
+                        this.selectedIndextoAddNode >= 0 ||
+                        this.selectByClicking ||
+                        this.selectByBrushing ||
+                        this.deselectByBrushing ||
+                        this.drawLine
+                      ) {
+                        this.selectedIndextoAddNode = undefined;
+                        this.selectByClicking = false;
+                        this.selectByBrushing = false;
+                        this.deselectByBrushing = false;
+                        this.drawLine = false;
+                        this.updateScatterplot();
+                      }
+
+                      this.editShowing = !this.editShowing;
                       e.target.focus();
                     }}
                     @blur=${() => (this.editShowing = false)}
@@ -557,11 +677,16 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 content=${
                   this.sharedState.chart.options.animation
                     ? "To use this option, you must first disable the animation"
-                    : this.totalDataLength === 0 && selectedDatasets_count === 0
+                    : this.sharedState.scatterDatasets.sets.length === 0
+                    ? "To use this option, you must first add dataset"
+                    : this.totalDataLength === 0 &&
+                      this.selectedDatasets_length === 0
                     ? "To use this option, you must select at least one dataset"
-                    : this.totalDataLength === 0 && selectedDatasets_count === 1
+                    : this.totalDataLength === 0 &&
+                      this.selectedDatasets_length === 1
                     ? "To use this option, you must first add at least one data point to the selected dataset table"
-                    : this.totalDataLength === 0 && selectedDatasets_count > 1
+                    : this.totalDataLength === 0 &&
+                      this.selectedDatasets_length > 1
                     ? "To use this option, you must first add at least one data point to the selected dataset tables"
                     : x_axis_type !== "number" || y_axis_type !== "number"
                     ? "The x and y axis must be numbers to use this option"
@@ -569,15 +694,21 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 }
               >
                 <sl-button
-                  variant="default"
+                  
                   size="small"
                   circle
-                  id="add-point-button"
+                  id="draw-line-button"
                   @click=${(e) => {
                     if (e.button !== 0) return;
-                    this.drawLine = true;
+                    this.selectedIndextoAddNode = undefined;
+                    this.selectByClicking = false;
+                    this.selectByBrushing = false;
+                    this.deselectByBrushing = false;
+                    this.hoverCursorChange = false;
+                    this.drawLine = !this.drawLine;
                     this.updateScatterplot();
                   }}
+                  variant=${this.drawLine ? "primary" : "default"}
                   .disabled=${
                     this.sharedState.chart.options.animation ||
                     this.totalDataLength === 0 ||
@@ -600,24 +731,26 @@ export class ScatterplotChart extends SharedTestStateMixin(
                   hoist
                   placement=${
                     this.sharedState.chart.options.animation ||
-                    selectedDatasets_count !== 1 ||
+                    this.selectedDatasets_length !== 1 ||
                     this.totalDataLength === 0 ||
                     (x_axis_type === "none" &&
                       y_axis_type === "none" &&
-                      selectedDatasets_count === 1)
+                      this.selectedDatasets_length === 1)
                       ? "top-end"
                       : "top-center"
                   }
                   content=${
                     this.sharedState.chart.options.animation
                       ? "To use this option, you must first disable the animation"
-                      : selectedDatasets_count !== 1
+                      : this.sharedState.scatterDatasets.sets.length === 0
+                      ? "To use this option, you must first add dataset"
+                      : this.selectedDatasets_length !== 1
                       ? "To use this option, you must first select only one dataset"
                       : this.totalDataLength === 0
                       ? "To use this option, you must first add at least one data point to the selected dataset table"
                       : x_axis_type === "none" &&
                         y_axis_type === "none" &&
-                        selectedDatasets_count === 1
+                        this.selectedDatasets_length === 1
                       ? "To use this option, you must first select the x or y axis"
                       : "Filter data points"
                   }
@@ -628,16 +761,30 @@ export class ScatterplotChart extends SharedTestStateMixin(
                     circle
                     id="filter-button"
                     @click=${(e) => {
-                      this.filterOn = true;
+                      if (
+                        this.selectedIndextoAddNode >= 0 ||
+                        this.selectByClicking ||
+                        this.selectByBrushing ||
+                        this.deselectByBrushing ||
+                        this.drawLine
+                      ) {
+                        this.selectedIndextoAddNode = undefined;
+                        this.selectByClicking = false;
+                        this.selectByBrushing = false;
+                        this.deselectByBrushing = false;
+                        this.drawLine = false;
+                      }
+
+                      this.filterOn = !this.filterOn;
                       e.target.focus();
                     }}
                     .disabled=${
                       this.sharedState.chart.options.animation ||
-                      selectedDatasets_count !== 1 ||
+                      this.selectedDatasets_length !== 1 ||
                       this.totalDataLength === 0 ||
                       (x_axis_type === "none" &&
                         y_axis_type === "none" &&
-                        selectedDatasets_count === 1)
+                        this.selectedDatasets_length === 1)
                     }
                     @blur=${() => (this.filterOn = false)}
                   >
@@ -693,11 +840,24 @@ export class ScatterplotChart extends SharedTestStateMixin(
               regressionTableVisible ? "visible" : "hidden"
             }"
             style="max-height: ${
-              regressionTableVisible && !lineTableVisible && !filterTableVisible
+              this.sharedState.chart.options.animation &&
+              regressionTableVisible &&
+              !lineTableVisible &&
+              !filterTableVisible
+                ? "19rem"
+                : regressionTableVisible &&
+                  !lineTableVisible &&
+                  !filterTableVisible
                 ? "23rem"
+                : this.sharedState.chart.options.animation &&
+                  regressionTableVisible &&
+                  (!lineTableVisible || !filterTableVisible)
+                ? "8.5rem"
                 : regressionTableVisible &&
                   (!lineTableVisible || !filterTableVisible)
                 ? "11rem"
+                : this.sharedState.chart.options.animation
+                ? "3.8rem"
                 : "4.3rem"
             };"
           >
@@ -715,11 +875,24 @@ export class ScatterplotChart extends SharedTestStateMixin(
             class="table-wrapper ${lineTableVisible ? "visible" : "hidden"} 
             "
             style="max-height: ${
-              lineTableVisible && !regressionTableVisible && !filterTableVisible
+              this.sharedState.chart.options.animation &&
+              lineTableVisible &&
+              !regressionTableVisible &&
+              !filterTableVisible
+                ? "19rem"
+                : lineTableVisible &&
+                  !regressionTableVisible &&
+                  !filterTableVisible
                 ? "23rem"
+                : this.sharedState.chart.options.animation &&
+                  lineTableVisible &&
+                  (!regressionTableVisible || !filterTableVisible)
+                ? "8rem"
                 : lineTableVisible &&
                   (!regressionTableVisible || !filterTableVisible)
                 ? "10.5rem"
+                : this.sharedState.chart.options.animation
+                ? "6.5rem"
                 : "9rem"
             };"
           >
@@ -736,11 +909,24 @@ export class ScatterplotChart extends SharedTestStateMixin(
           <div
             class="table-wrapper ${filterTableVisible ? "visible" : "hidden"}"
             style="max-height: ${
-              filterTableVisible && !regressionTableVisible && !lineTableVisible
+              this.sharedState.chart.options.animation &&
+              filterTableVisible &&
+              !regressionTableVisible &&
+              !lineTableVisible
+                ? "19rem"
+                : filterTableVisible &&
+                  !regressionTableVisible &&
+                  !lineTableVisible
                 ? "23rem"
+                : this.sharedState.chart.options.animation &&
+                  filterTableVisible &&
+                  (!regressionTableVisible || !lineTableVisible)
+                ? "8.5rem"
                 : filterTableVisible &&
                   (!regressionTableVisible || !lineTableVisible)
                 ? "11rem"
+                : this.sharedState.chart.options.animation
+                ? "6.5rem"
                 : "9rem"
             };"
           >
@@ -783,15 +969,22 @@ export class ScatterplotChart extends SharedTestStateMixin(
   }
   get totalDataLength() {
     let length = 0;
-    this.sharedState.scatterDatasets.selected.dataset_indexes.forEach(
-      (dataset_index) => {
-        length +=
-          this.sharedState.scatterDatasets.sets[dataset_index].dimensional_data
-            .length;
-      }
-    );
+    if (this.sharedState.scatterDatasets.sets.length !== 0) {
+      this.sharedState.scatterDatasets.selected.dataset_indexes.forEach(
+        (dataset_index) => {
+          length +=
+            this.sharedState.scatterDatasets.sets[dataset_index]
+              .dimensional_data.length;
+        }
+      );
+    }
     return length;
   }
+
+  get selectedDatasets_length() {
+    return this.sharedState.scatterDatasets.selected.dataset_indexes.length;
+  }
+
   // Get the length of the selected data points
   get selectedDataLength() {
     let length = 0;
@@ -823,7 +1016,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
     this.selectByBrushing = false;
     this.selectByClicking = false;
     this.deselectByBrushing = false;
-    this.selectedIndextoAddNote = undefined;
+    this.selectedIndextoAddNode = undefined;
     this.hideSelected = false;
     this.hideUnselected = false;
     this.deleteSelected = false;
@@ -868,6 +1061,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
     // delete the left over tooltip
     d3.select(root).selectAll(".tooltip").remove();
     this.createScatterPlot(); // Redraw the scatter plot with the new animation time
+    this.dispatchStateChange();
   }
   // i is index of the selected label to filter
 
@@ -883,6 +1077,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
     d3.select(root).selectAll("path.line").remove();
 
     this.createScatterPlot();
+    this.dispatchStateChange();
   }
   // !IMPORTANT: TODO: Fix the drag behavior out of scatterplot area ?
   createScatterPlot() {
@@ -893,25 +1088,37 @@ export class ScatterplotChart extends SharedTestStateMixin(
           .includes(i)
     );
     const x_axis_type =
-      selectedDatasets.length === 0
+      this.sharedState.scatterDatasets.sets.length === 0
+        ? "noData"
+        : selectedDatasets.length === 0
         ? "noSelectedDataset"
+        : this.totalDataLength === 0 && selectedDatasets.length !== 0
+        ? "noDataInSelectedDatasets"
         : this.sharedState.scatterDatasets.selected.axis.x === "None"
         ? "none"
-        : selectedDatasets[0].typeOfEachData[
+        : selectedDatasets.length > 0
+        ? selectedDatasets[0].typeOfEachData[
             selectedDatasets[0].labels.indexOf(
               this.sharedState.scatterDatasets.selected.axis.x
             )
-          ];
+          ]
+        : undefined;
     const y_axis_type =
-      selectedDatasets.length === 0
+      this.sharedState.scatterDatasets.sets.length === 0
+        ? "noData"
+        : selectedDatasets.length === 0
         ? "noSelectedDataset"
+        : this.totalDataLength === 0 && selectedDatasets.length !== 0
+        ? "noDataInSelectedDatasets"
         : this.sharedState.scatterDatasets.selected.axis.y === "None"
         ? "none"
-        : selectedDatasets[0].typeOfEachData[
+        : selectedDatasets.length > 0
+        ? selectedDatasets[0].typeOfEachData[
             selectedDatasets[0].labels.indexOf(
               this.sharedState.scatterDatasets.selected.axis.y
             )
-          ];
+          ]
+        : undefined;
 
     const root = this.shadowRoot.querySelector(".scatterplot-svg");
     let animationTime = Number(this.definition.animationTime);
@@ -919,14 +1126,23 @@ export class ScatterplotChart extends SharedTestStateMixin(
       (x_axis_type === "number" && y_axis_type === "number") ||
       this.sharedState.scatterDatasets.selected.dataset_indexes.length > 1 ||
       (x_axis_type === "noSelectedDataset" &&
-        y_axis_type === "noSelectedDataset")
+        y_axis_type === "noSelectedDataset") ||
+      (x_axis_type === "noData" && y_axis_type === "noData") ||
+      (x_axis_type === "noDataInSelectedDatasets" &&
+        y_axis_type === "noDataInSelectedDatasets")
     ) {
       const axisLabels = {
         x: this.sharedState.scatterDatasets.selected.axis.x,
         y: this.sharedState.scatterDatasets.selected.axis.y,
       };
       const datasets: PointOnlyNumbers[][] =
-        this.sharedState.scatterDatasets.selected.dataset_indexes.length > 0
+        this.sharedState.scatterDatasets.selected.dataset_indexes.length > 0 &&
+        x_axis_type !== "noData" &&
+        y_axis_type !== "noData" &&
+        x_axis_type !== "noSelectedDataset" &&
+        y_axis_type !== "noSelectedDataset" &&
+        x_axis_type !== "noDataInSelectedDatasets" &&
+        y_axis_type !== "noDataInSelectedDatasets"
           ? this.sharedState.scatterDatasets.selected.dataset_indexes
               .sort()
               .map((dataset_index) => {
@@ -990,42 +1206,28 @@ export class ScatterplotChart extends SharedTestStateMixin(
         x_axis_type,
         x_axis_type
       );
+      // For scatter plot with regression
+      const regressionFormulaRoot = this.shadowRoot.querySelector(
+        ".regression-formulas"
+      );
+      [...regressionFormulaRoot.children].forEach((child) => child.remove());
 
       if (
-        (x_axis_type === "number" &&
-          y_axis_type === "number" &&
-          datasets_count > 0) ||
-        lineDatasets_count > 0
+        x_axis_type === "number" &&
+        y_axis_type === "number" &&
+        (datasets_count > 0 || lineDatasets_count > 0)
       ) {
         if (
           x_axis_type === "number" &&
           y_axis_type === "number" &&
           datasets_count > 0
         ) {
-          // Handle recht click to remove point
-          datasets.forEach((_, index) => {
-            svg
-              .selectAll(`circle.dataset-${index}`)
-              .on("contextmenu", (event) => {
-                deletePointListeners(
-                  event,
-                  svg,
-                  datasets,
-                  this.sharedState.scatterDatasets,
-                  scales
-                );
-                //Re-render
-                this.updateScatterplot();
-              });
-          });
-
           // Handle adding a new point
           if (
-            this.addNode &&
-            this.selectedIndextoAddNote !== null &&
-            this.selectedIndextoAddNote !== undefined &&
-            this.selectedIndextoAddNote >= 0 &&
-            this.selectedIndextoAddNote <
+            this.selectedIndextoAddNode !== null &&
+            this.selectedIndextoAddNode !== undefined &&
+            this.selectedIndextoAddNode >= 0 &&
+            this.selectedIndextoAddNode <
               this.sharedState.scatterDatasets.selected.dataset_indexes.length
           ) {
             // Change cursor to a circle with the color of the selected dataset
@@ -1034,7 +1236,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
               if (
                 this.sharedState.scatterDatasets.selected.dataset_indexes.indexOf(
                   index
-                ) === this.selectedIndextoAddNote
+                ) === this.selectedIndextoAddNode
               ) {
                 color = set.color;
               }
@@ -1057,10 +1259,11 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 svg,
                 scales,
                 this.sharedState.scatterDatasets,
-                this.selectedIndextoAddNote
+                this.selectedIndextoAddNode
               );
               this.addNode = false;
-              this.selectedIndextoAddNote = undefined;
+              this.selectedIndextoAddNode = undefined;
+              this.hoverCursorChange = true;
               this.updateScatterplot();
               if (
                 selectedDatasets.length === 1 &&
@@ -1081,12 +1284,10 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 this.updateScatterplot();
               }
             });
-            this.hoverCursorChange = true;
           }
 
           // Clicking for selecting points
           if (
-            this.selectNode &&
             this.selectByClicking &&
             !this.selectByBrushing &&
             !this.deselectByBrushing
@@ -1104,16 +1305,93 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 );
                 // Re-render
                 this.selectByClicking = false;
+                this.hoverCursorChange = true;
                 this.updateScatterplot();
               });
             });
-            this.hoverCursorChange = true;
           }
 
-          // Dragging points to change their position
-          //TODO: Fix the problem with yelow marks when dragging (maybe focus problem)
-          //TODO: yellow marks appear after (eg. selectwith brush). The setting disappears
-          if (!(this.selectNode || this.selectByClicking || this.addNode)) {
+          // Handle brushing to select points (Select all points if they have the same coordinates)
+          // Handle deselecting points by brushing (deselect all points if they have the same coordinates)
+          if (
+            (this.selectByBrushing || this.deselectByBrushing) &&
+            !this.selectByClicking
+          ) {
+            if (this.selectByBrushing || this.deselectByBrushing) {
+              addBrushingListeners(
+                svg,
+                scatter,
+                dimensions,
+                scales,
+                this.sharedState.scatterDatasets,
+                () => {
+                  this.selectByBrushing = false;
+                  this.deselectByBrushing = false;
+                  this.updateScatterplot();
+                },
+                this.selectByBrushing ? "select" : "deselect"
+              );
+            }
+          }
+          // Draw a line in scatter plot
+          if (this.drawLine) {
+            // change cursor to pencil
+
+            // Define the pencil SVG as a string
+            let pencilCursorSVG = `
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+  <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+</svg>
+`;
+
+            // Encode the SVG to a Base64 data URL
+            let pencilCursorURL = `data:image/svg+xml;base64,${btoa(
+              pencilCursorSVG
+            )}`;
+            svg.style("cursor", `url(${pencilCursorURL}) 0 16, auto`);
+
+            addDrawLineListeners(svg, scales, (line) => {
+              this.sharedState.lineDatasets.sets.push({ data: line });
+              this.drawLine = false;
+              this.hoverCursorChange = true;
+              this.updateScatterplot();
+            });
+          }
+          //Hide selected points
+          if (this.hideSelected) {
+            scatter.selectAll("circle").each(function (d: PointOnlyNumbers) {
+              if (d.selected) {
+                d3.select(this).style("display", "none");
+              }
+            });
+          }
+          //Hide unselected points
+          if (this.hideUnselected) {
+            scatter.selectAll("circle").each(function (d: PointOnlyNumbers) {
+              if (!d.selected) {
+                d3.select(this).style("display", "none");
+              }
+            });
+          }
+          // Show all points
+          if (this.showAll) {
+            scatter.selectAll("circle").each(function (_) {
+              d3.select(this).style("display", "block");
+            });
+          }
+
+          //----------------- manipulate points without condition
+
+          if (
+            !(
+              this.selectByClicking ||
+              this.selectedIndextoAddNode !== undefined ||
+              this.drawLine ||
+              this.selectByBrushing ||
+              this.deselectByBrushing
+            )
+          ) {
+            // Dragging points to change their position
             addDragingPointListeners(
               svg,
               scatter,
@@ -1142,95 +1420,31 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 }
               }
             );
-          }
-
-          // Handle brushing to select points (Select all points if they have the same coordinates)
-          // Handle deselecting points by brushing (deselect all points if they have the same coordinates)
-          if (this.selectNode && !this.selectByClicking) {
-            if (this.selectByBrushing || this.deselectByBrushing) {
-              addBrushingListeners(
-                svg,
-                scatter,
-                dimensions,
-                scales,
-                this.sharedState.scatterDatasets,
-                () => {
-                  this.selectByBrushing = false;
-                  this.deselectByBrushing = false;
+            // Handle recht click to remove point
+            datasets.forEach((_, index) => {
+              svg
+                .selectAll(`circle.dataset-${index}`)
+                .on("contextmenu", (event) => {
+                  deletePointListeners(
+                    event,
+                    svg,
+                    datasets,
+                    this.sharedState.scatterDatasets,
+                    scales
+                  );
+                  //Re-render
                   this.updateScatterplot();
-                },
-                this.selectByBrushing ? "select" : "deselect"
-              );
-            }
-          }
-
-          //Hide selected points
-          if (this.hideSelected) {
-            scatter.selectAll("circle").each(function (d: PointOnlyNumbers) {
-              if (d.selected) {
-                d3.select(this).style("display", "none");
-              }
+                });
             });
           }
-          //Hide unselected points
-          if (this.hideUnselected) {
-            scatter.selectAll("circle").each(function (d: PointOnlyNumbers) {
-              if (!d.selected) {
-                d3.select(this).style("display", "none");
-              }
-            });
-          }
-          // Show all points
-          if (this.showAll) {
-            scatter.selectAll("circle").each(function (_) {
-              d3.select(this).style("display", "block");
-            });
-          }
+          //-----------------
 
-          // Draw a line in scatter plot
-          if (this.drawLine) {
-            // change cursor to pencil
-
-            // Define the pencil SVG as a string
-            let pencilCursorSVG = `
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
-  <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
-</svg>
-`;
-
-            // Encode the SVG to a Base64 data URL
-            let pencilCursorURL = `data:image/svg+xml;base64,${btoa(
-              pencilCursorSVG
-            )}`;
-            svg.style("cursor", `url(${pencilCursorURL}) 0 16, auto`);
-
-            addDrawLineListeners(svg, scales, (line) => {
-              this.sharedState.lineDatasets.sets.push({ data: line });
-              this.updateScatterplot();
-            });
-            this.drawLine = false;
-          }
-
-          // For scatter plot with regression
-          const regressionFormulaRoot = this.shadowRoot.querySelector(
-            ".regression-formulas"
-          );
-          [...regressionFormulaRoot.children].forEach((child) =>
-            child.remove()
-          );
+          // Scatterplot with regression line and correlation coefficient
           datasets.forEach((dataset, i) => {
-            const tr = document.createElement("tr");
-            const td1 = document.createElement("td");
-            const td2 = document.createElement("td");
-            tr.appendChild(td1);
-            tr.appendChild(td2);
-            const regressionSpan = document.createElement("span");
-            td1.appendChild(regressionSpan);
-            const correlationSpan = document.createElement("span");
-            td2.appendChild(correlationSpan);
-            regressionFormulaRoot.appendChild(tr);
-
-            if (this.sharedState.regressionType !== "none") {
+            if (
+              this.sharedState.regressionType !== "none" ||
+              this.sharedState.chart.options.showCorrelation
+            ) {
               const color =
                 this.sharedState.scatterDatasets.sets[
                   this.sharedState.scatterDatasets.selected.dataset_indexes.sort()[
@@ -1246,39 +1460,45 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 color
               );
               const regressionFormula = result.regressionFormula;
-              const regressionError = result.regressionError;
-              //  show the formula of the regression line on the top left corner
-              if (regressionFormula !== "") {
-                regressionSpan.innerText = regressionFormula;
-                if (regressionError) {
-                  regressionSpan.style.overflowWrap = "break-word";
-                  regressionSpan.style.color = color;
-                  regressionSpan.style.backgroundColor = "#ffbbbb";
-                } else regressionSpan.style.wordBreak = "break-all";
-                regressionSpan.style.color = color;
-              }
-            }
-
-            if (this.sharedState.chart.options.showCorrelation) {
-              // calculate the correlation coefficient for each dataset
               const correlation = calculateCorrelation(dataset);
-              correlationSpan.innerText = (
-                Math.round(correlation * 100) / 100
-              ).toLocaleString();
-              correlationSpan.style.color =
-                this.sharedState.scatterDatasets.sets[i].color ?? "#69b3a2";
+              //  show the formula of the regression line on the top left corner
+              if (
+                regressionFormula !== "" ||
+                (this.sharedState.chart.options.showCorrelation && correlation)
+              ) {
+                const tr = document.createElement("tr");
+                const td1 = document.createElement("td");
+                const td2 = document.createElement("td");
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                const regressionSpan = document.createElement("span");
+                td1.appendChild(regressionSpan);
+                const correlationSpan = document.createElement("span");
+                td2.appendChild(correlationSpan);
+                regressionFormulaRoot.appendChild(tr);
+                regressionSpan.innerText = regressionFormula;
+                regressionSpan.style.wordBreak = "break-all";
+                regressionSpan.style.color = color;
+                if (this.sharedState.chart.options.showCorrelation) {
+                  // calculate the correlation coefficient for each dataset
+
+                  correlationSpan.innerText = (
+                    Math.round(correlation * 100) / 100
+                  ).toLocaleString();
+                  correlationSpan.style.color =
+                    this.sharedState.scatterDatasets.sets[i].color ?? "#69b3a2";
+                }
+              }
             }
           });
 
           // Animate the scatter plot
           // For each point appears with a tooltip
-          //TODO: See the papers about teaching scatterplot for the animation
-          //TODO: Fix the regression line?
           // TODO: Consider to deactivate the draging and deleting points during the animation
           // TODO: Fix the problem when during animation the user want to choose regression line by deactivate the regression line?
           if (this.sharedState.chart.options.animation) {
             svg
-              .selectAll("path")
+              .selectAll(`.regression-line`)
               .style("opacity", 0)
               .transition()
               .delay(this.totalDataLength * animationTime + 550)
@@ -1337,17 +1557,25 @@ export class ScatterplotChart extends SharedTestStateMixin(
                     .attr("class", `line-y-${i}`);
 
                   setTimeout(() => {
+                    const d_x =
+                      Math.abs(d.x) > 10 ** 7
+                        ? customFormatForBigNumber(d.x, 4)
+                        : roundNumber(d.x, 4);
+                    const d_y =
+                      Math.abs(d.y) > 10 ** 7
+                        ? customFormatForBigNumber(d.y, 4)
+                        : roundNumber(d.y, 4);
                     // Show the tooltip after the lines are drawn
                     tooltip
                       .style("opacity", 1)
                       .html(
                         axisLabels.x +
                           ": " +
-                          d.x +
-                          " " +
+                          d_x +
+                          "<br/>" +
                           axisLabels.y +
                           ": " +
-                          d.y
+                          d_y
                       )
                       .style("left", coords.x + 10 + "px")
                       .style("top", coords.y + 10 + "px");
@@ -1592,16 +1820,12 @@ export class ScatterplotChart extends SharedTestStateMixin(
             .attr("y2", y2)
             .attr("stroke", "#69b3a2")
             .attr("stroke-width", 2);
-          svg.select(`.line-${i}`).on("contextmenu", (_) => {
-            this.sharedState.lineDatasets.sets.splice(i, 1);
-            this.updateScatterplot();
-          });
 
           // Define the center point of the line
           const center = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
 
           // Append the center point
-          svg
+          const centerpoint = svg
             .append("rect")
             .datum([endPointsLeft, endPointsRight])
             .attr("class", `center-point-${i}`)
@@ -1611,26 +1835,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
             .attr("height", 10) // Height of the rectangle
             .attr("fill", "white") // Fill color of the rectangle
             .attr("stroke", "black")
-            .attr("stroke-width", 1.5)
-            .call(dragCenter);
-          svg
-            .select(`.center-point-${i}`)
-            .on("contextmenu", (event) => {
-              deleteLineListeners(
-                event,
-                svg,
-                lineDatasetsWithCenterPoint,
-                scales,
-                this.sharedState.lineDatasets
-              );
-              this.updateScatterplot();
-            })
-            .on("mouseover", () => {
-              svg.style("cursor", "move");
-            })
-            .on("mouseleave", () => {
-              svg.style("cursor", "default");
-            });
+            .attr("stroke-width", 1.5);
 
           // Append the end point left
           const end_point_left = svg
@@ -1644,24 +1849,6 @@ export class ScatterplotChart extends SharedTestStateMixin(
             .attr("fill", "white") // Fill color of the rectangle
             .attr("stroke", "black")
             .attr("stroke-width", 1.5);
-          svg
-            .select(`.end-point-left-${i}`)
-            .on("contextmenu", (event) => {
-              deleteLineListeners(
-                event,
-                svg,
-                lineDatasetsWithCenterPoint,
-                scales,
-                this.sharedState.lineDatasets
-              );
-              this.updateScatterplot();
-            })
-            .on("mouseover", () => {
-              svg.style("cursor", "move");
-            })
-            .on("mouseleave", () => {
-              svg.style("cursor", "default");
-            });
 
           // Append the end point right
           const end_point_right = svg
@@ -1675,26 +1862,93 @@ export class ScatterplotChart extends SharedTestStateMixin(
             .attr("fill", "white")
             .attr("stroke", "black")
             .attr("stroke-width", 1.5);
-          svg
-            .select(`.end-point-right-${i}`)
-            .on("contextmenu", (event) => {
-              deleteLineListeners(
-                event,
-                svg,
-                lineDatasetsWithCenterPoint,
-                scales,
-                this.sharedState.lineDatasets
-              );
+
+          //----------- manipulate the line without condition
+          if (
+            !(
+              this.selectByClicking ||
+              this.selectedIndextoAddNode !== undefined ||
+              this.drawLine ||
+              this.selectByBrushing ||
+              this.deselectByBrushing
+            )
+          ) {
+            // delete line by right click on line
+            svg.select(`.line-${i}`).on("contextmenu", (_) => {
+              this.sharedState.lineDatasets.sets.splice(i, 1);
               this.updateScatterplot();
-            })
-            .on("mouseover", () => {
-              svg.style("cursor", "move");
-            })
-            .on("mouseleave", () => {
-              svg.style("cursor", "default");
             });
-          end_point_left.call(dragEndPointsLeft);
-          end_point_right.call(dragEndPointsRight);
+            // Delete line by right click on center point
+            svg
+              .select(`.center-point-${i}`)
+              .on("contextmenu", (event) => {
+                deleteLineListeners(
+                  event,
+                  svg,
+                  lineDatasetsWithCenterPoint,
+                  scales,
+                  this.sharedState.lineDatasets
+                );
+                this.updateScatterplot();
+              })
+              .on("mouseover", () => {
+                if (this.hoverCursorChange) {
+                  svg.style("cursor", "move");
+                }
+              })
+              .on("mouseleave", () => {
+                svg.style("cursor", "default");
+              });
+            // delete line by right click on end point left
+            svg
+              .select(`.end-point-left-${i}`)
+              .on("contextmenu", (event) => {
+                deleteLineListeners(
+                  event,
+                  svg,
+                  lineDatasetsWithCenterPoint,
+                  scales,
+                  this.sharedState.lineDatasets
+                );
+                this.updateScatterplot();
+              })
+              .on("mouseover", () => {
+                if (this.hoverCursorChange) {
+                  svg.style("cursor", "move");
+                }
+              })
+              .on("mouseleave", () => {
+                svg.style("cursor", "default");
+              });
+            // delete line by right click on end point right
+            svg
+              .select(`.end-point-right-${i}`)
+              .on("contextmenu", (event) => {
+                deleteLineListeners(
+                  event,
+                  svg,
+                  lineDatasetsWithCenterPoint,
+                  scales,
+                  this.sharedState.lineDatasets
+                );
+                this.updateScatterplot();
+              })
+              .on("mouseover", () => {
+                if (this.hoverCursorChange) {
+                  svg.style("cursor", "move");
+                }
+              })
+              .on("mouseleave", () => {
+                svg.style("cursor", "default");
+              });
+
+            // Dragging line
+            centerpoint.call(dragCenter);
+            end_point_left.call(dragEndPointsLeft);
+            end_point_right.call(dragEndPointsRight);
+          }
+
+          //-----------
           if (this.sharedState.chart.options.animation) {
             svg
               .select(`.line-${i}`)
@@ -2045,204 +2299,202 @@ export class ScatterplotChart extends SharedTestStateMixin(
             ? "deselect"
             : undefined;
         // Flag to track if brushing is enabled
-        if (this.selectNode && !this.selectByClicking) {
-          if (this.selectByBrushing || this.deselectByBrushing) {
-            let brushingEnabled = true;
-            const brush = d3
-              .brush()
-              .extent([
-                [0, 0],
-                [dimensions.width, dimensions.height],
-              ])
-              .on("start brush", (event) => {
-                if (!brushingEnabled) return; // Exit if brushing is disabled
-                const selection = event.selection;
-                if (selection) {
-                  const x0 = selection[0][0],
-                    x1 = selection[1][0],
-                    y0 = selection[0][1],
-                    y1 = selection[1][1];
-                  datasets.forEach((d: Point, i) => {
-                    // Reset
+        if (
+          (this.selectByBrushing || this.deselectByBrushing) &&
+          !this.selectByClicking
+        ) {
+          let brushingEnabled = true;
+          const brush = d3
+            .brush()
+            .extent([
+              [0, 0],
+              [dimensions.width, dimensions.height],
+            ])
+            .on("start brush", (event) => {
+              if (!brushingEnabled) return; // Exit if brushing is disabled
+              const selection = event.selection;
+              if (selection) {
+                const x0 = selection[0][0],
+                  x1 = selection[1][0],
+                  y0 = selection[0][1],
+                  y1 = selection[1][1];
+                datasets.forEach((d: Point, i) => {
+                  // Reset
+                  scatter
+                    .select(`.dataset-${i}`)
+                    .classed("selected", d.selected);
+                  // Determine the cx and cy based on the type of axis (number or string)
+                  const cx =
+                    x_axis_type === "number"
+                      ? scales.x_num(d.x as number)
+                      : y_axis_type === "number"
+                      ? scales.x_band(d.x as string) + 6 + d.offset
+                      : scales.x_band(d.x as string) +
+                        bandwidth_result.x_bandwidth / 2;
+
+                  const cy =
+                    y_axis_type === "number"
+                      ? scales.y_num(d.y as number)
+                      : scales.y_band(d.y as string) -
+                        6 -
+                        d.offset +
+                        bandwidth_result.y_bandwidth;
+                  //console.log("Point" + i + "p" + "Cx" + cx + "Cy" + cy);
+                  //console.log("X0 " + x0 + "X1 " + x1 + "Y0 " + y0 + "Y1 " + y1);
+                  const boolean = x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
+
+                  if (boolean) {
                     scatter
                       .select(`.dataset-${i}`)
+                      .classed("selected", select_deselect === "select");
+                  }
+                });
+                singeledatasets.forEach((d: OneDimentionalPoint, i) => {
+                  // Reset
+
+                  if (x_axis_type === "none" && y_axis_type === "number") {
+                    scatter
+                      .select(`.single-y-${i}`)
                       .classed("selected", d.selected);
-                    // Determine the cx and cy based on the type of axis (number or string)
-                    const cx =
-                      x_axis_type === "number"
-                        ? scales.x_num(d.x as number)
-                        : y_axis_type === "number"
-                        ? scales.x_band(d.x as string) + 6 + d.offset
-                        : scales.x_band(d.x as string) +
-                          bandwidth_result.x_bandwidth / 2;
+                  } else if (
+                    x_axis_type === "number" &&
+                    y_axis_type === "none"
+                  ) {
+                    scatter
+                      .select(`.single-x-${i}`)
+                      .classed("selected", d.selected);
+                  } else if (
+                    x_axis_type === "none" &&
+                    y_axis_type === "string"
+                  ) {
+                    scatter
+                      .select(`.single-string-y-${i}`)
+                      .classed("selected", d.selected);
+                  } else if (
+                    x_axis_type === "string" &&
+                    y_axis_type === "none"
+                  ) {
+                    scatter
+                      .select(`.single-string-x-${i}`)
+                      .classed("selected", d.selected);
+                  }
 
-                    const cy =
-                      y_axis_type === "number"
-                        ? scales.y_num(d.y as number)
-                        : scales.y_band(d.y as string) -
-                          6 -
-                          d.offset +
-                          bandwidth_result.y_bandwidth;
-                    //console.log("Point" + i + "p" + "Cx" + cx + "Cy" + cy);
-                    //console.log("X0 " + x0 + "X1 " + x1 + "Y0 " + y0 + "Y1 " + y1);
-                    const boolean =
-                      x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
-
-                    if (boolean) {
-                      scatter
-                        .select(`.dataset-${i}`)
-                        .classed("selected", select_deselect === "select");
-                    }
-                  });
-                  singeledatasets.forEach((d: OneDimentionalPoint, i) => {
-                    // Reset
-
+                  const cx =
+                    x_axis_type === "none"
+                      ? 6 + d.offset
+                      : x_axis_type === "number"
+                      ? scales.x_num(d.p as number)
+                      : scales.x_band(d.p as string) +
+                        bandwidth_result.x_bandwidth / 2;
+                  const cy =
+                    y_axis_type === "none"
+                      ? -6 + dimensions.height - d.offset
+                      : y_axis_type === "number"
+                      ? scales.y_num(d.p as number)
+                      : scales.y_band(d.p as string) +
+                        bandwidth_result.y_bandwidth / 2;
+                  const boolean = x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
+                  if (boolean) {
                     if (x_axis_type === "none" && y_axis_type === "number") {
                       scatter
                         .select(`.single-y-${i}`)
-                        .classed("selected", d.selected);
+                        .classed("selected", select_deselect === "select");
                     } else if (
                       x_axis_type === "number" &&
                       y_axis_type === "none"
                     ) {
                       scatter
                         .select(`.single-x-${i}`)
-                        .classed("selected", d.selected);
+                        .classed("selected", select_deselect === "select");
                     } else if (
                       x_axis_type === "none" &&
                       y_axis_type === "string"
                     ) {
                       scatter
                         .select(`.single-string-y-${i}`)
-                        .classed("selected", d.selected);
+                        .classed("selected", select_deselect === "select");
                     } else if (
                       x_axis_type === "string" &&
                       y_axis_type === "none"
                     ) {
                       scatter
                         .select(`.single-string-x-${i}`)
-                        .classed("selected", d.selected);
+                        .classed("selected", select_deselect === "select");
                     }
-
-                    const cx =
-                      x_axis_type === "none"
-                        ? 6 + d.offset
-                        : x_axis_type === "number"
-                        ? scales.x_num(d.p as number)
-                        : scales.x_band(d.p as string) +
-                          bandwidth_result.x_bandwidth / 2;
-                    const cy =
-                      y_axis_type === "none"
-                        ? -6 + dimensions.height - d.offset
-                        : y_axis_type === "number"
-                        ? scales.y_num(d.p as number)
-                        : scales.y_band(d.p as string) +
-                          bandwidth_result.y_bandwidth / 2;
-                    const boolean =
-                      x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
-                    if (boolean) {
-                      if (x_axis_type === "none" && y_axis_type === "number") {
-                        scatter
-                          .select(`.single-y-${i}`)
-                          .classed("selected", select_deselect === "select");
-                      } else if (
-                        x_axis_type === "number" &&
-                        y_axis_type === "none"
-                      ) {
-                        scatter
-                          .select(`.single-x-${i}`)
-                          .classed("selected", select_deselect === "select");
-                      } else if (
-                        x_axis_type === "none" &&
-                        y_axis_type === "string"
-                      ) {
-                        scatter
-                          .select(`.single-string-y-${i}`)
-                          .classed("selected", select_deselect === "select");
-                      } else if (
-                        x_axis_type === "string" &&
-                        y_axis_type === "none"
-                      ) {
-                        scatter
-                          .select(`.single-string-x-${i}`)
-                          .classed("selected", select_deselect === "select");
-                      }
-                    }
-                  });
-                }
-              })
-              .on("end", (event) => {
-                if (!brushingEnabled) return; // Exit if brushing is disabled
-                const selection = event.selection;
-                // Set the selected points to the shared state
-                if (selection) {
-                  datasets.forEach((d: Point, i) => {
-                    const cx =
-                      x_axis_type === "number"
-                        ? scales.x_num(d.x as number)
-                        : y_axis_type === "number"
-                        ? scales.x_band(d.x as string) + 6 + d.offset
-                        : scales.x_band(d.x as string) +
-                          bandwidth_result.x_bandwidth / 2;
-                    const cy =
-                      y_axis_type === "number"
-                        ? scales.y_num(d.y as number)
-                        : scales.y_band(d.y as string) -
-                          6 -
-                          d.offset +
-                          bandwidth_result.y_bandwidth;
-                    const boolean =
-                      selection[0][0] <= cx &&
-                      cx <= selection[1][0] &&
-                      selection[0][1] <= cy &&
-                      cy <= selection[1][1];
-                    if (boolean) {
-                      selectedDataset.dimensional_data[i].selected =
-                        select_deselect === "select";
-                    }
-                  });
-                  singeledatasets.forEach((d: OneDimentionalPoint, i) => {
-                    const cx =
-                      x_axis_type === "none"
-                        ? 6 + d.offset
-                        : x_axis_type === "number"
-                        ? scales.x_num(d.p as number)
-                        : scales.x_band(d.p as string) +
-                          bandwidth_result.x_bandwidth / 2;
-                    const cy =
-                      y_axis_type === "none"
-                        ? -6 + dimensions.height - d.offset
-                        : y_axis_type === "number"
-                        ? scales.y_num(d.p as number)
-                        : scales.y_band(d.p as string) +
-                          bandwidth_result.y_bandwidth / 2;
-                    const boolean =
-                      selection[0][0] <= cx &&
-                      cx <= selection[1][0] &&
-                      selection[0][1] <= cy &&
-                      cy <= selection[1][1];
-                    if (boolean) {
-                      selectedDataset.dimensional_data[i].selected =
-                        select_deselect === "select";
-                    }
-                  });
-                }
-                brushingEnabled = false; // Disable brushing after the first brush
-                // delete the brush
-                svg.call(brush.move, null); // Clear the brush selection
-                svg.on(".brush", null); // Remove brush event listeners
-                svg.selectAll(".overlay").remove(); // Remove any overlay elements created by brushing
-                this.selectByBrushing = false;
-                this.deselectByBrushing = false;
-                this.updateScatterplot();
-              });
-            svg.call(brush);
-          }
+                  }
+                });
+              }
+            })
+            .on("end", (event) => {
+              if (!brushingEnabled) return; // Exit if brushing is disabled
+              const selection = event.selection;
+              // Set the selected points to the shared state
+              if (selection) {
+                datasets.forEach((d: Point, i) => {
+                  const cx =
+                    x_axis_type === "number"
+                      ? scales.x_num(d.x as number)
+                      : y_axis_type === "number"
+                      ? scales.x_band(d.x as string) + 6 + d.offset
+                      : scales.x_band(d.x as string) +
+                        bandwidth_result.x_bandwidth / 2;
+                  const cy =
+                    y_axis_type === "number"
+                      ? scales.y_num(d.y as number)
+                      : scales.y_band(d.y as string) -
+                        6 -
+                        d.offset +
+                        bandwidth_result.y_bandwidth;
+                  const boolean =
+                    selection[0][0] <= cx &&
+                    cx <= selection[1][0] &&
+                    selection[0][1] <= cy &&
+                    cy <= selection[1][1];
+                  if (boolean) {
+                    selectedDataset.dimensional_data[i].selected =
+                      select_deselect === "select";
+                  }
+                });
+                singeledatasets.forEach((d: OneDimentionalPoint, i) => {
+                  const cx =
+                    x_axis_type === "none"
+                      ? 6 + d.offset
+                      : x_axis_type === "number"
+                      ? scales.x_num(d.p as number)
+                      : scales.x_band(d.p as string) +
+                        bandwidth_result.x_bandwidth / 2;
+                  const cy =
+                    y_axis_type === "none"
+                      ? -6 + dimensions.height - d.offset
+                      : y_axis_type === "number"
+                      ? scales.y_num(d.p as number)
+                      : scales.y_band(d.p as string) +
+                        bandwidth_result.y_bandwidth / 2;
+                  const boolean =
+                    selection[0][0] <= cx &&
+                    cx <= selection[1][0] &&
+                    selection[0][1] <= cy &&
+                    cy <= selection[1][1];
+                  if (boolean) {
+                    selectedDataset.dimensional_data[i].selected =
+                      select_deselect === "select";
+                  }
+                });
+              }
+              brushingEnabled = false; // Disable brushing after the first brush
+              // delete the brush
+              svg.call(brush.move, null); // Clear the brush selection
+              svg.on(".brush", null); // Remove brush event listeners
+              svg.selectAll(".overlay").remove(); // Remove any overlay elements created by brushing
+              this.selectByBrushing = false;
+              this.deselectByBrushing = false;
+              this.updateScatterplot();
+            });
+          svg.call(brush);
         }
         // Select by clicking
         // Clicking for selecting points
         if (
-          this.selectNode &&
           this.selectByClicking &&
           !this.selectByBrushing &&
           !this.deselectByBrushing
@@ -2623,7 +2875,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
         //TODO: Pos. of the tooltip and the mean line
         if (
           (x_axis_type === "number" || y_axis_type === "number") &&
-          this.sharedState.chart.options.showMeanLine
+          this.sharedState.chart.options.showMean
         ) {
           const meanLine = (
             axis: "x" | "y" | "xy_xnum_ystr" | "xy_xstr_ynum"
@@ -2819,7 +3071,13 @@ export class ScatterplotChart extends SharedTestStateMixin(
         }
 
         // Dragging points to change their position along the axis
-        if (!(this.selectNode || this.selectByClicking)) {
+        if (
+          !(
+            this.selectByClicking ||
+            this.selectByBrushing ||
+            this.deselectByBrushing
+          )
+        ) {
           let minDistance = Infinity;
           let minDistance_band = Infinity;
           let index = -1;
@@ -3056,7 +3314,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                 });
                 if (
                   (x_axis_type === "number" || y_axis_type === "number") &&
-                  this.sharedState.chart.options.showMeanLine
+                  this.sharedState.chart.options.showMean
                 ) {
                   if (axis === "x" || axis === "y") {
                     const mean_singledataset = d3.mean(
@@ -3280,6 +3538,25 @@ export class ScatterplotChart extends SharedTestStateMixin(
                     coords.x = rect.x + rect.width / 2;
                     coords.y = rect.y + rect.height / 2;
                   }
+                  let d_x: number | string;
+                  if (x_axis_type === "number") {
+                    d_x =
+                      (datasets[i].x as number) > 10 ** 7
+                        ? customFormatForBigNumber(datasets[i].x as number, 4)
+                        : roundNumber(datasets[i].x as number, 4);
+                  } else {
+                    d_x = datasets[i].x;
+                  }
+
+                  let d_y: number | string;
+                  if (y_axis_type === "number") {
+                    d_y =
+                      (datasets[i].y as number) > 10 ** 5
+                        ? customFormatForBigNumber(datasets[i].y as number, 4)
+                        : roundNumber(datasets[i].y as number, 4);
+                  } else {
+                    d_y = datasets[i].y;
+                  }
                   tooltip
                     .style("opacity", 1)
                     .html(
@@ -3288,11 +3565,11 @@ export class ScatterplotChart extends SharedTestStateMixin(
                         "<br>" +
                         axisLabels.x +
                         ": " +
-                        datasets[i].x +
+                        d_x +
                         " " +
                         axisLabels.y +
                         ": " +
-                        datasets[i].y
+                        d_y
                     )
                     .style("left", coords.x + 10 + "px")
                     .style("top", coords.y + 10 + "px");
@@ -3331,6 +3608,13 @@ export class ScatterplotChart extends SharedTestStateMixin(
                     coords.x = rect.x + rect.width / 2;
                     coords.y = rect.y + rect.height / 2;
                   }
+                  const p_y: number =
+                    (singeledatasets[i].p as number) > 10 ** 5
+                      ? customFormatForBigNumber(
+                          singeledatasets[i].p as number,
+                          4
+                        )
+                      : roundNumber(singeledatasets[i].p as number, 4);
                   tooltip
                     .style("opacity", 1)
                     .html(
@@ -3339,7 +3623,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                         "<br>" +
                         axisLabels.y +
                         ": " +
-                        singeledatasets[i].p
+                        p_y
                     )
                     .style("left", coords.x + 10 + "px")
                     .style("top", coords.y + 10 + "px");
@@ -3428,6 +3712,13 @@ export class ScatterplotChart extends SharedTestStateMixin(
                     coords.x = rect.x + rect.width / 2;
                     coords.y = rect.y + rect.height / 2;
                   }
+                  const p_x: number =
+                    (singeledatasets[i].p as number) > 10 ** 7
+                      ? customFormatForBigNumber(
+                          singeledatasets[i].p as number,
+                          4
+                        )
+                      : roundNumber(singeledatasets[i].p as number, 4);
                   tooltip
                     .style("opacity", 1)
                     .html(
@@ -3436,7 +3727,7 @@ export class ScatterplotChart extends SharedTestStateMixin(
                         "<br>" +
                         axisLabels.x +
                         ": " +
-                        singeledatasets[i].p
+                        p_x
                     )
                     .style("left", coords.x + 10 + "px")
                     .style("top", coords.y + 10 + "px");

@@ -10,54 +10,106 @@ import {
 } from "../../functions";
 
 import style from "./DatasetInput.style";
-
 import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js";
 import SlColorPicker from "@shoelace-style/shoelace/dist/components/color-picker/color-picker.js";
 import IconTrash from "bootstrap-icons/icons/trash.svg";
 import IconPlusCircle from "bootstrap-icons/icons/plus-circle.svg";
-import { SharedTestStateMixin } from "../../state";
 import { FileUploadButton } from "../FileUploadButton";
-import { LitElementWw } from "@webwriter/lit";
+import StateComponent from "../../stateComponent";
 
 @customElement("wwci-dataset-input")
-export class DatasetInput extends SharedTestStateMixin(
-  LitElementWw as unknown as LitElementWw &
-    Parameters<typeof SharedTestStateMixin>[0]
-) {
+export class DatasetInput extends StateComponent {
   addDataset() {
-    this.sharedState.chart.datasets.sets.push({
+    const newDataset = {
       name: randomString(),
       color: randomColor(),
       colors: this.sharedState.chart.datasets.sets[0].colors,
       data: Array(this.sharedState.chart.datasets.sets[0].data.length)
         .fill("")
         .map(() => randomNumber()),
-    });
+    };
+    this.sharedState = {
+      ...this.sharedState,
+      chart: {
+        ...this.sharedState.chart,
+        datasets: {
+          ...this.sharedState.chart.datasets,
+          sets: [...this.sharedState.chart.datasets.sets, newDataset],
+        },
+      },
+    };
+    this.dispatchStateChange();
   }
 
   addColumn() {
-    this.sharedState.chart.datasets.labels.push(randomString());
-    this.sharedState.chart.datasets.sets =
-      this.sharedState.chart.datasets.sets.map((dataset) => {
-        dataset.data.push(randomNumber());
-        dataset.colors.push(randomColor());
-        return dataset;
-      });
+    const updatedSets = this.sharedState.chart.datasets.sets.map((dataset) => {
+      return {
+        ...dataset,
+        data: [...dataset.data, randomNumber()],
+        colors: [...dataset.colors, randomColor()],
+      };
+    });
+    const updatedLabels = [
+      ...this.sharedState.chart.datasets.labels,
+      randomString(),
+    ];
+
+    this.sharedState = {
+      ...this.sharedState,
+      chart: {
+        ...this.sharedState.chart,
+        datasets: {
+          ...this.sharedState.chart.datasets,
+          sets: updatedSets,
+          labels: updatedLabels,
+        },
+      },
+    };
+    this.dispatchStateChange();
   }
 
   deleteColumn(i: number) {
-    this.sharedState.chart.datasets.labels.splice(i, 1);
-    this.sharedState.chart.datasets.sets =
-      this.sharedState.chart.datasets.sets.map((dataset) => {
-        dataset.data.splice(i, 1);
-        dataset.colors.splice(i, 1);
-        return dataset;
-      });
+    const updatedSets = this.sharedState.chart.datasets.sets.map((dataset) => {
+      return {
+        ...dataset,
+        data: dataset.data.filter((_, j) => j !== i),
+        colors: dataset.colors.filter((_, j) => j !== i),
+      };
+    });
+    const updatedLabels = this.sharedState.chart.datasets.labels.filter(
+      (_, j) => j !== i
+    );
+
+    this.sharedState = {
+      ...this.sharedState,
+      chart: {
+        ...this.sharedState.chart,
+        datasets: {
+          ...this.sharedState.chart.datasets,
+          sets: updatedSets,
+          labels: updatedLabels,
+        },
+      },
+    };
+    this.dispatchStateChange();
   }
 
   deleteDataset(i: number) {
-    this.sharedState.chart.datasets.sets.splice(i, 1);
+    const updatedSets = this.sharedState.chart.datasets.sets.filter(
+      (_, j) => j !== i
+    );
+    this.sharedState = {
+      ...this.sharedState,
+      chart: {
+        ...this.sharedState.chart,
+        datasets: {
+          ...this.sharedState.chart.datasets,
+          sets: updatedSets,
+        },
+      },
+    };
+    this.dispatchStateChange();
   }
 
   render() {
@@ -85,9 +137,24 @@ export class DatasetInput extends SharedTestStateMixin(
                             type="text"
                             class="input"
                             value="${label}"
-                            @sl-input=${(e: any) =>
-                              (this.sharedState.chart.datasets.labels[i] =
-                                e.target.value)}
+                            @sl-input=${(e: any) => {
+                              const newLabels =
+                                this.sharedState.chart.datasets.labels.map(
+                                  (label, index) =>
+                                    index === i ? e.target.value : label
+                                );
+                              this.sharedState = {
+                                ...this.sharedState, // spread the existing sharedState
+                                chart: {
+                                  ...this.sharedState.chart, // spread the existing chart
+                                  datasets: {
+                                    ...this.sharedState.chart.datasets, // spread the existing datasets
+                                    labels: newLabels, // update the labels array immutably
+                                  },
+                                },
+                              };
+                              this.dispatchStateChange();
+                            }}
                           ></sl-input>
                         </div>
                         ${!this.sharedState.printable
@@ -136,9 +203,27 @@ export class DatasetInput extends SharedTestStateMixin(
                             type="text"
                             class="input"
                             value="${dataset.name}"
-                            @sl-input=${(e: any) =>
-                              (this.sharedState.chart.datasets.sets[i].name =
-                                e.target.value)}
+                            @sl-input=${(e: any) => {
+                              const newSets =
+                                this.sharedState.chart.datasets.sets.map(
+                                  (set, index) =>
+                                    index === i
+                                      ? { ...set, name: e.target.value }
+                                      : set
+                                );
+
+                              this.sharedState = {
+                                ...this.sharedState, // spread the existing sharedState
+                                chart: {
+                                  ...this.sharedState.chart, // spread the existing chart
+                                  datasets: {
+                                    ...this.sharedState.chart.datasets, // spread the existing datasets
+                                    sets: newSets, // update the sets array immutably
+                                  },
+                                },
+                              };
+                              this.dispatchStateChange();
+                            }}
                           ></sl-input>
                         </div>
 
@@ -151,10 +236,26 @@ export class DatasetInput extends SharedTestStateMixin(
                                 )}
                                 value="${this.sharedState.chart.datasets.sets[i]
                                   .color}"
-                                @sl-input=${(e: any) =>
-                                  (this.sharedState.chart.datasets.sets[
-                                    i
-                                  ].color = e.target.value)}
+                                @sl-input=${(e: any) => {
+                                  const newSets =
+                                    this.sharedState.chart.datasets.sets.map(
+                                      (set, index) =>
+                                        index === i
+                                          ? { ...set, color: e.target.value }
+                                          : set
+                                    );
+                                  this.sharedState = {
+                                    ...this.sharedState, // spread the existing sharedState
+                                    chart: {
+                                      ...this.sharedState.chart, // spread the existing chart
+                                      datasets: {
+                                        ...this.sharedState.chart.datasets, // spread the existing datasets
+                                        sets: newSets, // update the sets array immutably
+                                      },
+                                    },
+                                  };
+                                  this.dispatchStateChange();
+                                }}
                               ></sl-color-picker>
                             `
                           : html``}
@@ -176,10 +277,40 @@ export class DatasetInput extends SharedTestStateMixin(
                                 type="number"
                                 class="input"
                                 value="${value}"
-                                @sl-input=${(e: any) =>
-                                  (this.sharedState.chart.datasets.sets[i].data[
-                                    j
-                                  ] = Number(e.target.value))}
+                                @sl-input=${(e: any) => {
+                                  const newSets =
+                                    this.sharedState.chart.datasets.sets.map(
+                                      (set, index) => {
+                                        if (index === i) {
+                                          // Update the specific data point in the dataset
+                                          const newData = set.data.map(
+                                            (dataPoint, dataIndex) =>
+                                              dataIndex === j
+                                                ? Number(e.target.value)
+                                                : dataPoint
+                                          );
+
+                                          // Return the updated set with the new data array
+                                          return { ...set, data: newData };
+                                        }
+
+                                        // Return the original set if the index doesn't match
+                                        return set;
+                                      }
+                                    );
+
+                                  this.sharedState = {
+                                    ...this.sharedState, // spread the existing sharedState
+                                    chart: {
+                                      ...this.sharedState.chart, // spread the existing chart
+                                      datasets: {
+                                        ...this.sharedState.chart.datasets, // spread the existing datasets
+                                        sets: newSets, // update the sets array immutably with new data
+                                      },
+                                    },
+                                  };
+                                  this.dispatchStateChange();
+                                }}
                               ></sl-input>
                             </div>
 
@@ -192,10 +323,43 @@ export class DatasetInput extends SharedTestStateMixin(
                                   value="${this.sharedState.chart.datasets.sets[
                                     i
                                   ].colors[j]}"
-                                  @sl-input=${(e: any) =>
-                                    (this.sharedState.chart.datasets.sets[
-                                      i
-                                    ].colors[j] = e.target.value)}
+                                  @sl-input=${(e: any) => {
+                                    const newSets =
+                                      this.sharedState.chart.datasets.sets.map(
+                                        (set, setIndex) => {
+                                          if (setIndex === i) {
+                                            // Update the specific color at index j in the colors array
+                                            const newColors = set.colors.map(
+                                              (color, colorIndex) =>
+                                                colorIndex === j
+                                                  ? e.target.value
+                                                  : color
+                                            );
+
+                                            // Return the updated set with the new colors array
+                                            return {
+                                              ...set,
+                                              colors: newColors,
+                                            };
+                                          }
+
+                                          // Return the original set if the index doesn't match
+                                          return set;
+                                        }
+                                      );
+
+                                    this.sharedState = {
+                                      ...this.sharedState, // spread the existing sharedState
+                                      chart: {
+                                        ...this.sharedState.chart, // spread the existing chart
+                                        datasets: {
+                                          ...this.sharedState.chart.datasets, // spread the existing datasets
+                                          sets: newSets, // update the sets array immutably with new colors
+                                        },
+                                      },
+                                    };
+                                    this.dispatchStateChange();
+                                  }}
                                 ></sl-color-picker>`
                               : html``}
                           </div>
@@ -227,8 +391,20 @@ export class DatasetInput extends SharedTestStateMixin(
                   @wwcifileinput=${async (e) => {
                     const fileContent = await readFileInput(e.detail.value);
                     const { datasets, title } = csvToDataset(fileContent);
-                    this.sharedState.chart.datasets = datasets;
-                    if (title) this.dispatchTitleUpdateEvent(title);
+                    // Create a new immutable sharedState object
+                    this.sharedState = {
+                      ...this.sharedState, // spread the existing sharedState
+                      chart: {
+                        ...this.sharedState.chart, // spread the existing chart
+                        datasets: {
+                          ...this.sharedState.chart.datasets, // spread the existing datasets
+                          sets: datasets.sets, // update the sets array with the new datasets
+                          labels: datasets.labels, // update labels if necessary (optional, depends on your csvToDataset result)
+                        },
+                        title: title, // update the title immutably
+                      },
+                    };
+                    this.dispatchStateChange();
                   }}
                 ></wwci-file-upload-button>
               `
@@ -236,30 +412,6 @@ export class DatasetInput extends SharedTestStateMixin(
         </div>
       </div>
     </div>`;
-  }
-
-  dispatchUpdateEvent() {
-    this.dispatchEvent(
-      new CustomEvent("wwci-change", {
-        detail: {
-          value: this.sharedState.chart.datasets,
-        },
-        bubbles: false,
-        composed: true,
-      })
-    );
-  }
-
-  dispatchTitleUpdateEvent(title: string) {
-    this.dispatchEvent(
-      new CustomEvent("wwci-title-change", {
-        detail: {
-          value: title,
-        },
-        bubbles: false,
-        composed: true,
-      })
-    );
   }
 
   static styles = style;

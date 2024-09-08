@@ -10,8 +10,18 @@ import { OptionDefinition } from "./definition";
 
 @customElement("radar-chart")
 export class RadarChart extends GenericChart<typeof OptionDefinition> {
-  constructor() {
-    super(OptionDefinition);
+  connectedCallback() {
+    super.connectedCallback();
+    this.sharedState.chart.optionDefinition = OptionDefinition;
+    this.sharedState.chart.options = Object.entries(OptionDefinition).reduce(
+      (acc, [key, value]) => {
+        acc[key] = this.sharedState.chart.options[key] ?? value.default;
+        return acc;
+      },
+      {} as any
+    ) as ChartOptions<OptionDefinition>;
+
+    this.requestUpdate();
   }
 
   @state()
@@ -26,7 +36,9 @@ export class RadarChart extends GenericChart<typeof OptionDefinition> {
     const datasets = this.prepareDataset();
 
     this.chartHelper.setTitle(this.label);
-    this.chartHelper.setLineSmooth(this.options.smoothTheLine);
+    this.chartHelper.setLineSmooth(
+      this.sharedState.chart.options.smoothTheLine as boolean
+    );
 
     this.chartHelper.setXLabels(this.datasets.labels);
     updateData(datasets, this.chartHelper.chart.data.datasets);
@@ -43,11 +55,14 @@ export class RadarChart extends GenericChart<typeof OptionDefinition> {
         labels: this.datasets.labels,
         datasets: datasets,
       },
+      options: {},
     });
 
-    this.chartHelper = new ChartHelper("radar", chart);
+    this.chartHelper = ChartHelper.create("radar", chart);
     this.chartHelper.setTitle(this.label);
-    this.chartHelper.setLineSmooth(this.options.smoothTheLine);
+    this.chartHelper.setLineSmooth(
+      this.sharedState.chart.options.smoothTheLine as boolean
+    );
 
     this.chartHelper.update();
   }
@@ -65,20 +80,20 @@ export class RadarChart extends GenericChart<typeof OptionDefinition> {
       return {
         label: dataset.name,
         data: dataset.data,
-        backgroundColor: this.options.fill
+        backgroundColor: this.sharedState.chart.options.fill
           ? dataset.colors.map(() => dataset.color)
           : dataset.colors.map(() => addAlphaToRGB(dataset.color, 0.2)),
 
-        pointBackgroundColor: this.options.pointColors
+        pointBackgroundColor: this.sharedState.chart.options.pointColors
           ? dataset.colors
           : dataset.colors.map(() => dataset.color),
 
         borderColor: dataset.color,
 
-        borderWidth: this.options.borderWidth ?? 1,
+        borderWidth: Number(this.sharedState.chart.options.borderWidth ?? 1),
 
         pointBorderColor: "transparent",
-        pointRadius: this.options.pointRadius,
+        pointRadius: Number(this.sharedState.chart.options.pointRadius ?? 0),
       };
     });
     return result;

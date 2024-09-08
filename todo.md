@@ -12,9 +12,8 @@
 
 # Individual Todos
 
-- see view mode and fix bugs
+- index.html, Barchart.ts,printable,editable,usw.
 - csv file
-- Design x for each chart option, show data, teacher options
 - Redo, unredo
 - import component
 

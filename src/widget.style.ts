@@ -125,25 +125,7 @@ export default css`
     width: 100%;
     overflow: auto;
   }
-  #options-panel {
-    overflow: auto;
-    padding-left: 20px;
-    padding-right: 20px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-gap: 10px;
-    box-sizing: border-box;
-  }
-  #teacher-options-panel {
-    background-color: white;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-sizing: border-box;
-    padding-bottom: 2px;
-  }
-
+ 
   #settings {
     color: var(--sl-color-gray-600);
     font-size: var(--sl-font-size-medium);

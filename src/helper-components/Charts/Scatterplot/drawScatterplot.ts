@@ -381,16 +381,38 @@ function drawAxis(
   const gy = svg.append("g").style("color", "#a29e9e");
   // count the points in datasets
   if (
-    x_axis_type === "noSelectedDataset" &&
-    y_axis_type === "noSelectedDataset" &&
+    ((x_axis_type === "noSelectedDataset" &&
+      y_axis_type === "noSelectedDataset") ||
+      (x_axis_type === "noData" && y_axis_type === "noData") ||
+      (x_axis_type === "noDataInSelectedDatasets" &&
+        y_axis_type === "noDataInSelectedDatasets")) &&
     lineDatasets_count === 0
   ) {
-    svg
-      .append("text")
-      .attr("x", width / 2)
-      .attr("y", height / 2)
-      .attr("text-anchor", "middle")
-      .text("Please select at least one dataset");
+    if (
+      x_axis_type === "noSelectedDataset" &&
+      y_axis_type === "noSelectedDataset"
+    ) {
+      svg
+        .append("text")
+        .attr("x", width / 2)
+        .attr("y", height / 2)
+        .attr("text-anchor", "middle")
+        .text("Please select at least one dataset");
+    } else if (x_axis_type === "noData" && y_axis_type === "noData") {
+      svg
+        .append("text")
+        .attr("x", width / 2)
+        .attr("y", height / 2)
+        .attr("text-anchor", "middle")
+        .text("Please add dataset");
+    } else {
+      svg
+        .append("text")
+        .attr("x", width / 2)
+        .attr("y", height / 2)
+        .attr("text-anchor", "middle")
+        .text("Please add data to the selected dataset(s)");
+    }
   } else if (
     (x_axis_type === "none" || y_axis_type === "none") &&
     lineDatasets_count === 0
@@ -951,9 +973,9 @@ function findTheClosestPoint(
   const flattenedDatasets = datasets.flat();
   for (let i = flattenedDatasets.length - 1; i >= 0; i--) {
     const point = flattenedDatasets[i];
-    const distance = Math.sqrt(
-      (point.x - click_X) ** 2 + (point.y - click_Y) ** 2
-    );
+    const diff_x = Math.abs(point.x - click_X);
+    const diff_y = Math.abs(point.y - click_Y);
+    const distance = diff_x + diff_y;
     if (distance < minDistance) {
       minDistance = distance;
       closestPoint = point;
@@ -1090,6 +1112,7 @@ function addGridListeners(
   grid_x.selectAll(".domain").remove(); // Important, since the activities on point are not working
   grid_y.selectAll(".domain").remove();
 }
+// 10^7 for x-axis and 10^5 for y-axis
 function roundNumber(num: number, decimal: number): number {
   // if the number with less than 4 decimal places, return the number
   const [_, decimalPart] = num.toString().split(".");
@@ -1111,15 +1134,15 @@ function addRegressionLine(
   dataset: PointOnlyNumbers[],
   regressionType: string,
   color: string
-): { regressionFormula: string; regressionError: boolean } {
+): { regressionFormula: string } {
   let regression: d3regression.Regression | undefined;
   let regressionFormula = "";
-  let regressionError = false;
+
   let requiredPoints = 2; // Default to 2 for most regression types
 
   switch (regressionType) {
     case "none":
-      return { regressionFormula, regressionError };
+      return { regressionFormula };
     case "linear":
       regression = d3regression.regressionLinear();
       break;
@@ -1143,51 +1166,49 @@ function addRegressionLine(
   }
 
   if (!regression || dataset.length < requiredPoints) {
-    regressionError = true;
-    regressionFormula = `Cannot perform ${regressionType} regression: Insufficient data points.`;
-    return { regressionFormula, regressionError };
-  }
+    return { regressionFormula };
+  } else {
+    regression = regression.x((d) => d.x).y((d) => d.y);
 
-  regression = regression.x((d) => d.x).y((d) => d.y);
+    // Render the regression line
+    const line = d3
+      .line()
+      .x((d) => scales.x(d[0]))
+      .y((d) => scales.y(d[1]));
 
-  // Render the regression line
-  const line = d3
-    .line()
-    .x((d) => scales.x(d[0]))
-    .y((d) => scales.y(d[1]));
+    const regressionData = regression(dataset);
 
-  const regressionData = regression(dataset);
+    svg
+      .append("path")
+      .attr("class", "regression-line")
+      .datum(regressionData)
+      .attr("fill", "none")
+      .attr("stroke", color)
+      .attr("stroke-width", 1.5)
+      .attr("d", line);
 
-  svg
-    .append("path")
-    .datum(regressionData)
-    .attr("fill", "none")
-    .attr("stroke", color)
-    .attr("stroke-width", 1.5)
-    .attr("d", line);
-
-  // Generate the regression formula string
-  switch (regressionType) {
-    case "linear":
-      regressionFormula = `y = ${
-        Math.abs(regressionData.a) > 10 ** 7
-          ? customFormatForBigNumber(regressionData.a, 4)
-          : roundNumber(regressionData.a, 4)
-      }x  ${
-        roundNumber(regressionData.b, 4) > 0
-          ? ` + ${
-              Math.abs(regressionData.b) > 10 ** 7
-                ? customFormatForBigNumber(regressionData.b, 4)
-                : roundNumber(regressionData.b, 4)
-            }`
-          : ` - ${
-              Math.abs(regressionData.b) > 10 ** 7
-                ? customFormatForBigNumber(Math.abs(regressionData.b), 4)
-                : roundNumber(Math.abs(regressionData.b), 4)
-            }`
-      }`;
-      break;
-    /*case "quadratic":
+    // Generate the regression formula string
+    switch (regressionType) {
+      case "linear":
+        regressionFormula = `y = ${
+          Math.abs(regressionData.a) > 10 ** 7
+            ? customFormatForBigNumber(regressionData.a, 4)
+            : roundNumber(regressionData.a, 4)
+        }x  ${
+          roundNumber(regressionData.b, 4) > 0
+            ? ` + ${
+                Math.abs(regressionData.b) > 10 ** 7
+                  ? customFormatForBigNumber(regressionData.b, 4)
+                  : roundNumber(regressionData.b, 4)
+              }`
+            : ` - ${
+                Math.abs(regressionData.b) > 10 ** 7
+                  ? customFormatForBigNumber(Math.abs(regressionData.b), 4)
+                  : roundNumber(Math.abs(regressionData.b), 4)
+              }`
+        }`;
+        break;
+      /*case "quadratic":
       regressionFormula = `y = ${roundNumber(regressionData.a, 4)}x^2 ${
         roundNumber(regressionData.b, 4) > 0
           ? ` + ${roundNumber(regressionData.b, 4)}x`
@@ -1244,12 +1265,13 @@ function addRegressionLine(
         regressionFormula = `y = ? x^?`;
       }
       break;*/
-    case "loess":
-      regressionFormula = `LOESS curve`;
-      break;
+      case "loess":
+        regressionFormula = `LOESS curve`;
+        break;
+    }
   }
 
-  return { regressionFormula, regressionError };
+  return { regressionFormula };
 }
 
 function calculateCorrelation(dataset: PointOnlyNumbers[]) {
@@ -1446,6 +1468,9 @@ function deletePointListeners(
                     index_in_dimensional_data
                   ].y
             );
+            set.ids = set.ids.filter(
+              (id) => id !== index_in_dimensional_data + 1
+            );
           }
         });
       }
@@ -1457,7 +1482,7 @@ function addPointListeners(
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   scales: Scales,
   scatterdatasets: ScatterDatasets,
-  selectedIndextoAddNote: number
+  selectedIndextoAddNode: number
 ) {
   //const scatterplotdatasets = getScatterplotDataSets(scatterdatasets);
   const [clickX, clickY] = d3.pointer(event, svg.node());
@@ -1465,18 +1490,18 @@ function addPointListeners(
   const newY = scales.y.invert(clickY);
 
   // Add the new point to the dataset
-  /*scatterplotdatasets.sets[selectedIndextoAddNote].dimensional_data.push({
+  /*scatterplotdatasets.sets[selectedIndextoAddNode].dimensional_data.push({
     x: newX,
     y: newY,
     selected: false,
   });
   //TODO: Fix this
-  scatterplotdatasets.sets[selectedIndextoAddNote].ids.push(1);*/
+  scatterplotdatasets.sets[selectedIndextoAddNode].ids.push(1);*/
   // Add the new point to the original scatterdatasets
   scatterdatasets.sets.forEach((set, index) => {
     if (
       scatterdatasets.selected.dataset_indexes.indexOf(index) ===
-      selectedIndextoAddNote
+      selectedIndextoAddNode
     ) {
       const index_x = set.labels.indexOf(scatterdatasets.selected.axis.x);
       const index_y = set.labels.indexOf(scatterdatasets.selected.axis.y);
@@ -1555,7 +1580,7 @@ function selectPointByClickingListeners(
 }
 function updateColorForFilter(
   i: number,
-  type: "number" | "string",
+  type: "number" | "string" | string,
   selectedDataset: ScatterDataset
 ) {
   const listofstringsforlabels: string[] = [];
@@ -2393,9 +2418,6 @@ function drawScatterplot_singleDataset2(
         scatter
           .selectAll(`circle.single-string-y-${i}`)
           .on("mouseover", function () {
-            if (options.hoverCursorChange) {
-              d3.select(this).attr("r", 7);
-            }
             // Show tooltip
             if (options.hoverTooltip) {
               tooltip
@@ -2482,9 +2504,6 @@ function drawScatterplot_singleDataset2(
         scatter
           .selectAll(`circle.single-string-x-${i}`)
           .on("mouseover", function () {
-            if (options.hoverCursorChange) {
-              d3.select(this).attr("r", 7);
-            }
             // Show tooltip
             if (options.hoverTooltip) {
               tooltip

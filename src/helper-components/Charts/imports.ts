@@ -1,6 +1,6 @@
 import { attribute } from "../../functions";
 
-import { ChartDataSets } from "../../interfaces";
+import { ChartDataSets, ChartState } from "../../interfaces";
 
 import { html, unsafeStatic } from "lit/static-html.js";
 
@@ -47,7 +47,9 @@ export function getChart(
   datasets: ChartDataSets,
   title: string,
   options: any,
-  teacherOptions: TeacherOptions
+  teacherOptions: TeacherOptions,
+  onChange: (e: CustomEvent) => void,
+  sharedState: ChartState
 ) {
   const chart = charts.find((chart) => chartType === chart.Name);
   if (!chart) return html`<div>Chart not found!</div>`;
@@ -62,9 +64,9 @@ export function getChart(
     datasets="${attribute(datasets)}"
     label=${title}
     style="display: flex; flex-grow: 1; max-height: 100%; max-width: 100%; justify-content: center; align-items: center;"
-    options="${attribute(options)}
-
-    ">
+    options="${attribute(options)}"
+    .sharedState=${sharedState}
+    @wwci-state-change=${onChange}>
   </${chartName}>
 
   </div>`;
