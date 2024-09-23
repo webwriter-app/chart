@@ -172,27 +172,32 @@ function checkDatasetForScatterplot(
 
 function calculateSVGDimensions(
   data: PointOnlyNumbers[][],
-  line_datasets: LineDataSets
+  line_datasets: LineDataSets,
+  datasets_count: number,
+  lineDatasets_count: number
 ): Dimensions {
   let maxX = 0;
   let maxY = 0;
   let minX = 0;
   let minY = 0;
   let result = checkDatasetForScatterplot(data, line_datasets);
+  if (datasets_count > 0) {
+    data.forEach((dataset) => {
+      maxX = Math.max(...dataset.map((d) => d.x), maxX);
+      maxY = Math.max(...dataset.map((d) => d.y), maxY);
+      minX = Math.min(...dataset.map((d) => d.x), minX);
+      minY = Math.min(...dataset.map((d) => d.y), minY);
+    });
+  }
 
-  data.forEach((dataset) => {
-    maxX = Math.max(...dataset.map((d) => d.x), maxX);
-    maxY = Math.max(...dataset.map((d) => d.y), maxY);
-    minX = Math.min(...dataset.map((d) => d.x), minX);
-    minY = Math.min(...dataset.map((d) => d.y), minY);
-  });
-
-  line_datasets.sets.forEach((line_dataset) => {
-    maxX = Math.max(...line_dataset.data.map((d) => d.x), maxX);
-    maxY = Math.max(...line_dataset.data.map((d) => d.y), maxY);
-    minX = Math.min(...line_dataset.data.map((d) => d.x), minX);
-    minY = Math.min(...line_dataset.data.map((d) => d.y), minY);
-  });
+  if (lineDatasets_count > 0) {
+    line_datasets.sets.forEach((line_dataset) => {
+      maxX = Math.max(...line_dataset.data.map((d) => d.x), maxX);
+      maxY = Math.max(...line_dataset.data.map((d) => d.y), maxY);
+      minX = Math.min(...line_dataset.data.map((d) => d.x), minX);
+      minY = Math.min(...line_dataset.data.map((d) => d.y), minY);
+    });
+  }
   if (maxX > 0) {
     const roundingFactorX = 10 ** Math.floor(Math.log10(maxX));
     maxX = Math.ceil(maxX / roundingFactorX) * roundingFactorX;
@@ -213,7 +218,7 @@ function calculateSVGDimensions(
   }
 
   // set the dimensions and margins of the graph
-  const margin = { top: 20, right: 55, bottom: 50, left: 70 },
+  const margin = { top: 50, right: 55, bottom: 50, left: 70 },
     width = 575 - margin.left - margin.right,
     height = 420 - margin.top - margin.bottom;
   let tick_x = -1;
@@ -372,7 +377,8 @@ function drawAxis(
   datasets_count: number,
   lineDatasets_count: number,
   x_axis_type: string,
-  y_axis_type: string
+  y_axis_type: string,
+  title: string
 ) {
   const gx = svg
     .append("g")
@@ -569,6 +575,12 @@ function drawAxis(
       .attr("transform", "rotate(-90)")
       .text(axisLabels.y ? axisLabels.y : "Y-axis");
   }
+  svg
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", -20)
+    .attr("text-anchor", "middle")
+    .text(title);
   return { gx, gy };
 }
 
@@ -602,6 +614,7 @@ function drawScatterplot(
   root: Element,
   datasets: PointOnlyNumbers[][],
   axisLabels: { x: string; y: string },
+  fullAxisLabels: { x: string; y: string },
   options: {
     hoverTooltip: boolean;
     showOutliers: boolean;
@@ -611,9 +624,15 @@ function drawScatterplot(
   datasets_count: number,
   lineDatasets_count: number,
   x_axis_type: string,
-  y_axis_type: string
+  y_axis_type: string,
+  title: string
 ) {
-  const dimensions = calculateSVGDimensions(datasets, line_datasets);
+  const dimensions = calculateSVGDimensions(
+    datasets,
+    line_datasets,
+    datasets_count,
+    lineDatasets_count
+  );
   const svg = createSVG(
     root,
     dimensions.width,
@@ -646,14 +665,19 @@ function drawScatterplot(
     datasets_count,
     lineDatasets_count,
     x_axis_type,
-    y_axis_type
+    y_axis_type,
+    title
   );
   const tooltip = createTooltip(root);
   // For normal scatter plot
   const scatter = svg.append("g");
 
   // Draw points in the scatter plot
-  if (datasets_count > 0 && x_axis_type !== "none" && y_axis_type !== "none") {
+  if (
+    datasets_count > 0 &&
+    x_axis_type === "number" &&
+    y_axis_type === "number"
+  ) {
     for (let i = 0; i < datasets.length; i++) {
       const dataset = datasets[i];
       drawPoints(scatter, dataset, i, scales);
@@ -682,11 +706,11 @@ function drawScatterplot(
                 "ID: " +
                   d.id +
                   "<br/>" +
-                  axisLabels.x +
+                  fullAxisLabels.x +
                   ": " +
                   dx +
                   " " +
-                  axisLabels.y +
+                  fullAxisLabels.y +
                   ": " +
                   dy
               );
@@ -753,7 +777,7 @@ function drawScatterplot(
               .html(
                 `${
                   datasetLabel ? "Outlier of " + datasetLabel : "Outlier"
-                }<br>${axisLabels.x}: ${dx} ${axisLabels.y}: ${dy}`
+                }<br>${fullAxisLabels.x}: ${dx} ${fullAxisLabels.y}: ${dy}`
               )
               .style("left", `${event.pageX + 10}px`)
               .style("top", `${event.pageY + 10}px`);
@@ -1469,7 +1493,11 @@ function deletePointListeners(
                   ].y
             );
             set.ids = set.ids.filter(
-              (id) => id !== index_in_dimensional_data + 1
+              (id) =>
+                id !==
+                scatterplotdatasets.sets[datasetIndex].ids[
+                  index_in_dimensional_data
+                ]
             );
           }
         });
@@ -1782,7 +1810,7 @@ function calculateSVGDimensions_singleDataset(
     minY = Math.ceil(Math.abs(minY) / roundingFactorY) * roundingFactorY * -1;
   }
   // set the dimensions and margins of the graph
-  const margin = { top: 20, right: 55, bottom: 50, left: 70 },
+  const margin = { top: 50, right: 55, bottom: 50, left: 70 },
     width = 575 - margin.left - margin.right,
     height = 420 - margin.top - margin.bottom;
   let tick_x = -1;
@@ -1922,7 +1950,8 @@ function drawAxis_singleDataset(
   scales_x_num: d3.ScaleLinear<number, number>,
   scales_y_num: d3.ScaleLinear<number, number>,
   tick_x: number,
-  tick_y: number
+  tick_y: number,
+  title: string
 ) {
   // Add Gridlines
   const addGrid = (axis, scale, dimension, transform, offset) => {
@@ -2165,6 +2194,14 @@ function drawAxis_singleDataset(
       .text("Please add data to the selected dataset");
   }
   svg.selectAll(".domain, .tick line").attr("stroke", "lightgrey");
+
+  svg
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", -20)
+    .attr("text-anchor", "middle")
+    .text(title);
+
   return { x_bandwidth, y_bandwidth };
 }
 
@@ -2174,7 +2211,8 @@ function drawScatterplot_singleDataset(
   data_for_y_axis_copy: { x: number | string; y: number | string }[],
   x_axis_type: string,
   y_axis_type: string,
-  axisLabels: { x: string; y: string }
+  axisLabels: { x: string; y: string },
+  title: string
 ) {
   const dimensions = calculateSVGDimensions_singleDataset(
     data_for_x_axis_copy,
@@ -2232,7 +2270,8 @@ function drawScatterplot_singleDataset(
     scales.x_num,
     scales.y_num,
     dimensions.ticks.x,
-    dimensions.ticks.y
+    dimensions.ticks.y,
+    title
   );
   return { svg, scales, dimensions, bandwidth_result };
 }
@@ -2250,7 +2289,7 @@ function drawScatterplot_singleDataset2(
     hoverCursorChange: boolean;
     hoverTooltip: boolean;
   },
-  axisLabels: { x: string; y: string }
+  fullAxisLabels: { x: string; y: string }
 ) {
   const tooltip = createTooltip(root);
   const scatter = svg.append("g");
@@ -2321,11 +2360,11 @@ function drawScatterplot_singleDataset2(
                   "ID: " +
                     d.id +
                     "<br>" +
-                    axisLabels.x +
+                    fullAxisLabels.x +
                     ": " +
                     dx +
                     " " +
-                    axisLabels.y +
+                    fullAxisLabels.y +
                     ": " +
                     dy
                 );
@@ -2382,7 +2421,7 @@ function drawScatterplot_singleDataset2(
 
               tooltip
                 .style("opacity", 1)
-                .html("ID: " + d.id + "<br>" + axisLabels.y + ": " + dy);
+                .html("ID: " + d.id + "<br>" + fullAxisLabels.y + ": " + dy);
             }
           })
           .on("mousemove", (e) => {
@@ -2422,7 +2461,7 @@ function drawScatterplot_singleDataset2(
             if (options.hoverTooltip) {
               tooltip
                 .style("opacity", 1)
-                .html("ID: " + d.id + "<br>" + axisLabels.y + ": " + d.p);
+                .html("ID: " + d.id + "<br>" + fullAxisLabels.y + ": " + d.p);
             }
           })
           .on("mousemove", (e) => {
@@ -2468,7 +2507,7 @@ function drawScatterplot_singleDataset2(
 
               tooltip
                 .style("opacity", 1)
-                .html("ID: " + d.id + "<br>" + axisLabels.x + ": " + dx);
+                .html("ID: " + d.id + "<br>" + fullAxisLabels.x + ": " + dx);
             }
           })
           .on("mousemove", (e) => {
@@ -2508,7 +2547,7 @@ function drawScatterplot_singleDataset2(
             if (options.hoverTooltip) {
               tooltip
                 .style("opacity", 1)
-                .html("ID: " + d.id + "<br>" + axisLabels.x + ": " + d.p);
+                .html("ID: " + d.id + "<br>" + fullAxisLabels.x + ": " + d.p);
             }
           })
           .on("mousemove", (e) => {
@@ -2526,6 +2565,27 @@ function drawScatterplot_singleDataset2(
   }
   return { scatter, tooltip };
 }
+// Achtung the dragging und brushing und select in the fall that labels wil be cutted
+function clampLabel(label: string, maxLength = 6) {
+  if (!label) return "";
+  return label.length > maxLength
+    ? label.slice(0, maxLength - 2) + "..."
+    : label;
+}
+function clampLabelForXAxis(label: string, count_labels_in_x_axis: number) {
+  let maxLength = 6;
+  if (!label) return "";
+  if (count_labels_in_x_axis > 0) {
+    maxLength =
+      count_labels_in_x_axis <= 10
+        ? Math.floor(42 / count_labels_in_x_axis)
+        : 4;
+  }
+  return label.length > maxLength
+    ? label.slice(0, maxLength - 2) + "..."
+    : label;
+}
+
 export {
   drawScatterplot,
   addDrawLineListeners,
@@ -2550,4 +2610,6 @@ export {
   checkDatasetForScatterplot,
   customFormatForBigNumber,
   roundNumber,
+  clampLabel,
+  clampLabelForXAxis,
 };

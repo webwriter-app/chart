@@ -34,6 +34,8 @@ import {
   drawScatterplot_singleDataset2,
   customFormatForBigNumber,
   roundNumber,
+  clampLabel,
+  clampLabelForXAxis,
 } from "./drawScatterplot";
 import style from "./scatterplot.style";
 import StateComponent from "../../../stateComponent";
@@ -148,9 +150,14 @@ export class ScatterplotChart extends StateComponent {
       _changedProperties.has("showOutliers") ||
       _changedProperties.has("showMean") ||
       _changedProperties.has("showRegressionLine") ||
-      _changedProperties.has("hoverTooltip")
+      _changedProperties.has("hoverTooltip") ||
+      _changedProperties.get("sharedState")?.scatterDatasets.title !==
+        this.sharedState.scatterDatasets.title
     ) {
-      this.updateScatterplot();
+      if (!this.isDragging) {
+        // Add a condition if the line is not dragged
+        this.updateScatterplot();
+      }
     }
   }
 
@@ -236,10 +243,12 @@ export class ScatterplotChart extends StateComponent {
                         this.selectedDatasets_length === 0
                       ? "To use this option, you must select at least one dataset"
                       : this.totalDataLength === 0 &&
-                        this.selectedDatasets_length === 1
+                        this.selectedDatasets_length === 1 &&
+                        this.sharedState.lineDatasets.sets.length === 0
                       ? "To use this option, you must first add at least one data point to the selected dataset table"
                       : this.totalDataLength === 0 &&
-                        this.selectedDatasets_length > 1
+                        this.selectedDatasets_length > 1 &&
+                        this.sharedState.lineDatasets.sets.length === 0
                       ? "To use this option, you must first add at least one data point to the selected dataset tables"
                       : x_axis_type !== "number" || y_axis_type !== "number"
                       ? "The x and y axis must be numbers to use this option"
@@ -279,7 +288,8 @@ export class ScatterplotChart extends StateComponent {
                     }}
                     .disabled=${
                       this.sharedState.chart.options.animation ||
-                      this.totalDataLength === 0 ||
+                      (this.totalDataLength === 0 &&
+                        this.sharedState.lineDatasets.sets.length === 0) ||
                       x_axis_type !== "number" ||
                       y_axis_type !== "number"
                     }
@@ -314,7 +324,7 @@ export class ScatterplotChart extends StateComponent {
                               }}
                               .checked=${this.selectedIndextoAddNode === i}
                             >
-                              Add data of ${dataset.name}
+                              Add a new data point of "${dataset.name}"
                             </sl-menu-item>
                           `;
                         }
@@ -1132,8 +1142,8 @@ export class ScatterplotChart extends StateComponent {
         y_axis_type === "noDataInSelectedDatasets")
     ) {
       const axisLabels = {
-        x: this.sharedState.scatterDatasets.selected.axis.x,
-        y: this.sharedState.scatterDatasets.selected.axis.y,
+        x: clampLabel(this.sharedState.scatterDatasets.selected.axis.x, 42),
+        y: clampLabel(this.sharedState.scatterDatasets.selected.axis.y, 42),
       };
       const datasets: PointOnlyNumbers[][] =
         this.sharedState.scatterDatasets.selected.dataset_indexes.length > 0 &&
@@ -1142,7 +1152,9 @@ export class ScatterplotChart extends StateComponent {
         x_axis_type !== "noSelectedDataset" &&
         y_axis_type !== "noSelectedDataset" &&
         x_axis_type !== "noDataInSelectedDatasets" &&
-        y_axis_type !== "noDataInSelectedDatasets"
+        y_axis_type !== "noDataInSelectedDatasets" &&
+        x_axis_type !== "none" &&
+        y_axis_type !== "none"
           ? this.sharedState.scatterDatasets.selected.dataset_indexes
               .sort()
               .map((dataset_index) => {
@@ -1184,17 +1196,26 @@ export class ScatterplotChart extends StateComponent {
             )
           : [];
       let datasets_count = 0;
-      datasets.forEach((dataset) => {
-        datasets_count += dataset.length;
-      });
+      if (datasets.length > 0) {
+        datasets.forEach((dataset) => {
+          datasets_count += dataset.length;
+        });
+      }
+
       let lineDatasets_count = 0;
-      lineDatasetsWithCenterPoint.forEach((dataset) => {
-        lineDatasets_count += dataset.length;
-      });
+      if (lineDatasetsWithCenterPoint.length > 0) {
+        lineDatasetsWithCenterPoint.forEach((dataset) => {
+          lineDatasets_count += dataset.length;
+        });
+      }
       const { svg, scales, scatter, dimensions, tooltip } = drawScatterplot(
         root,
         datasets,
         axisLabels,
+        {
+          x: this.sharedState.scatterDatasets.selected.axis.x,
+          y: this.sharedState.scatterDatasets.selected.axis.y,
+        },
         {
           hoverTooltip: this.sharedState.chart.options.hoverTooltip,
           showOutliers: this.sharedState.chart.options.showOutliers,
@@ -1204,7 +1225,8 @@ export class ScatterplotChart extends StateComponent {
         datasets_count,
         lineDatasets_count,
         x_axis_type,
-        x_axis_type
+        x_axis_type,
+        this.sharedState.scatterDatasets.title
       );
       // For scatter plot with regression
       const regressionFormulaRoot = this.shadowRoot.querySelector(
@@ -1213,8 +1235,9 @@ export class ScatterplotChart extends StateComponent {
       [...regressionFormulaRoot.children].forEach((child) => child.remove());
 
       if (
-        x_axis_type === "number" &&
-        y_axis_type === "number" &&
+        ((x_axis_type === "number" && y_axis_type === "number") ||
+          (x_axis_type === "noDataInSelectedDatasets" &&
+            y_axis_type === "noDataInSelectedDatasets")) &&
         (datasets_count > 0 || lineDatasets_count > 0)
       ) {
         if (
@@ -1222,70 +1245,6 @@ export class ScatterplotChart extends StateComponent {
           y_axis_type === "number" &&
           datasets_count > 0
         ) {
-          // Handle adding a new point
-          if (
-            this.selectedIndextoAddNode !== null &&
-            this.selectedIndextoAddNode !== undefined &&
-            this.selectedIndextoAddNode >= 0 &&
-            this.selectedIndextoAddNode <
-              this.sharedState.scatterDatasets.selected.dataset_indexes.length
-          ) {
-            // Change cursor to a circle with the color of the selected dataset
-            let color: string;
-            this.sharedState.scatterDatasets.sets.forEach((set, index) => {
-              if (
-                this.sharedState.scatterDatasets.selected.dataset_indexes.indexOf(
-                  index
-                ) === this.selectedIndextoAddNode
-              ) {
-                color = set.color;
-              }
-            });
-
-            let circleCursorSVG = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="${color}" class="bi bi-circle-fill" viewBox="0 0 16 16">
-    <circle cx="8" cy="8" r="7"/>
-  </svg>
-`;
-            let circleCursorURL = `data:image/svg+xml;base64,${btoa(
-              circleCursorSVG
-            )}`;
-
-            // Set the cursor style to the circle with the specified color
-            svg.style("cursor", `url(${circleCursorURL}) 8 8, auto`); // Centered cursor
-            svg.on("click", (event) => {
-              addPointListeners(
-                event,
-                svg,
-                scales,
-                this.sharedState.scatterDatasets,
-                this.selectedIndextoAddNode
-              );
-              this.addNode = false;
-              this.selectedIndextoAddNode = undefined;
-              this.hoverCursorChange = true;
-              this.updateScatterplot();
-              if (
-                selectedDatasets.length === 1 &&
-                (this.sharedState.scatterDatasets.selected.axis.x ===
-                  selectedDatasets[0].filter.label ||
-                  this.sharedState.scatterDatasets.selected.axis.y ===
-                    selectedDatasets[0].filter.label) &&
-                selectedDatasets[0].filter.type === "number"
-              ) {
-                updateColorForFilter(
-                  this.sharedState.scatterDatasets.selected.axis.x ===
-                    selectedDatasets[0].filter.label
-                    ? selectedDatasets[0].labels.indexOf(axisLabels.x)
-                    : selectedDatasets[0].labels.indexOf(axisLabels.y),
-                  "number",
-                  selectedDatasets[0]
-                );
-                this.updateScatterplot();
-              }
-            });
-          }
-
           // Clicking for selecting points
           if (
             this.selectByClicking &&
@@ -1569,11 +1528,11 @@ export class ScatterplotChart extends StateComponent {
                     tooltip
                       .style("opacity", 1)
                       .html(
-                        axisLabels.x +
+                        this.sharedState.scatterDatasets.selected.axis.x +
                           ": " +
                           d_x +
                           "<br/>" +
-                          axisLabels.y +
+                          this.sharedState.scatterDatasets.selected.axis.y +
                           ": " +
                           d_y
                       )
@@ -1667,6 +1626,69 @@ export class ScatterplotChart extends StateComponent {
               );
             }
           }
+        }
+        // Handle adding a new point
+        if (
+          this.selectedIndextoAddNode !== null &&
+          this.selectedIndextoAddNode !== undefined &&
+          this.selectedIndextoAddNode >= 0 &&
+          this.selectedIndextoAddNode <
+            this.sharedState.scatterDatasets.selected.dataset_indexes.length
+        ) {
+          // Change cursor to a circle with the color of the selected dataset
+          let color: string;
+          this.sharedState.scatterDatasets.sets.forEach((set, index) => {
+            if (
+              this.sharedState.scatterDatasets.selected.dataset_indexes.indexOf(
+                index
+              ) === this.selectedIndextoAddNode
+            ) {
+              color = set.color;
+            }
+          });
+
+          let circleCursorSVG = `
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="${color}" class="bi bi-circle-fill" viewBox="0 0 16 16">
+  <circle cx="8" cy="8" r="7"/>
+</svg>
+`;
+          let circleCursorURL = `data:image/svg+xml;base64,${btoa(
+            circleCursorSVG
+          )}`;
+
+          // Set the cursor style to the circle with the specified color
+          svg.style("cursor", `url(${circleCursorURL}) 8 8, auto`); // Centered cursor
+          svg.on("click", (event) => {
+            addPointListeners(
+              event,
+              svg,
+              scales,
+              this.sharedState.scatterDatasets,
+              this.selectedIndextoAddNode
+            );
+            this.addNode = false;
+            this.selectedIndextoAddNode = undefined;
+            this.hoverCursorChange = true;
+            this.updateScatterplot();
+            if (
+              selectedDatasets.length === 1 &&
+              (this.sharedState.scatterDatasets.selected.axis.x ===
+                selectedDatasets[0].filter.label ||
+                this.sharedState.scatterDatasets.selected.axis.y ===
+                  selectedDatasets[0].filter.label) &&
+              selectedDatasets[0].filter.type === "number"
+            ) {
+              updateColorForFilter(
+                this.sharedState.scatterDatasets.selected.axis.x ===
+                  selectedDatasets[0].filter.label
+                  ? selectedDatasets[0].labels.indexOf(axisLabels.x)
+                  : selectedDatasets[0].labels.indexOf(axisLabels.y),
+                "number",
+                selectedDatasets[0]
+              );
+              this.updateScatterplot();
+            }
+          });
         }
         // Add grid
         if (this.sharedState.chart.options.showGrid) {
@@ -2013,10 +2035,11 @@ export class ScatterplotChart extends StateComponent {
         });
       }
     } else if (selectedDatasets.length === 1) {
+      //-----------------------------------------------
       const selectedDataset = selectedDatasets[0];
       const axisLabels = {
-        x: this.sharedState.scatterDatasets.selected.axis.x,
-        y: this.sharedState.scatterDatasets.selected.axis.y,
+        x: clampLabel(this.sharedState.scatterDatasets.selected.axis.x, 42),
+        y: clampLabel(this.sharedState.scatterDatasets.selected.axis.y, 42),
       };
       let datasets: Point[] = [];
       let singeledatasets: OneDimentionalPoint[] = [];
@@ -2024,18 +2047,30 @@ export class ScatterplotChart extends StateComponent {
         x: number | string;
         y: number | string;
       }[] = [];
+      const count_labels_in_x_axis = selectedDataset.dimensional_data.length;
       selectedDataset.dimensional_data.map((dimensional_data) => {
         const d = {
-          x: dimensional_data.data[
-            selectedDataset.labels.indexOf(
-              this.sharedState.scatterDatasets.selected.axis.x
-            )
-          ],
-          y: dimensional_data.data[
-            selectedDataset.labels.indexOf(
-              this.sharedState.scatterDatasets.selected.axis.y
-            )
-          ],
+          x: (() => {
+            const value =
+              dimensional_data.data[
+                selectedDataset.labels.indexOf(
+                  this.sharedState.scatterDatasets.selected.axis.x
+                )
+              ];
+            if (typeof value === "string")
+              return clampLabelForXAxis(value, count_labels_in_x_axis);
+            return value;
+          })(),
+          y: (() => {
+            const value =
+              dimensional_data.data[
+                selectedDataset.labels.indexOf(
+                  this.sharedState.scatterDatasets.selected.axis.y
+                )
+              ];
+            if (typeof value === "string") return clampLabel(value);
+            return value;
+          })(),
         };
         return datasets_copy.push(d);
       });
@@ -2047,16 +2082,27 @@ export class ScatterplotChart extends StateComponent {
           const d = {
             p:
               x_axis_type === "none"
-                ? dimensional_data.data[
-                    selectedDataset.labels.indexOf(
-                      this.sharedState.scatterDatasets.selected.axis.y
-                    )
-                  ]
-                : dimensional_data.data[
-                    selectedDataset.labels.indexOf(
-                      this.sharedState.scatterDatasets.selected.axis.x
-                    )
-                  ],
+                ? (() => {
+                    const value =
+                      dimensional_data.data[
+                        selectedDataset.labels.indexOf(
+                          this.sharedState.scatterDatasets.selected.axis.y
+                        )
+                      ];
+                    if (typeof value === "string") return clampLabel(value);
+                    return value;
+                  })()
+                : (() => {
+                    const value =
+                      dimensional_data.data[
+                        selectedDataset.labels.indexOf(
+                          this.sharedState.scatterDatasets.selected.axis.x
+                        )
+                      ];
+                    if (typeof value === "string")
+                      return clampLabelForXAxis(value, count_labels_in_x_axis);
+                    return value;
+                  })(),
           };
           return d;
         }
@@ -2095,7 +2141,8 @@ export class ScatterplotChart extends StateComponent {
           data_for_y_axis_copy,
           x_axis_type,
           y_axis_type,
-          axisLabels
+          axisLabels,
+          this.sharedState.scatterDatasets.title
         );
 
       // Check if x or y is a string and if an offset needs to be applied
@@ -2105,18 +2152,21 @@ export class ScatterplotChart extends StateComponent {
         let offset = 0;
         const selected = dataset.selected;
         if (!(x_axis_type === "none") && !(y_axis_type === "none")) {
-          const x =
+          let x =
             dataset.data[
               selectedDataset.labels.indexOf(
                 this.sharedState.scatterDatasets.selected.axis.x
               )
             ];
-          const y =
+          if (typeof x === "string")
+            x = clampLabelForXAxis(x, count_labels_in_x_axis);
+          let y =
             dataset.data[
               selectedDataset.labels.indexOf(
                 this.sharedState.scatterDatasets.selected.axis.y
               )
             ];
+          if (typeof y === "string") y = clampLabel(y);
           // Check if x or y is a string and if an offset needs to be applied
           if (x_axis_type === "string" && y_axis_type === "number") {
             offset = calculateOffset(datasets, "x", x, y);
@@ -2128,21 +2178,24 @@ export class ScatterplotChart extends StateComponent {
 
           datasets.push({ x, y, selected, offset, color, id });
         } else if (x_axis_type === "none" && !(y_axis_type === "none")) {
-          const y =
+          let y =
             dataset.data[
               selectedDataset.labels.indexOf(
                 this.sharedState.scatterDatasets.selected.axis.y
               )
             ];
+          if (typeof y === "string") y = clampLabel(y);
           offset = calculateOffset(singeledatasets, "x_none", null, y);
           singeledatasets.push({ p: y, selected, offset, color, id });
         } else if (!(x_axis_type === "none") && y_axis_type === "none") {
-          const x =
+          let x =
             dataset.data[
               selectedDataset.labels.indexOf(
                 this.sharedState.scatterDatasets.selected.axis.x
               )
             ];
+          if (typeof x === "string")
+            x = clampLabelForXAxis(x, count_labels_in_x_axis);
           offset = calculateOffset(singeledatasets, "y_none", null, x);
           singeledatasets.push({ p: x, selected, offset, color, id });
         }
@@ -2264,7 +2317,10 @@ export class ScatterplotChart extends StateComponent {
           hoverCursorChange: this.hoverCursorChange,
           hoverTooltip: this.sharedState.chart.options.hoverTooltip,
         } as any,
-        axisLabels
+        {
+          x: this.sharedState.scatterDatasets.selected.axis.x,
+          y: this.sharedState.scatterDatasets.selected.axis.y,
+        }
       );
 
       const listofstringsforlabels_x_axis: string[] = [];
@@ -3563,11 +3619,11 @@ export class ScatterplotChart extends StateComponent {
                       "ID: " +
                         datasets[i].id +
                         "<br>" +
-                        axisLabels.x +
+                        this.sharedState.scatterDatasets.selected.axis.x +
                         ": " +
                         d_x +
                         " " +
-                        axisLabels.y +
+                        this.sharedState.scatterDatasets.selected.axis.y +
                         ": " +
                         d_y
                     )
@@ -3621,7 +3677,7 @@ export class ScatterplotChart extends StateComponent {
                       "ID: " +
                         singeledatasets[i].id +
                         "<br>" +
-                        axisLabels.y +
+                        this.sharedState.scatterDatasets.selected.axis.y +
                         ": " +
                         p_y
                     )
@@ -3669,7 +3725,7 @@ export class ScatterplotChart extends StateComponent {
                       "ID: " +
                         singeledatasets[i].id +
                         "<br>" +
-                        axisLabels.y +
+                        this.sharedState.scatterDatasets.selected.axis.y +
                         ": " +
                         singeledatasets[i].p
                     )
@@ -3725,7 +3781,7 @@ export class ScatterplotChart extends StateComponent {
                       "ID: " +
                         singeledatasets[i].id +
                         "<br>" +
-                        axisLabels.x +
+                        this.sharedState.scatterDatasets.selected.axis.x +
                         ": " +
                         p_x
                     )
@@ -3775,7 +3831,7 @@ export class ScatterplotChart extends StateComponent {
                       "ID: " +
                         singeledatasets[i].id +
                         "<br>" +
-                        axisLabels.x +
+                        this.sharedState.scatterDatasets.selected.axis.x +
                         ": " +
                         singeledatasets[i].p
                     )
