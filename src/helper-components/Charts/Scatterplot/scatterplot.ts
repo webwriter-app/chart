@@ -1444,8 +1444,7 @@ export class ScatterplotChart extends StateComponent {
                   correlationSpan.innerText = (
                     Math.round(correlation * 100) / 100
                   ).toLocaleString();
-                  correlationSpan.style.color =
-                    this.sharedState.scatterDatasets.sets[i].color ?? "#69b3a2";
+                  correlationSpan.style.color = color;
                 }
               }
             }

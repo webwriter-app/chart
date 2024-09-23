@@ -147,10 +147,6 @@ export class WwChart extends LitElementWw {
     this.editable = true;
   }
 
-  changeShowData() {
-    this.showData = !this.showData;
-  }
-
   protected onStateChange(e: CustomEvent) {
     if (!e.detail || !e.detail.state) {
       console.log("No state to update. Detail is missing or incomplete.");
@@ -237,7 +233,8 @@ export class WwChart extends LitElementWw {
             slot="nav"
             panel="data"
             @click=${() => {
-              this.changeShowData();
+              this.showChart = false;
+              this.showData = true;
             }}
             >Data</sl-tab
           >
