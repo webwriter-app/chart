@@ -124,7 +124,8 @@ export class ScatterDatasetInput extends StateComponent {
 
   addRow(index_inset: number) {
     const newId =
-      this.sharedState.scatterDatasets.sets[index_inset].ids.length + 1;
+      Math.max(0, ...this.sharedState.scatterDatasets.sets[index_inset].ids) +
+      1;
     const newRow = {
       data: this.sharedState.scatterDatasets.sets[
         index_inset
@@ -217,6 +218,27 @@ export class ScatterDatasetInput extends StateComponent {
       this.sharedState.scatterDatasets.selected.dataset_indexes
         .map((index) => (index > index_inset ? index - 1 : index))
         .filter((index) => index !== null);
+    if (
+      index_inset ===
+        this.sharedState.scatterDatasets.selected.dataset_indexes[0] &&
+      this.sharedState.scatterDatasets.selected.dataset_indexes.length === 1
+    ) {
+      this.sharedState = {
+        ...this.sharedState,
+        scatterDatasets: {
+          ...this.sharedState.scatterDatasets,
+          sets: updatedSets,
+          selected: {
+            ...this.sharedState.scatterDatasets.selected,
+            dataset_indexes: [],
+            axis: {
+              x: "None",
+              y: "None",
+            },
+          },
+        },
+      };
+    }
 
     this.sharedState = {
       ...this.sharedState,
@@ -373,6 +395,7 @@ export class ScatterDatasetInput extends StateComponent {
                     style="display: flex; flex-direction: row; align-items: center"
                   >
                             <sl-color-picker
+                            size="small"
                               ?disabled=${!(
                                 this.sharedState.editable ||
                                 this.sharedState.teacherOptions.changeData
@@ -834,10 +857,16 @@ export class ScatterDatasetInput extends StateComponent {
                               this.sharedState.teacherOptions.changeData
                             )}
                             id="input"
-                            type="number"
+                            type="text"
                             class="input"
                             value="${each_dataset.ids[index_inscatter]}"
                             @sl-input=${(e: any) => {
+                              e.target.value = e.target.value.replaceAll(
+                                /[^\d.,\-]+/g,
+                                ""
+                              );
+                              const newNumber = Number(e.target.value);
+                              if (isNaN(newNumber)) return;
                               const targetIndex =
                                 this.sharedState.scatterDatasets.sets.length -
                                 1 -
@@ -850,7 +879,7 @@ export class ScatterDatasetInput extends StateComponent {
                                           ...dataset,
                                           ids: dataset.ids.map((id, idx) =>
                                             idx === index_inscatter
-                                              ? Number(e.target.value)
+                                              ? newNumber
                                               : id
                                           ),
                                         }
@@ -895,11 +924,7 @@ export class ScatterDatasetInput extends StateComponent {
                                   .sets.length -
                                 1 -
                                 index_reverse}-${index_inscatter}-${index_indata}"
-                                type="${each_dataset.typeOfEachData[
-                                  index_indata
-                                ] === "number"
-                                  ? "number"
-                                  : "text"}"
+                                type="text"
                                 value="${data}"
                                 @sl-input=${(e: any) => {
                                   const targetIndex =
@@ -923,7 +948,20 @@ export class ScatterDatasetInput extends StateComponent {
                                               ? each_dataset.typeOfEachData[
                                                   index_indata
                                                 ] === "number"
-                                                ? Number(e.target.value)
+                                                ? (() => {
+                                                    e.target.value =
+                                                      e.target.value.replaceAll(
+                                                        /[^\d.,\-]+/g,
+                                                        ""
+                                                      );
+                                                    const number = Number(
+                                                      e.target.value
+                                                    );
+                                                    if (isNaN(number)) {
+                                                      return data;
+                                                    }
+                                                    return number;
+                                                  })()
                                                 : String(e.target.value)
                                               : data
                                         );

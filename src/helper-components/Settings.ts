@@ -33,6 +33,14 @@ export class Settings extends StateComponent {
   accessor showErrorIcon = false;
 
   static styles = css`
+    sl-details::part(header) {
+      padding: 0.5em 0;
+    }
+    sl-details::part(content) {
+      padding: 0px;
+      padding-left: 2px;
+      padding-bottom: 0.5em;
+    }
     .lock-button-locked {
       color: red;
     }
@@ -56,7 +64,8 @@ export class Settings extends StateComponent {
     }
     .container {
       overflow: visible;
-      margin: 0 0.5em;
+      /* margin: 0 0.5em; */
+      margin-top: 0.5em;
     }
     .row {
       display: flex;
@@ -81,7 +90,7 @@ export class Settings extends StateComponent {
     .triangle-container {
       position: absolute;
       bottom: 0;
-      right: -9px; /* Keep the triangle at the bottom-left of wwci-select */
+      right: 1px; /* Keep the triangle at the bottom-left of wwci-select */
       z-index: 10;
       transform: translateY(40%);
     }
@@ -539,15 +548,27 @@ export class Settings extends StateComponent {
               (this.sharedState.teacherOptions.changeOptions &&
                 !this.sharedState.chart.optionsLocked["title"])
             )}
-            value=${this.sharedState.chart.title}
+            value=${this.sharedState.chart.selectedType === "Scatterplot"
+              ? this.sharedState.scatterDatasets.title
+              : this.sharedState.chart.title}
             @sl-input=${(e: any) => {
-              this.sharedState = {
-                ...this.sharedState,
-                chart: {
-                  ...this.sharedState.chart,
-                  title: e.target.value,
-                },
-              };
+              if (this.sharedState.chart.selectedType === "Scatterplot") {
+                this.sharedState = {
+                  ...this.sharedState,
+                  scatterDatasets: {
+                    ...this.sharedState.scatterDatasets,
+                    title: e.target.value,
+                  },
+                };
+              } else {
+                this.sharedState = {
+                  ...this.sharedState,
+                  chart: {
+                    ...this.sharedState.chart,
+                    title: e.target.value,
+                  },
+                };
+              }
 
               this.dispatchStateChange();
             }}

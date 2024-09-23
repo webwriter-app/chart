@@ -1,14 +1,16 @@
 {
   "name": "@webwriter/chart",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.",
-  "author": "Luis Kugel",
-  "license": "MIT",
-  "type": "module",
-  "main": "src/widget.ts",
   "keywords": [
     "webwriter-widget"
   ],
+  "license": "MIT",
+  "author": "Phuong Anh Nguyen",
+  "repository": {
+    "url": "https://git.rwth-aachen.de/learntech-lufgi9/bama/webwriter/ww-chart",
+    "type": "git"
+  },
   "scripts": {
     "dev": "vite --open",
     "build": "tsc && vite build && ./create-files.sh",
@@ -16,13 +18,6 @@
     "run-prettier": "npx prettier --write .",
     "coverage": "vitest --coverage",
     "typecheck": "tsc --noEmit --composite false"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://git.rwth-aachen.de/learntech-lufgi9/bama/webwriter/ww-chart"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "dependencies": {
     "@shoelace-style/shoelace": "^2.15.1",
@@ -44,9 +39,17 @@
     "vite-plugin-babel": "^1.1.3",
     "vitest": "^0.30.1"
   },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
   "exports": {
-    "./widgets/webwriter-chart": "./src/widget.ts",
-    "./snippets/info-sheet": "./src/snippets/info-sheet.html"
+    "./widgets/webwriter-chart.*": {
+      "source": "./src/widget.ts",
+      "default": "./dist/widgets.*"
+    },
+    "./snippets/info-sheet": "./src/snippets/info-sheet.html",
+    "./snippets/example-exercise": "./src/snippets/example-exercise.html"
   },
   "editingConfig": {
     "./widgets/webwriter-chart": {
@@ -57,6 +60,11 @@
     "./snippets/info-sheet": {
       "label": {
         "en": "Scatterplot Info Sheet"
+      }
+    },
+    "./snippets/example-exercise": {
+      "label": {
+        "en": "Example Exercise"
       }
     }
   }

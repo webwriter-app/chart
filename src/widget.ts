@@ -12,7 +12,6 @@ import SlCheckbox from "@shoelace-style/shoelace/dist/components/checkbox/checkb
 import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert.component.js";
 
 import style from "./widget.style";
-import "./index.css";
 
 import {
   ChartType,
@@ -53,6 +52,7 @@ export class WwChart extends LitElementWw {
       sets: [],
     },
     scatterDatasets: {
+      title: "My Scatterplot",
       sets: [],
       selected: {
         axis: {
@@ -188,7 +188,7 @@ export class WwChart extends LitElementWw {
         style=${this.isContentEditable ? "" : "display: none;"}
       >
         <div id="settings-wrapper">
-          <h2>Setting</h2>
+          <h2>Settings</h2>
           <!-- <sl-checkbox
             id="Editable"
             ?checked=${this.sharedState.editable}

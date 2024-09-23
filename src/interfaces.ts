@@ -49,17 +49,7 @@ export interface ScatterplotDataSet {
   dimensional_data?: { x: number; y: number; selected: boolean }[];
   index_in_scatterdatasets: number;
 }
-// TODO: Delete this interface
-// For Advanced Scatterplot with multiple columns for y and x axis
-export interface ScatterplotDataSetsAdvanced {
-  labels: string[];
-  color: string;
-  sets: ScatterplotDataSetAdvanced[];
-}
-export interface ScatterplotDataSetAdvanced {
-  id: number;
-  data: (number | string)[];
-}
+
 export interface LineDataSet {
   data: { x: number; y: number }[];
 }
@@ -67,6 +57,7 @@ export interface LineDataSets {
   sets: LineDataSet[];
 }
 export interface ScatterDatasets {
+  title: string;
   sets: ScatterDataset[];
   selected: {
     axis: {

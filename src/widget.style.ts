@@ -1,17 +1,8 @@
 import { css } from "lit";
 
 export default css`
-  :host,
   #main {
-    /* margin-top: 1px;
-  margin-left: 1px; */
-    /* max-width: 1280px; */
-    /* margin: 0 auto; */
-    /* padding: 2rem; */
-
-    /* margin-bottom: 1vh; */
-    /* text-align: center; */
-    /* background-color: blue; */
+    outline: 1px solid lightgray;
   }
 
   .logo {
@@ -98,7 +89,6 @@ export default css`
   #main {
     height: 32rem;
     width: 100%;
-    outline: 2px solid black;
     display: flex;
     flex-direction: column;
   }
@@ -119,27 +109,29 @@ export default css`
 
   #data-panel {
     flex: 1;
-    padding: 0;
+    padding: 0 0.5em;
     background-color: #eaeaea;
-    outline: 2px solid darkblue;
     width: 100%;
     overflow: auto;
   }
- 
+
   #settings {
     color: var(--sl-color-gray-600);
     font-size: var(--sl-font-size-medium);
     line-height: var(--sl-line-height-medium);
     font-weight: 400;
 
-    box-sizing: border-box;
     overflow: overlay;
     padding-top: 0px !important;
+    width: 100%;
+
+    box-sizing: content-box;
+    padding-left: 10px;
   }
   #settings-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 1em;
+    gap: 0.25em;
   }
   #settings-panel {
     background-color: white;
@@ -165,14 +157,6 @@ export default css`
     top: 0;
     background: #f4f4f4;
     z-index: 1;
-
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 0 .5em
-
-    display: flex;
-    align-items: center;
-    gap: 1ch;
 
     border-bottom: 2px solid var(--sl-color-gray-600);
     color: darkblue;

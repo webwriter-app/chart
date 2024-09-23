@@ -230,6 +230,7 @@ export class DatasetInput extends StateComponent {
                         ${!this.sharedState.printable
                           ? html`
                               <sl-color-picker
+                                size="small"
                                 ?disabled=${!(
                                   this.sharedState.editable ||
                                   this.sharedState.teacherOptions.changeData
@@ -316,6 +317,7 @@ export class DatasetInput extends StateComponent {
 
                             ${!this.sharedState.printable
                               ? html`<sl-color-picker
+                                  size="small"
                                   ?disabled=${!(
                                     this.sharedState.editable ||
                                     this.sharedState.teacherOptions.changeData

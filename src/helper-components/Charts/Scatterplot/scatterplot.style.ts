@@ -132,4 +132,11 @@ g {
 svg *, sl-icon {
   user-select: none;
 }
+sl-button::part(base) {
+  align-items : center;
+}
+
+sl-button sl-icon {
+  pointer-events: none;
+}
 `;
