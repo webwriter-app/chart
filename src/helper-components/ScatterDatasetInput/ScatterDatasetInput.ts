@@ -215,9 +215,10 @@ export class ScatterDatasetInput extends StateComponent {
       (_, i) => i !== index_inset
     );
     const updatedDatasetIndexes =
-      this.sharedState.scatterDatasets.selected.dataset_indexes
-        .map((index) => (index > index_inset ? index - 1 : index))
-        .filter((index) => index !== null);
+      this.sharedState.scatterDatasets.selected.dataset_indexes.filter(
+        (index) => index !== index_inset
+      );
+
     if (
       index_inset ===
         this.sharedState.scatterDatasets.selected.dataset_indexes[0] &&
