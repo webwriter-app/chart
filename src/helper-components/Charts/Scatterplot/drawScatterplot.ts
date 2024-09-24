@@ -216,6 +216,12 @@ function calculateSVGDimensions(
     const roundingFactorY = 10 ** Math.floor(Math.log10(Math.abs(minY)));
     minY = Math.ceil(Math.abs(minY) / roundingFactorY) * roundingFactorY * -1;
   }
+  if (minX === 0 && maxX === 0) {
+    maxX = 1;
+  }
+  if (minY === 0 && maxY === 0) {
+    maxY = 1;
+  }
 
   // set the dimensions and margins of the graph
   const margin = { top: 50, right: 55, bottom: 50, left: 70 },
@@ -1808,6 +1814,12 @@ function calculateSVGDimensions_singleDataset(
   if (minY < 0) {
     const roundingFactorY = 10 ** Math.floor(Math.log10(Math.abs(minY)));
     minY = Math.ceil(Math.abs(minY) / roundingFactorY) * roundingFactorY * -1;
+  }
+  if (minX === 0 && maxX === 0) {
+    maxX = 1;
+  }
+  if (minY === 0 && maxY === 0) {
+    maxY = 1;
   }
   // set the dimensions and margins of the graph
   const margin = { top: 50, right: 55, bottom: 50, left: 70 },
