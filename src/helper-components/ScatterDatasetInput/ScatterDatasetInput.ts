@@ -22,15 +22,6 @@ import "../FileUploadButton";
 import { SelectDataset } from "./SelectDataset";
 import { updateColorForFilter } from "../../helper-components/Charts/Scatterplot/drawScatterplot";
 import StateComponent from "../../stateComponent";
-//TODO: Add teacher options,
-//TODO:, file upload, dispatch event, change style for plus button
-//TODO: Add margin
-//TODO: Add style for selected Element
-//TODO: Fix color by changing lightgreen and yellow to a better color
-//TODO: Fix color of trash to red when hovering
-// TODO: Fix style for the popup of buttons SelectDatasets?
-// Fix the button add dataset
-// Add the possibility to change the type of the column
 @customElement("wwci-scatterdataset-input")
 export class ScatterDatasetInput extends StateComponent {
   // Define properties with appropriate types
@@ -155,10 +146,14 @@ export class ScatterDatasetInput extends StateComponent {
         sets: updatedSets,
       },
     };
+
+    this.updateFilter(index_inset);
+
+    this.dispatchStateChange();
+  }
+  updateFilter(index_inset: number) {
     if (
-      this.sharedState.scatterDatasets.selected.dataset_indexes.length === 1 &&
-      this.sharedState.scatterDatasets.selected.dataset_indexes[0] ===
-        index_inset &&
+      this.sharedState.scatterDatasets.sets[index_inset].filter &&
       this.sharedState.scatterDatasets.sets[index_inset].filter?.label &&
       this.sharedState.scatterDatasets.sets[index_inset].filter
         ?.index_in_labels !== -1 &&
@@ -179,7 +174,6 @@ export class ScatterDatasetInput extends StateComponent {
             this.sharedState.scatterDatasets.sets[index_inset]
           );
     }
-    this.dispatchStateChange();
   }
 
   deleteRow(index_inset: number, index_indata_scatterplot: number) {
@@ -207,6 +201,7 @@ export class ScatterDatasetInput extends StateComponent {
         sets: updatedSets,
       },
     };
+    this.updateFilter(index_inset);
     this.dispatchStateChange();
   }
 
@@ -218,7 +213,7 @@ export class ScatterDatasetInput extends StateComponent {
       this.sharedState.scatterDatasets.selected.dataset_indexes.filter(
         (index) => index !== index_inset
       );
-
+    // if there is only dataset, remove line datasets and selected axis to None
     if (
       index_inset ===
         this.sharedState.scatterDatasets.selected.dataset_indexes[0] &&
@@ -239,6 +234,8 @@ export class ScatterDatasetInput extends StateComponent {
           },
         },
       };
+      // when only one dataset => remove line datasets
+      this.sharedState.lineDatasets.sets = [];
     }
 
     this.sharedState = {
@@ -254,7 +251,39 @@ export class ScatterDatasetInput extends StateComponent {
     };
     this.dispatchStateChange();
   }
+  recoverColorForFilter(index_inset: number) {
+    const selectedDataset = this.sharedState.scatterDatasets.sets[index_inset];
+    const updatedFilter = selectedDataset.dimensional_data.map((d) => ({
+      ...d,
+      color: selectedDataset.color,
+    }));
+
+    this.sharedState = {
+      ...this.sharedState,
+      scatterDatasets: {
+        ...this.sharedState.scatterDatasets,
+        sets: this.sharedState.scatterDatasets.sets.map((dataset, i) => {
+          if (i === index_inset) {
+            return {
+              ...dataset,
+              dimensional_data: updatedFilter,
+            };
+          }
+          return dataset;
+        }),
+      },
+    };
+  }
   deleteColumn(index_inset: number, index_inlabels: number) {
+    // recover color for filter if the column was selected as filter
+
+    if (
+      this.sharedState.scatterDatasets.sets[index_inset].filter
+        ?.index_in_labels === index_inlabels
+    ) {
+      this.recoverColorForFilter(index_inset);
+    }
+
     const updatedSets = this.sharedState.scatterDatasets.sets.map(
       (dataset, i) => {
         if (i === index_inset) {
@@ -270,7 +299,11 @@ export class ScatterDatasetInput extends StateComponent {
             })),
             filter:
               dataset.filter.index_in_labels === index_inlabels
-                ? { label: "", type: "none", index_in_labels: -1 }
+                ? {
+                    label: "",
+                    type: "none",
+                    index_in_labels: -1,
+                  }
                 : dataset.filter,
           };
         }
@@ -344,7 +377,7 @@ export class ScatterDatasetInput extends StateComponent {
     const updatedSets = this.sharedState.scatterDatasets.sets.map(
       (dataset, i) => {
         if (i === index_inset) {
-          return { ...dataset, color };
+          return { ...dataset, color: color };
         }
         return dataset;
       }
@@ -357,6 +390,8 @@ export class ScatterDatasetInput extends StateComponent {
         sets: updatedSets,
       },
     };
+    // ensure the color updated
+    this.recoverColorForFilter(index_inset);
     this.dispatchStateChange();
   }
   // !important index_inset is the index of the dataset and index_inset = this.sharedState.scatterDatasets.sets.length - 1 - index_reverse
@@ -500,14 +535,83 @@ export class ScatterDatasetInput extends StateComponent {
                             value="${label}"
                             @sl-input=${(e: any) => {
                               const newValue = String(e.target.value);
+                              const targetIndex =
+                                this.sharedState.scatterDatasets.sets.length -
+                                1 -
+                                index_reverse;
+                              const targetDataset =
+                                this.sharedState.scatterDatasets.sets[
+                                  targetIndex
+                                ];
+                              // Check if we need to update the filter and color
+                              let updatedFilter = targetDataset.filter;
+                              if (
+                                targetDataset.filter?.index_in_labels ===
+                                index_inlabels
+                              ) {
+                                updatedFilter = {
+                                  ...targetDataset.filter,
+                                  label: newValue,
+                                };
+                              }
+                              const updatedIndexes = [
+                                ...this.sharedState.scatterDatasets.selected
+                                  .dataset_indexes,
+                              ];
+                              // check for the selected axis
+                              if (
+                                this.sharedState.scatterDatasets.selected
+                                  .dataset_indexes.length === 1 &&
+                                this.sharedState.scatterDatasets.selected
+                                  .dataset_indexes[0] === targetIndex
+                              ) {
+                                if (
+                                  this.sharedState.scatterDatasets.selected.axis
+                                    .x === label
+                                ) {
+                                  this.sharedState.scatterDatasets.selected.axis.x =
+                                    newValue;
+                                } else if (
+                                  this.sharedState.scatterDatasets.selected.axis
+                                    .y === label
+                                ) {
+                                  this.sharedState.scatterDatasets.selected.axis.y =
+                                    newValue;
+                                }
+                                if (
+                                  this.sharedState.scatterDatasets.selected.axis
+                                    .x ===
+                                  this.sharedState.scatterDatasets.selected.axis
+                                    .y
+                                ) {
+                                  this.sharedState.scatterDatasets.selected.axis.y =
+                                    "None";
+
+                                  this.sharedState.scatterDatasets.selected.axis.x =
+                                    "None";
+                                }
+                              } else if (
+                                this.sharedState.scatterDatasets.selected
+                                  .dataset_indexes.length > 1 &&
+                                this.sharedState.scatterDatasets.selected.dataset_indexes.includes(
+                                  targetIndex
+                                )
+                              ) {
+                                if (
+                                  this.sharedState.scatterDatasets.selected.axis
+                                    .x === label ||
+                                  this.sharedState.scatterDatasets.selected.axis
+                                    .y === label
+                                ) {
+                                  const index =
+                                    updatedIndexes.indexOf(targetIndex);
+                                  updatedIndexes.splice(index, 1);
+                                }
+                              }
+
                               const updatedSets =
                                 this.sharedState.scatterDatasets.sets.map(
                                   (dataset, i) => {
-                                    const targetIndex =
-                                      this.sharedState.scatterDatasets.sets
-                                        .length -
-                                      1 -
-                                      index_reverse;
                                     if (i === targetIndex) {
                                       const updatedLabels = dataset.labels.map(
                                         (label, labelIndex) =>
@@ -518,19 +622,25 @@ export class ScatterDatasetInput extends StateComponent {
                                       return {
                                         ...dataset,
                                         labels: updatedLabels, // Update labels immutably
+                                        filter: updatedFilter,
                                       };
                                     }
                                     return dataset;
                                   }
                                 );
-
-                              this.sharedState = {
+                              const updatedState = {
                                 ...this.sharedState,
                                 scatterDatasets: {
                                   ...this.sharedState.scatterDatasets,
                                   sets: updatedSets,
+                                  selected: {
+                                    ...this.sharedState.scatterDatasets
+                                      .selected,
+                                    dataset_indexes: updatedIndexes,
+                                  },
                                 },
                               };
+                              this.sharedState = updatedState;
                               this.dispatchStateChange();
                             }}
                             @sl-blur=${() => {
@@ -551,7 +661,7 @@ export class ScatterDatasetInput extends StateComponent {
                                 )
                               ) {
                                 const updatedLabels = labels.map((l, i) =>
-                                  i === index_inlabels ? `${label} (1)` : l
+                                  i === index_inlabels ? `${label}(1)` : l
                                 );
 
                                 const updatedSets =
@@ -668,38 +778,16 @@ export class ScatterDatasetInput extends StateComponent {
                                     })
                                   );
                                 let updatedFilter = targetDataset.filter;
-
+                                // check if we need to update the filter and color
                                 if (
-                                  this.sharedState.scatterDatasets.selected
-                                    .dataset_indexes.length === 1 &&
-                                  this.sharedState.scatterDatasets.selected
-                                    .dataset_indexes[0] ===
-                                    this.sharedState.scatterDatasets.sets
-                                      .length -
-                                      1 -
-                                      index_reverse &&
-                                  this.sharedState.scatterDatasets.sets[
-                                    this.sharedState.scatterDatasets.sets
-                                      .length -
-                                      1 -
-                                      index_reverse
-                                  ].filter?.label === label &&
-                                  this.sharedState.scatterDatasets.sets[
-                                    this.sharedState.scatterDatasets.sets
-                                      .length -
-                                      1 -
-                                      index_reverse
-                                  ].filter?.index_in_labels === index_inlabels
+                                  targetDataset.filter?.label === label &&
+                                  targetDataset.filter?.index_in_labels ===
+                                    index_inlabels
                                 ) {
                                   updatedFilter = {
                                     ...targetDataset.filter,
                                     type: "string",
                                   };
-                                  updateColorForFilter(
-                                    updatedFilter.index_in_labels,
-                                    "string",
-                                    targetDataset
-                                  );
                                 }
                                 // Update the sets array immutably
                                 const updatedSets =
@@ -724,6 +812,7 @@ export class ScatterDatasetInput extends StateComponent {
                                     sets: updatedSets,
                                   },
                                 };
+                                this.updateFilter(targetIndex);
                                 this.dispatchStateChange();
                               }}
                               class="button-datatype-category"
@@ -774,10 +863,6 @@ export class ScatterDatasetInput extends StateComponent {
                                 // Check if we need to update the filter and color
                                 let updatedFilter = targetDataset.filter;
                                 if (
-                                  this.sharedState.scatterDatasets.selected
-                                    .dataset_indexes.length === 1 &&
-                                  this.sharedState.scatterDatasets.selected
-                                    .dataset_indexes[0] === targetIndex &&
                                   targetDataset.filter?.label === label &&
                                   targetDataset.filter?.index_in_labels ===
                                     index_inlabels
@@ -786,11 +871,6 @@ export class ScatterDatasetInput extends StateComponent {
                                     ...targetDataset.filter,
                                     type: "number",
                                   };
-                                  updateColorForFilter(
-                                    updatedFilter.index_in_labels,
-                                    "number",
-                                    targetDataset
-                                  );
                                 }
 
                                 // Update the sets array immutably
@@ -816,6 +896,7 @@ export class ScatterDatasetInput extends StateComponent {
                                     sets: updatedSets,
                                   },
                                 };
+                                this.updateFilter(targetIndex);
                                 this.dispatchStateChange();
                               }}
                               class="button-datatype-number"
@@ -975,29 +1056,12 @@ export class ScatterDatasetInput extends StateComponent {
                                     );
 
                                   let updatedFilter = targetDataset.filter;
-
+                                  // Update the filter and color if the column is selected as filter
                                   if (
-                                    this.sharedState.scatterDatasets.selected
-                                      .dataset_indexes.length === 1 &&
-                                    this.sharedState.scatterDatasets.selected
-                                      .dataset_indexes[0] ===
-                                      this.sharedState.scatterDatasets.sets
-                                        .length -
-                                        1 -
-                                        index_reverse &&
-                                    this.sharedState.scatterDatasets.sets[
-                                      this.sharedState.scatterDatasets.sets
-                                        .length -
-                                        1 -
-                                        index_reverse
-                                    ].filter?.label ===
+                                    targetDataset.filter?.label ===
                                       each_dataset.labels[index_indata] &&
-                                    this.sharedState.scatterDatasets.sets[
-                                      this.sharedState.scatterDatasets.sets
-                                        .length -
-                                        1 -
-                                        index_reverse
-                                    ].filter?.index_in_labels === index_indata
+                                    targetDataset.filter?.index_in_labels ===
+                                      index_indata
                                   ) {
                                     updatedFilter = {
                                       ...targetDataset.filter,
@@ -1008,16 +1072,6 @@ export class ScatterDatasetInput extends StateComponent {
                                           ? "number"
                                           : "string",
                                     };
-
-                                    updateColorForFilter(
-                                      index_indata,
-                                      each_dataset.typeOfEachData[
-                                        index_indata
-                                      ] === "number"
-                                        ? "number"
-                                        : "string",
-                                      targetDataset
-                                    );
                                   }
                                   const updatedSets =
                                     this.sharedState.scatterDatasets.sets.map(
@@ -1039,7 +1093,7 @@ export class ScatterDatasetInput extends StateComponent {
                                       sets: updatedSets,
                                     },
                                   };
-
+                                  this.updateFilter(targetIndex);
                                   this.dispatchStateChange();
                                 }}
                               ></sl-input>
