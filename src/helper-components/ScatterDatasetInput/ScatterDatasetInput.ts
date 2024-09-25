@@ -390,8 +390,16 @@ export class ScatterDatasetInput extends StateComponent {
         sets: updatedSets,
       },
     };
-    // ensure the color updated
-    this.recoverColorForFilter(index_inset);
+    // ensure the color updated, when no filter is selected
+    if (
+      !this.sharedState.scatterDatasets.sets[index_inset].filter ||
+      this.sharedState.scatterDatasets.sets[index_inset].filter.type ===
+        "none" ||
+      this.sharedState.scatterDatasets.sets[index_inset].filter
+        .index_in_labels === -1
+    ) {
+      this.recoverColorForFilter(index_inset);
+    }
     this.dispatchStateChange();
   }
   // !important index_inset is the index of the dataset and index_inset = this.sharedState.scatterDatasets.sets.length - 1 - index_reverse
