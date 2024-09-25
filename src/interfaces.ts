@@ -52,6 +52,7 @@ export interface ScatterplotDataSet {
 
 export interface LineDataSet {
   data: { x: number; y: number }[];
+  color: string;
 }
 export interface LineDataSets {
   sets: LineDataSet[];

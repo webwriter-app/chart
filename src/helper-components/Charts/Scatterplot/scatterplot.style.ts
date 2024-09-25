@@ -79,22 +79,46 @@ table {
   font-size: 12px;
   max-width: 9rem;
 }
-.color-formulas td {
-  font-size: 12px;
-  overflow-wrap: break-word;
-  max-width: 8.35rem;
-}
+
 .line-formulas td {
   font-size: 12px;
 }
-
-
-
-.color-span {
-  width: 1rem;
-  height: 1rem;
+  .lengend-container.hidden {
+  display: none;
+}
+  .legend-container.visible {
+  border: 1px solid #000;
+  padding: 1px 10px 5px 10px; /* Top = 5px, Right = 10px, Bottom = 10px, Left = 10px */
   display: inline-block;
-  border-radius: 50%;
+  min-width: 9.85rem;
+  max-width: 10rem;
+}
+
+.legend-title {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.legend-color-box {
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  border: 1px solid black; 
+}
+.legend-label {
+  font-size: 12px;
 }
 
 svg {
@@ -125,9 +149,9 @@ g {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  background: white;
+  background-color: white;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  z-index: 1000;
 }
 svg *, sl-icon {
   user-select: none;
@@ -139,4 +163,54 @@ sl-button::part(base) {
 sl-button sl-icon {
   pointer-events: none;
 }
+.gradient-bar-container {
+    width: 91%; /* Adjust as needed */
+    margin: 3px 0;
+     z-index: 1; /* Ensure the gradient is below the pop-up */
+  }
+
+  .gradient-bar {
+  height: 20px;
+  border: 1px solid #000;
+  background: linear-gradient(to right, #cceeff, #99ccff, #6699ff, #3366ff, #0033cc);
+   z-index: 1; /* Ensure the gradient is below the pop-up */
+}
+
+ 
+    .gradient-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+      font-size: 12px; 
+    }
+      /* Create tick mark container */
+    .ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0px;
+      
+    }
+
+    .tick {
+      width: 1px;
+      height: 5px;
+      background-color: black;
+    }
+
+    .tick-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+      #min-value {
+  margin-left: -1px; /* Move the minimum value left */
+}
+
+#max-value {
+  margin-right: -2px; /* Move the maximum value right */
+}
+
+
+
 `;

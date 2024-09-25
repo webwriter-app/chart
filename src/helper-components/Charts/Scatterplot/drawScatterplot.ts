@@ -604,6 +604,20 @@ function createTooltip(parent: Element) {
     .style("border-radius", "5px")
     .style("padding", "10px");
 }
+function createNewTooltip(parent: Element) {
+  // This tooltip is used for the dragging
+  return d3
+    .select(parent)
+    .append("div")
+    .style("opacity", 0)
+    .attr("class", "new-tooltip")
+    .style("position", "fixed")
+    .style("background-color", "white")
+    .style("border", "solid")
+    .style("border-width", "1px")
+    .style("border-radius", "5px")
+    .style("padding", "10px");
+}
 
 // Custom tick format for x-axis when the max value > 10^7 or min value < -10^7
 function customFormatForBigNumber(d, decimal: number) {
@@ -625,6 +639,8 @@ function drawScatterplot(
     hoverTooltip: boolean;
     showOutliers: boolean;
     hoverCursorChange: boolean;
+    drawLine: boolean;
+    isDragging: boolean;
   },
   line_datasets: LineDataSets,
   datasets_count: number,
@@ -690,6 +706,8 @@ function drawScatterplot(
       // Hover points to make them bigger and show tooltip
       scatter
         .selectAll(`circle.dataset-${i}`)
+        .style("stroke", "black")
+        .style("stroke-width", 0.5)
         .on("mouseover", function (_e, d: PointOnlyNumbers) {
           if (options.hoverCursorChange) {
             d3.select(this).attr("r", 8);
@@ -705,7 +723,11 @@ function drawScatterplot(
               ? roundNumber(d.y, 4)
               : customFormatForBigNumber(d.y, 4);
           // Show tooltip
-          if (options.hoverTooltip) {
+          if (
+            options.hoverTooltip &&
+            !options.isDragging &&
+            !options.drawLine
+          ) {
             tooltip
               .style("opacity", 1)
               .html(
@@ -730,7 +752,13 @@ function drawScatterplot(
           // Change the cursor back to normal
           d3.select(this).style("cursor", "default");
           // Hide tooltip
-          tooltip.transition().duration(200).style("opacity", 0);
+          if (
+            options.hoverTooltip &&
+            !options.isDragging &&
+            !options.drawLine
+          ) {
+            tooltip.transition().duration(200).style("opacity", 0);
+          }
         });
 
       // Show outliers for each dataset
@@ -778,18 +806,22 @@ function drawScatterplot(
               Math.abs(d.y) < 10 ** 5
                 ? roundNumber(d.y, 4)
                 : customFormatForBigNumber(d.y, 4);
-            tooltip
-              .style("opacity", 1)
-              .html(
-                `${
-                  datasetLabel ? "Outlier of " + datasetLabel : "Outlier"
-                }<br>${fullAxisLabels.x}: ${dx} ${fullAxisLabels.y}: ${dy}`
-              )
-              .style("left", `${event.pageX + 10}px`)
-              .style("top", `${event.pageY + 10}px`);
+            if (!options.isDragging && !options.drawLine) {
+              tooltip
+                .style("opacity", 1)
+                .html(
+                  `${
+                    datasetLabel ? "Outlier of " + datasetLabel : "Outlier"
+                  }<br>${fullAxisLabels.x}: ${dx} ${fullAxisLabels.y}: ${dy}`
+                )
+                .style("left", `${event.pageX + 10}px`)
+                .style("top", `${event.pageY + 10}px`);
+            }
           })
           .on("mouseleave", () => {
-            tooltip.transition().duration(200).style("opacity", 0);
+            if (!options.isDragging && !options.drawLine) {
+              tooltip.transition().duration(200).style("opacity", 0);
+            }
           });
       }
     }
@@ -850,9 +882,9 @@ function drawPoints(
     .attr("cy", (d) => scales.y(d.y))
     .attr("r", 7)
     .style("fill", (d) => d.color ?? "#417ca1")
+    .style("opacity", 1)
     .style("stroke", "back")
     .style("stroke-width", 0.5)
-    .style("opacity", 1)
     .classed("selected", (d) => d.selected);
 }
 
@@ -1061,24 +1093,30 @@ function findTheLastMatchIndexInSPDataset(
 }
 
 function addDragingPointListeners(
+  root: Element,
   svg: d3.Selection<SVGElement, unknown, null, undefined>,
   scatter: d3.Selection<SVGGElement, unknown, null, undefined>,
   scales: Scales,
   scatterdatasets: ScatterDatasets,
   datasets: PointOnlyNumbers[][],
-  onFinish: () => void
+  onFinish: () => void,
+  axisLabels: { x: string; y: string }
 ) {
+  // create tooltip that separates from the tooltip of the chart
   let index_set = {
     index_in_set: -1,
     index_in_dimensional_data: -1,
     index_in_data_x: -1,
     index_in_data_y: -1,
   };
+  const new_tooltip = createNewTooltip(root);
   const drag = d3
     .drag()
     .on("start", (event, d: PointOnlyNumbers) => {
       d3.select(event.sourceEvent.target).classed("selected", true);
       index_set = findIndexForPoint(d, scatterdatasets, true);
+      // Delete the tooltip
+      d3.select(root).selectAll(".tooltip").remove();
     })
     .on("drag", (event, d: PointOnlyNumbers) => {
       // Get new coordinates relative to the SVG container
@@ -1089,8 +1127,27 @@ function addDragingPointListeners(
       scatter.selectAll("circle").each(function (d: PointOnlyNumbers) {
         d3.select(this).attr("cx", scales.x(d.x)).attr("cy", scales.y(d.y));
       });
+      // show the tooltip with the new values
+      const dx: number =
+        Math.abs(d.x) < 10 ** 7
+          ? roundNumber(d.x, 4)
+          : customFormatForBigNumber(d.x, 4);
+      const dy: number =
+        Math.abs(d.y) < 10 ** 5
+          ? roundNumber(d.y, 4)
+          : customFormatForBigNumber(d.y, 4);
+      new_tooltip
+        .style("opacity", 1)
+        .html(
+          `ID: ${d.id}<br/>
+          ${axisLabels.x}: ${dx} ${axisLabels.y}: ${dy}`
+        )
+        .style("left", `${event.sourceEvent.pageX + 10}px`)
+        .style("top", `${event.sourceEvent.pageY + 10}px`);
     })
     .on("end", (event, d: PointOnlyNumbers) => {
+      // Delete the new tooltip
+      d3.select(root).selectAll(".new-tooltip").remove();
       const selected = d.selected;
       // Update the data point in the scatterdatasets
       scatterdatasets.sets[index_set.index_in_set].dimensional_data[
@@ -1148,7 +1205,7 @@ function roundNumber(num: number, decimal: number): number {
   const [_, decimalPart] = num.toString().split(".");
 
   // If there is no decimal part or it's length is less than or equal to 4, return the original number
-  if (!decimalPart || decimalPart.length <= 4) {
+  if (!decimalPart || decimalPart.length <= 2) {
     return num;
   }
   // else fix the number to .. decimal places
@@ -1548,7 +1605,7 @@ function addPointListeners(
         } else if (label === "number") {
           return 0; // or some default value
         } else {
-          return "string"; // or some default value
+          return "new string"; // or some default value
         }
       });
       set.dimensional_data.push({
@@ -1643,18 +1700,14 @@ function updateColorForFilter(
       }
     });
     const range_value = max - min;
-    if (range_value < 5) {
-      parts = range_value;
-      for (let i = 0; i < parts + 2; i++) {
-        ranges.push(min + i);
-      }
-    } else {
-      let step = Math.ceil(range_value / parts);
-      for (let i = 0; i < parts + 1; i++) {
-        ranges.push(min + i * step);
-      }
+
+    let step = Math.ceil(range_value / parts);
+    for (let i = 0; i < parts + 1; i++) {
+      ranges.push(min + i * step);
     }
-    const colors = generateColorWheel(5);
+
+    const colors = ["#cceeff", "#99ccff", "#6699ff", "#3366ff", "#0033cc"];
+
     for (let i = 0; i < ranges.length - 1; i++) {
       rangesandcolors.push({
         range: { min: ranges[i], max: ranges[i + 1] },
@@ -2624,4 +2677,5 @@ export {
   roundNumber,
   clampLabel,
   clampLabelForXAxis,
+  createNewTooltip,
 };

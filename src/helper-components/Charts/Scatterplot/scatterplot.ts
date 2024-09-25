@@ -9,7 +9,7 @@ import SlPopup from "@shoelace-style/shoelace/dist/components/popup/popup.compon
 import SlMenu from "@shoelace-style/shoelace/dist/components/menu/menu.js";
 import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
 import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.component.js";
-import IconFileBarGraph from "bootstrap-icons/icons/file-bar-graph.svg";
+import IconPluslg from "bootstrap-icons/icons/plus-lg.svg";
 import IconHandIndex from "bootstrap-icons/icons/hand-index.svg";
 import IconEye from "bootstrap-icons/icons/eye.svg";
 import IconPencil from "bootstrap-icons/icons/pencil.svg";
@@ -36,9 +36,11 @@ import {
   roundNumber,
   clampLabel,
   clampLabelForXAxis,
+  createNewTooltip,
 } from "./drawScatterplot";
 import style from "./scatterplot.style";
 import StateComponent from "../../../stateComponent";
+import { generateColorWheel } from "../../../functions";
 export interface PointOnlyNumbers {
   x: number;
   y: number;
@@ -207,9 +209,12 @@ export class ScatterplotChart extends StateComponent {
       this.totalDataLength !== 0;
     const filterTableVisible =
       this.sharedState.scatterDatasets.selected.dataset_indexes.length === 1 &&
+      firstSelectedDataset?.filter &&
       firstSelectedDataset?.filter?.label !== "" &&
       firstSelectedDataset?.filter?.type !== "none" &&
-      firstSelectedDataset?.filter?.index_in_labels !== -1;
+      firstSelectedDataset?.filter?.index_in_labels !== -1 &&
+      firstSelectedDataset.dimensional_data.length !== 0 &&
+      (x_axis_type !== "none" || y_axis_type !== "none");
     // If the animation is on, deactivate the addNode,  selectByClicking, selectByBrushing, deselectByBrushing,  drawLine
     if (this.animation) {
       this.selectedIndextoAddNode = undefined;
@@ -284,6 +289,17 @@ export class ScatterplotChart extends StateComponent {
                       } else {
                         this.addNode = !this.addNode;
                       }
+                      // no popup when there is only one selected dataset
+                      if (
+                        this.sharedState.scatterDatasets.selected
+                          .dataset_indexes.length === 1
+                      ) {
+                        this.addNode = false;
+                        this.selectedIndextoAddNode =
+                          this.sharedState.scatterDatasets.selected.dataset_indexes[0];
+                        this.hoverCursorChange = false;
+                        this.updateScatterplot();
+                      }
                       e.target.focus();
                     }}
                     .disabled=${
@@ -295,7 +311,7 @@ export class ScatterplotChart extends StateComponent {
                     }
                     @blur=${() => (this.addNode = false)}
                   >
-                    <sl-icon src=${IconFileBarGraph} label="Data"></sl-icon>
+                    <sl-icon src=${IconPluslg} label="Data"></sl-icon>
                   </sl-button>
                 </sl-tooltip>
               </span>
@@ -324,7 +340,10 @@ export class ScatterplotChart extends StateComponent {
                               }}
                               .checked=${this.selectedIndextoAddNode === i}
                             >
-                              Add a new data point of "${dataset.name}"
+                              New data point of
+                              <span style="color: ${dataset.color};"
+                                >${dataset.name}</span
+                              >
                             </sl-menu-item>
                           `;
                         }
@@ -419,6 +438,63 @@ export class ScatterplotChart extends StateComponent {
                   </sl-button>
                 </sl-tooltip>
               </span>
+              <span slot="anchor">
+              <sl-tooltip
+                hoist
+                placement=${
+                  this.sharedState.chart.options.animation ||
+                  x_axis_type !== "number" ||
+                  y_axis_type !== "number" ||
+                  this.totalDataLength === 0
+                    ? "top-end"
+                    : "top-center"
+                }
+                content=${
+                  this.sharedState.chart.options.animation
+                    ? "To use this option, you must first disable the animation"
+                    : this.sharedState.scatterDatasets.sets.length === 0
+                    ? "To use this option, you must first add dataset"
+                    : this.totalDataLength === 0 &&
+                      this.selectedDatasets_length === 0
+                    ? "To use this option, you must select at least one dataset"
+                    : this.totalDataLength === 0 &&
+                      this.selectedDatasets_length === 1
+                    ? "To use this option, you must first add at least one data point to the selected dataset table"
+                    : this.totalDataLength === 0 &&
+                      this.selectedDatasets_length > 1
+                    ? "To use this option, you must first add at least one data point to the selected dataset tables"
+                    : x_axis_type !== "number" || y_axis_type !== "number"
+                    ? "The x and y axis must be numbers to use this option"
+                    : "Draw a line in the scatterplot"
+                }
+              >
+                <sl-button
+                  
+                  size="small"
+                  circle
+                  id="draw-line-button"
+                  @click=${(e) => {
+                    if (e.button !== 0) return;
+                    this.selectedIndextoAddNode = undefined;
+                    this.selectByClicking = false;
+                    this.selectByBrushing = false;
+                    this.deselectByBrushing = false;
+                    this.hoverCursorChange = false;
+                    this.drawLine = !this.drawLine;
+                    this.updateScatterplot();
+                  }}
+                  variant=${this.drawLine ? "primary" : "default"}
+                  .disabled=${
+                    this.sharedState.chart.options.animation ||
+                    this.totalDataLength === 0 ||
+                    x_axis_type !== "number" ||
+                    y_axis_type !== "number"
+                  }
+                >
+                  <sl-icon src=${IconPencil} label="Draw"></sl-icon>
+                </sl-button>
+              </sl-tooltip>
+            </span>
               <div class="popup-content">
                 <sl-button
                   id="select-by-clicking"
@@ -673,82 +749,16 @@ export class ScatterplotChart extends StateComponent {
                 >
               </div>
             </sl-popup>
-            <span slot="anchor">
-              <sl-tooltip
-                hoist
-                placement=${
-                  this.sharedState.chart.options.animation ||
-                  x_axis_type !== "number" ||
-                  y_axis_type !== "number" ||
-                  this.totalDataLength === 0
-                    ? "top-end"
-                    : "top-center"
-                }
-                content=${
-                  this.sharedState.chart.options.animation
-                    ? "To use this option, you must first disable the animation"
-                    : this.sharedState.scatterDatasets.sets.length === 0
-                    ? "To use this option, you must first add dataset"
-                    : this.totalDataLength === 0 &&
-                      this.selectedDatasets_length === 0
-                    ? "To use this option, you must select at least one dataset"
-                    : this.totalDataLength === 0 &&
-                      this.selectedDatasets_length === 1
-                    ? "To use this option, you must first add at least one data point to the selected dataset table"
-                    : this.totalDataLength === 0 &&
-                      this.selectedDatasets_length > 1
-                    ? "To use this option, you must first add at least one data point to the selected dataset tables"
-                    : x_axis_type !== "number" || y_axis_type !== "number"
-                    ? "The x and y axis must be numbers to use this option"
-                    : "Draw a line in the scatterplot"
-                }
-              >
-                <sl-button
-                  
-                  size="small"
-                  circle
-                  id="draw-line-button"
-                  @click=${(e) => {
-                    if (e.button !== 0) return;
-                    this.selectedIndextoAddNode = undefined;
-                    this.selectByClicking = false;
-                    this.selectByBrushing = false;
-                    this.deselectByBrushing = false;
-                    this.hoverCursorChange = false;
-                    this.drawLine = !this.drawLine;
-                    this.updateScatterplot();
-                  }}
-                  variant=${this.drawLine ? "primary" : "default"}
-                  .disabled=${
-                    this.sharedState.chart.options.animation ||
-                    this.totalDataLength === 0 ||
-                    x_axis_type !== "number" ||
-                    y_axis_type !== "number"
-                  }
-                >
-                  <sl-icon src=${IconPencil} label="Draw"></sl-icon>
-                </sl-button>
-              </sl-tooltip>
-            </span>
             <sl-popup
               placement="bottom"
               strategy="fixed"
               .active=${this.filterOn}
-              distance="7"
+              distance="7" 
             >
               <span slot="anchor">
                 <sl-tooltip
                   hoist
-                  placement=${
-                    this.sharedState.chart.options.animation ||
-                    this.selectedDatasets_length !== 1 ||
-                    this.totalDataLength === 0 ||
-                    (x_axis_type === "none" &&
-                      y_axis_type === "none" &&
-                      this.selectedDatasets_length === 1)
-                      ? "top-end"
-                      : "top-center"
-                  }
+                  placement=${"top-end"}
                   content=${
                     this.sharedState.chart.options.animation
                       ? "To use this option, you must first disable the animation"
@@ -762,7 +772,7 @@ export class ScatterplotChart extends StateComponent {
                         y_axis_type === "none" &&
                         this.selectedDatasets_length === 1
                       ? "To use this option, you must first select the x or y axis"
-                      : "Filter data points"
+                      : "Group data points"
                   }
                 >
                   <sl-button
@@ -821,7 +831,8 @@ export class ScatterplotChart extends StateComponent {
                             firstSelectedDataset.filter.index_in_labels = index;
                             const type =
                               firstSelectedDataset.typeOfEachData[index];
-                            firstSelectedDataset.filter.type = type;
+                            firstSelectedDataset.filter.type =
+                              type === "number" ? "number" : "string";
                             updateColorForFilter(i, type, firstSelectedDataset);
                           } else {
                             firstSelectedDataset.filter.label = "";
@@ -833,6 +844,7 @@ export class ScatterplotChart extends StateComponent {
                               }
                             );
                           }
+                          this.filterOn = false;
                           this.updateScatterplot();
                         }}
                         .checked=${firstSelectedDataset?.filter.label === label}
@@ -940,22 +952,100 @@ export class ScatterplotChart extends StateComponent {
                 : "9rem"
             };"
           >
-            <table>
-              <thead>
-                <tr>
-                  <th class="th_color">Color</th>
-                  <th class="th_range">
-                    ${
-                      firstSelectedDataset?.filter?.label &&
-                      firstSelectedDataset?.filter.type === "number"
-                        ? firstSelectedDataset?.filter.label
-                        : "Label"
-                    }
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="color-formulas"></tbody>
-            </table>
+          <div class="legend-container ${
+            filterTableVisible && firstSelectedDataset?.filter.type === "string"
+              ? "visible"
+              : "hidden"
+          }">
+          
+            <h2 style="font-size: 12px; text-align: center;">${
+              filterTableVisible &&
+              firstSelectedDataset?.filter.type === "string"
+                ? firstSelectedDataset?.filter.label
+                : ""
+            }</h2> 
+          ${
+            filterTableVisible && firstSelectedDataset?.filter.type === "string"
+              ? html` <div class="legend-items"></div> `
+              : html``
+          }   
+        </div>
+      
+          <h2 style="font-size: 12px; text-align: center;" ${
+            filterTableVisible && firstSelectedDataset?.filter.type === "number"
+              ? "display: visible;"
+              : "display: none;"
+          }">
+            ${
+              filterTableVisible &&
+              firstSelectedDataset?.filter.type === "number"
+                ? firstSelectedDataset?.filter.label
+                : ""
+            }
+          </h2>
+    
+          ${
+            filterTableVisible && firstSelectedDataset?.filter.type === "number"
+              ? html`
+                  <div class="gradient-bar-container">
+                    <div class="gradient-bar" id="gradient-bar"></div>
+                    <div class="ticks">
+                      <div class="tick"></div>
+                      <div class="tick"></div>
+                      <div class="tick"></div>
+                      <div class="tick"></div>
+                      <div class="tick"></div>
+                      <div class="tick"></div>
+                    </div>
+                    <div class="gradient-bar-labels">
+                      <span id="min-value"
+                        >${firstSelectedDataset?.filter?.rangesandcolors
+                          ? firstSelectedDataset?.filter?.rangesandcolors[0]
+                              ?.range.min >
+                            10 ** 4
+                            ? customFormatForBigNumber(
+                                firstSelectedDataset?.filter?.rangesandcolors[0]
+                                  ?.range.min,
+                                2
+                              )
+                            : roundNumber(
+                                firstSelectedDataset?.filter?.rangesandcolors[0]
+                                  ?.range.min,
+                                2
+                              )
+                          : "4"}</span
+                      >
+                      <!-- Min value -->
+                      <span id="max-value"
+                        >${firstSelectedDataset?.filter?.rangesandcolors
+                          ? firstSelectedDataset?.filter?.rangesandcolors[
+                              firstSelectedDataset?.filter?.rangesandcolors
+                                .length - 1
+                            ]?.range.max >
+                            10 ** 4
+                            ? customFormatForBigNumber(
+                                firstSelectedDataset?.filter?.rangesandcolors[
+                                  firstSelectedDataset?.filter?.rangesandcolors
+                                    .length - 1
+                                ]?.range.max,
+                                2
+                              )
+                            : roundNumber(
+                                firstSelectedDataset?.filter?.rangesandcolors[
+                                  firstSelectedDataset?.filter?.rangesandcolors
+                                    .length - 1
+                                ]?.range.max,
+                                2
+                              )
+                          : "4"}</span
+                      >
+                      <!-- Max value -->
+                    </div>
+                  </div>
+                `
+              : html``
+          }
+          
           </div>
           ${
             this.sharedState.chart.options.animation
@@ -1220,6 +1310,8 @@ export class ScatterplotChart extends StateComponent {
           hoverTooltip: this.sharedState.chart.options.hoverTooltip,
           showOutliers: this.sharedState.chart.options.showOutliers,
           hoverCursorChange: this.hoverCursorChange,
+          drawLine: this.drawLine,
+          isDragging: this.isDragging,
         } as any,
         this.sharedState.lineDatasets,
         datasets_count,
@@ -1228,6 +1320,7 @@ export class ScatterplotChart extends StateComponent {
         x_axis_type,
         this.sharedState.scatterDatasets.title
       );
+      const new_tooltip = createNewTooltip(root);
       // For scatter plot with regression
       const regressionFormulaRoot = this.shadowRoot.querySelector(
         ".regression-formulas"
@@ -1310,7 +1403,13 @@ export class ScatterplotChart extends StateComponent {
             svg.style("cursor", `url(${pencilCursorURL}) 0 16, auto`);
 
             addDrawLineListeners(svg, scales, (line) => {
-              this.sharedState.lineDatasets.sets.push({ data: line });
+              this.sharedState.lineDatasets.sets.push({
+                data: line,
+                color:
+                  generateColorWheel(6)[
+                    (this.sharedState.lineDatasets.sets.length - 1) % 6
+                  ],
+              });
               this.drawLine = false;
               this.hoverCursorChange = true;
               this.updateScatterplot();
@@ -1351,7 +1450,10 @@ export class ScatterplotChart extends StateComponent {
             )
           ) {
             // Dragging points to change their position
+            // deaktivate the tooltip when dragging
+
             addDragingPointListeners(
+              root,
               svg,
               scatter,
               scales,
@@ -1377,7 +1479,8 @@ export class ScatterplotChart extends StateComponent {
                   );
                   this.updateScatterplot();
                 }
-              }
+              },
+              axisLabels
             );
             // Handle recht click to remove point
             datasets.forEach((_, index) => {
@@ -1393,6 +1496,23 @@ export class ScatterplotChart extends StateComponent {
                   );
                   //Re-render
                   this.updateScatterplot();
+                  if (
+                    selectedDatasets.length === 1 &&
+                    selectedDatasets[0].filter &&
+                    selectedDatasets[0].filter?.label !== "" &&
+                    selectedDatasets[0].filter.index_in_labels !== -1 &&
+                    (selectedDatasets[0].filter?.type === "number" ||
+                      selectedDatasets[0].filter?.type === "string")
+                  ) {
+                    updateColorForFilter(
+                      selectedDatasets[0].filter.index_in_labels,
+                      selectedDatasets[0].filter.type === "number"
+                        ? "number"
+                        : "string",
+                      selectedDatasets[0]
+                    );
+                    this.updateScatterplot();
+                  }
                 });
             });
           }
@@ -1571,56 +1691,42 @@ export class ScatterplotChart extends StateComponent {
             }, this.totalDataLength * animationTime + 500);
           }
 
-          const colorFormulaRoot =
-            this.shadowRoot.querySelector(".color-formulas");
+          const legendContainer =
+            this.shadowRoot.querySelector(".legend-items");
           if (
+            selectedDatasets.length === 1 &&
+            selectedDatasets[0].filter &&
+            selectedDatasets[0].filter.index_in_labels !== -1 &&
             selectedDatasets[0].filter.label &&
-            selectedDatasets[0].filter.type !== "none" &&
-            selectedDatasets.length === 1
+            selectedDatasets[0].filter.type === "string"
           ) {
-            if (!colorFormulaRoot) {
+            if (!legendContainer) {
               return; // Exit the function if the element is not found
             }
-            [...colorFormulaRoot.children].forEach((child) => child.remove());
+            [...legendContainer.children].forEach((child) => child.remove());
 
-            if (selectedDatasets[0].filter.type === "number") {
-              selectedDatasets[0].filter.rangesandcolors.forEach(
-                (rangeandcolor, i) => {
-                  const tr = document.createElement("tr");
-                  const td1 = document.createElement("td");
-                  const td2 = document.createElement("td");
-                  tr.appendChild(td1);
-                  tr.appendChild(td2);
-                  const colorSpan = document.createElement("span");
-                  td1.appendChild(colorSpan);
-                  const rangeSpan = document.createElement("span");
-                  td2.appendChild(rangeSpan);
-                  colorFormulaRoot.appendChild(tr);
-                  colorSpan.classList.add("color-span");
-                  colorSpan.style.background = rangeandcolor.color;
-                  rangeSpan.innerText =
-                    i === selectedDatasets[0].filter.rangesandcolors.length - 1
-                      ? `[${rangeandcolor.range.min} - ${rangeandcolor.range.max}]`
-                      : `[${rangeandcolor.range.min} - ${rangeandcolor.range.max})`;
-                }
-              );
-            }
             if (selectedDatasets[0].filter.type === "string") {
               selectedDatasets[0].filter.labelsandcolors.forEach(
                 (labelandcolor) => {
-                  const tr = document.createElement("tr");
-                  const td1 = document.createElement("td");
-                  const td2 = document.createElement("td");
-                  tr.appendChild(td1);
-                  tr.appendChild(td2);
-                  const colorSpan = document.createElement("span");
-                  td1.appendChild(colorSpan);
-                  const labelSpan = document.createElement("span");
-                  td2.appendChild(labelSpan);
-                  colorFormulaRoot.appendChild(tr);
-                  colorSpan.classList.add("color-span");
-                  colorSpan.style.background = labelandcolor.color;
-                  labelSpan.innerText = `${labelandcolor.label}`;
+                  const legendItem = document.createElement("div");
+                  legendItem.classList.add("legend-item");
+
+                  // Create color box
+                  const colorBox = document.createElement("span");
+                  colorBox.classList.add("legend-color-box");
+                  colorBox.style.backgroundColor = labelandcolor.color;
+
+                  // Create label
+                  const label = document.createElement("span");
+                  label.classList.add("legend-label");
+                  label.innerText = labelandcolor.label;
+
+                  // Append the color box and label
+                  legendItem.appendChild(colorBox);
+                  legendItem.appendChild(label);
+
+                  // Add the legend item to the container
+                  legendContainer.appendChild(legendItem);
                 }
               );
             }
@@ -1666,34 +1772,53 @@ export class ScatterplotChart extends StateComponent {
               this.selectedIndextoAddNode
             );
             this.addNode = false;
-            this.selectedIndextoAddNode = undefined;
-            this.hoverCursorChange = true;
-            this.updateScatterplot();
             if (
               selectedDatasets.length === 1 &&
-              (this.sharedState.scatterDatasets.selected.axis.x ===
-                selectedDatasets[0].filter.label ||
-                this.sharedState.scatterDatasets.selected.axis.y ===
-                  selectedDatasets[0].filter.label) &&
-              selectedDatasets[0].filter.type === "number"
+              this.sharedState.scatterDatasets.selected.dataset_indexes[0] ===
+                this.selectedIndextoAddNode &&
+              selectedDatasets[0].filter &&
+              selectedDatasets[0].filter?.label !== "" &&
+              selectedDatasets[0].filter.index_in_labels !== -1 &&
+              (selectedDatasets[0].filter?.type === "number" ||
+                selectedDatasets[0].filter?.type === "string")
             ) {
               updateColorForFilter(
-                this.sharedState.scatterDatasets.selected.axis.x ===
-                  selectedDatasets[0].filter.label
-                  ? selectedDatasets[0].labels.indexOf(axisLabels.x)
-                  : selectedDatasets[0].labels.indexOf(axisLabels.y),
-                "number",
+                selectedDatasets[0].filter.index_in_labels,
+                selectedDatasets[0].filter.type === "number"
+                  ? "number"
+                  : "string",
                 selectedDatasets[0]
               );
               this.updateScatterplot();
             }
+            this.selectedIndextoAddNode = undefined;
+            this.hoverCursorChange = true;
+            this.updateScatterplot();
           });
         }
         // Add grid
         if (this.sharedState.chart.options.showGrid) {
           addGridListeners(svg, scales, dimensions);
         }
-        //TODO: Limit the line to the scatterplot area
+        function calculateLineFormular(
+          left: PointOnlyNumbers,
+          right: PointOnlyNumbers
+        ) {
+          const a = (right.y - left.y) / (right.x - left.x);
+          const b = left.y - a * left.x;
+
+          const lineFormula = `y = ${
+            Math.abs(a) > 10 ** 7
+              ? customFormatForBigNumber(a, 4)
+              : roundNumber(a, 4)
+          }x + ${
+            Math.abs(b) > 10 ** 7
+              ? customFormatForBigNumber(b, 4)
+              : roundNumber(b, 4)
+          }`;
+          return lineFormula;
+        }
+
         // Handle dragging lines to new positions
         // Define the drag behavior for the center point of the line to move the entire line up down
         // Define the drag behavior for the center point
@@ -1704,6 +1829,7 @@ export class ScatterplotChart extends StateComponent {
           .on("start", (event) => {
             d3.select(event.sourceEvent.target).classed("selected-rect", true);
             this.isDragging = true;
+            d3.select(root).selectAll(".tooltip").remove();
           })
           .on("drag", (event, d: PointOnlyNumbers) => {
             // Find index i of the line
@@ -1736,8 +1862,30 @@ export class ScatterplotChart extends StateComponent {
               false,
               this.sharedState.lineDatasets
             );
+            // Tooltip for show the new position of the line
+            const coords = {
+              x: 0,
+              y: 0,
+            };
+            const line = this.sharedState.lineDatasets.sets[index_center].data;
+            const circle = this.shadowRoot.querySelector(
+              `svg rect.center-point-${index_center}`
+            ) as SVGRectElement;
+            if (circle) {
+              const rect = circle.getBoundingClientRect();
+              coords.x = rect.x + rect.width / 2;
+              coords.y = rect.y + rect.height / 2;
+            }
+            const lineFormula = calculateLineFormular(line[0], line[1]);
+            new_tooltip
+              .style("opacity", 1)
+              .html(`${lineFormula}`)
+              .style("left", coords.x + 10 + "px")
+              .style("top", coords.y + 10 + "px");
           })
           .on("end", () => {
+            // Delete the new tooltip
+            d3.select(root).selectAll(".new-tooltip").remove();
             this.isDragging = false;
             this.updateScatterplot();
           });
@@ -1748,6 +1896,8 @@ export class ScatterplotChart extends StateComponent {
           .on("start", (event, _) => {
             d3.select(event.sourceEvent.target).classed("selected-rect", true);
             this.isDragging = true;
+            // Delete the tooltip
+            d3.select(root).selectAll(".tooltip").remove();
           })
           .on("drag", (event, d: PointOnlyNumbers) => {
             // Find index i of the line
@@ -1775,8 +1925,30 @@ export class ScatterplotChart extends StateComponent {
               false,
               this.sharedState.lineDatasets
             );
+            // Tooltip for show the new position of the line
+            const coords = {
+              x: 0,
+              y: 0,
+            };
+            const line = this.sharedState.lineDatasets.sets[index_right].data;
+            const circle = this.shadowRoot.querySelector(
+              `svg rect.center-point-${index_right}`
+            ) as SVGRectElement;
+            if (circle) {
+              const rect = circle.getBoundingClientRect();
+              coords.x = rect.x + rect.width / 2;
+              coords.y = rect.y + rect.height / 2;
+            }
+            const lineFormula = calculateLineFormular(line[0], line[1]);
+            new_tooltip
+              .style("opacity", 1)
+              .html(`${lineFormula}`)
+              .style("left", coords.x + 10 + "px")
+              .style("top", coords.y + 10 + "px");
           })
           .on("end", () => {
+            // Delete the new tooltip
+            d3.select(root).selectAll(".new-tooltip").remove();
             this.isDragging = false;
             this.updateScatterplot();
           });
@@ -1786,6 +1958,8 @@ export class ScatterplotChart extends StateComponent {
           .on("start", (event, _) => {
             d3.select(event.sourceEvent.target).classed("selected-rect", true);
             this.isDragging = true;
+            // Delete the tooltip
+            d3.select(root).selectAll(".tooltip").remove();
           })
           .on("drag", (event, d: PointOnlyNumbers) => {
             // Find index i of the line
@@ -1813,12 +1987,34 @@ export class ScatterplotChart extends StateComponent {
               true,
               this.sharedState.lineDatasets
             );
+
+            // Tooltip for show the new position of the line
+            const coords = {
+              x: 0,
+              y: 0,
+            };
+            const line = this.sharedState.lineDatasets.sets[index_left].data;
+            const circle = this.shadowRoot.querySelector(
+              `svg rect.center-point-${index_left}`
+            ) as SVGRectElement;
+            if (circle) {
+              const rect = circle.getBoundingClientRect();
+              coords.x = rect.x + rect.width / 2;
+              coords.y = rect.y + rect.height / 2;
+            }
+            const lineFormula = calculateLineFormular(line[0], line[1]);
+            new_tooltip
+              .style("opacity", 1)
+              .html(`${lineFormula}`)
+              .style("left", coords.x + 10 + "px")
+              .style("top", coords.y + 10 + "px");
           })
           .on("end", () => {
+            // Delete the new tooltip
+            d3.select(root).selectAll(".new-tooltip").remove();
             this.isDragging = false;
             this.updateScatterplot();
           });
-        // TODO: Delete the line by right click
 
         // Append the line and points
         this.sharedState.lineDatasets.sets.forEach((dataset, i) => {
@@ -1839,7 +2035,7 @@ export class ScatterplotChart extends StateComponent {
             .attr("y1", y1)
             .attr("x2", x2)
             .attr("y2", y2)
-            .attr("stroke", "#69b3a2")
+            .attr("stroke", dataset.color ?? "#272ef3")
             .attr("stroke-width", 2);
 
           // Define the center point of the line
@@ -1894,6 +2090,10 @@ export class ScatterplotChart extends StateComponent {
               this.deselectByBrushing
             )
           ) {
+            const lineFormula = calculateLineFormular(
+              dataset.data[0],
+              dataset.data[1]
+            );
             // delete line by right click on line
             svg.select(`.line-${i}`).on("contextmenu", (_) => {
               this.sharedState.lineDatasets.sets.splice(i, 1);
@@ -1912,12 +2112,23 @@ export class ScatterplotChart extends StateComponent {
                 );
                 this.updateScatterplot();
               })
-              .on("mouseover", () => {
+              .on("mouseover", (event) => {
                 if (this.hoverCursorChange) {
                   svg.style("cursor", "move");
                 }
+                // if the hover tooltip on show the tooltip with the line formula
+                if (this.hoverTooltip && !this.isDragging && !this.drawLine) {
+                  tooltip
+                    .style("opacity", 1)
+                    .html(`${lineFormula}`)
+                    .style("left", `${event.pageX + 10}px`)
+                    .style("top", `${event.pageY + 10}px`);
+                }
               })
               .on("mouseleave", () => {
+                if (this.hoverTooltip && !this.isDragging && !this.drawLine) {
+                  tooltip.transition().duration(200).style("opacity", 0);
+                }
                 svg.style("cursor", "default");
               });
             // delete line by right click on end point left
@@ -1936,9 +2147,31 @@ export class ScatterplotChart extends StateComponent {
               .on("mouseover", () => {
                 if (this.hoverCursorChange) {
                   svg.style("cursor", "move");
+                  if (this.hoverTooltip && !this.isDragging && !this.drawLine) {
+                    const coords = {
+                      x: 0,
+                      y: 0,
+                    };
+                    const circle = this.shadowRoot.querySelector(
+                      `svg rect.center-point-${i}`
+                    ) as SVGRectElement;
+                    if (circle) {
+                      const rect = circle.getBoundingClientRect();
+                      coords.x = rect.x + rect.width / 2;
+                      coords.y = rect.y + rect.height / 2;
+                    }
+                    tooltip
+                      .style("opacity", 1)
+                      .html(`${lineFormula}`)
+                      .style("left", coords.x + 10 + "px")
+                      .style("top", coords.y + 10 + "px");
+                  }
                 }
               })
               .on("mouseleave", () => {
+                if (this.hoverTooltip && !this.isDragging && !this.drawLine) {
+                  tooltip.transition().duration(200).style("opacity", 0);
+                }
                 svg.style("cursor", "default");
               });
             // delete line by right click on end point right
@@ -1958,8 +2191,30 @@ export class ScatterplotChart extends StateComponent {
                 if (this.hoverCursorChange) {
                   svg.style("cursor", "move");
                 }
+                if (this.hoverTooltip && !this.isDragging && !this.drawLine) {
+                  const coords = {
+                    x: 0,
+                    y: 0,
+                  };
+                  const circle = this.shadowRoot.querySelector(
+                    `svg rect.center-point-${i}`
+                  ) as SVGRectElement;
+                  if (circle) {
+                    const rect = circle.getBoundingClientRect();
+                    coords.x = rect.x + rect.width / 2;
+                    coords.y = rect.y + rect.height / 2;
+                  }
+                  tooltip
+                    .style("opacity", 1)
+                    .html(`${lineFormula}`)
+                    .style("left", coords.x + 10 + "px")
+                    .style("top", coords.y + 10 + "px");
+                }
               })
               .on("mouseleave", () => {
+                if (this.hoverTooltip && !this.isDragging && !this.drawLine) {
+                  tooltip.transition().duration(200).style("opacity", 0);
+                }
                 svg.style("cursor", "default");
               });
 
@@ -2031,6 +2286,8 @@ export class ScatterplotChart extends StateComponent {
               : roundNumber(b, 4)
           }`;
           lineSpan.innerText = lineFormula;
+          // Add the color of the line to the formula
+          lineSpan.style.color = dataset.color ?? "#272ef3";
         });
       }
     } else if (selectedDatasets.length === 1) {
@@ -3133,6 +3390,7 @@ export class ScatterplotChart extends StateComponent {
             this.deselectByBrushing
           )
         ) {
+          const new_tooltip = createNewTooltip(root);
           let minDistance = Infinity;
           let minDistance_band = Infinity;
           let index = -1;
@@ -3284,6 +3542,7 @@ export class ScatterplotChart extends StateComponent {
                     )
                     .classed("selected", true);
                 }
+                d3.select(root).selectAll(".tooltip").remove();
               })
               .on("drag", (event) => {
                 const [clickX, clickY] = d3.pointer(event, svg.node());
@@ -3495,8 +3754,86 @@ export class ScatterplotChart extends StateComponent {
                     });
                   }
                 }
+                // Update the visual postion of the tooltip
+                // show Tooltip for the points
+                if (x_axis_type === "number" && y_axis_type === "none") {
+                  const dx =
+                    Math.abs(newX as unknown as number) < 10 ** 7
+                      ? roundNumber(newX as unknown as number, 4)
+                      : customFormatForBigNumber(newX as unknown as number, 4);
+                  new_tooltip
+                    .style("opacity", 1)
+                    .html(
+                      "ID: " +
+                        singeledatasets[index].id +
+                        "<br>" +
+                        axisLabels.x +
+                        ": " +
+                        dx
+                    )
+                    .style("left", `${event.sourceEvent.pageX + 10}px`)
+                    .style("top", `${event.sourceEvent.pageY + 10}px`);
+                } else if (y_axis_type === "number" && x_axis_type === "none") {
+                  const dy =
+                    Math.abs(newY as unknown as number) < 10 ** 5
+                      ? roundNumber(newY as unknown as number, 4)
+                      : customFormatForBigNumber(newY as unknown as number, 4);
+                  new_tooltip
+                    .style("opacity", 1)
+                    .html(
+                      "ID: " +
+                        singeledatasets[index].id +
+                        "<br>" +
+                        axisLabels.y +
+                        ": " +
+                        dy
+                    )
+                    .style("left", `${event.sourceEvent.pageX + 10}px`)
+                    .style("top", `${event.sourceEvent.pageY + 10}px`);
+                } else if (
+                  x_axis_type === "string" &&
+                  y_axis_type === "number"
+                ) {
+                  const dy =
+                    Math.abs(newY as unknown as number) < 10 ** 5
+                      ? roundNumber(newY as unknown as number, 4)
+                      : customFormatForBigNumber(newY as unknown as number, 4);
+                  new_tooltip
+                    .style("opacity", 1)
+                    .html(
+                      "ID: " +
+                        datasets[index].id +
+                        "<br>" +
+                        axisLabels.y +
+                        ": " +
+                        dy
+                    )
+                    .style("left", `${event.sourceEvent.pageX + 10}px`)
+                    .style("top", `${event.sourceEvent.pageY + 10}px`);
+                } else if (
+                  x_axis_type === "number" &&
+                  y_axis_type === "string"
+                ) {
+                  const dx =
+                    Math.abs(newX as unknown as number) < 10 ** 7
+                      ? roundNumber(newX as unknown as number, 4)
+                      : customFormatForBigNumber(newX as unknown as number, 4);
+                  new_tooltip
+                    .style("opacity", 1)
+                    .html(
+                      "ID: " +
+                        datasets[index].id +
+                        "<br>" +
+                        axisLabels.x +
+                        ": " +
+                        dx
+                    )
+                    .style("left", `${event.sourceEvent.pageX + 10}px`)
+                    .style("top", `${event.sourceEvent.pageY + 10}px`);
+                }
               })
               .on("end", (_) => {
+                d3.select(root).selectAll(".new-tooltip").remove();
                 count = 0;
                 // Update the data of the circle (this is true)
                 if (index !== -1) {
@@ -3510,8 +3847,8 @@ export class ScatterplotChart extends StateComponent {
                   this.updateScatterplot();
                   if (
                     this.sharedState.scatterDatasets.selected.axis.x ===
-                      selectedDataset.filter.label &&
-                    selectedDataset.filter.type === "number" &&
+                      selectedDataset.filter?.label &&
+                    selectedDataset.filter?.type === "number" &&
                     (axis === "x" || axis === "xy_xnum_ystr")
                   ) {
                     updateColorForFilter(
@@ -3522,8 +3859,8 @@ export class ScatterplotChart extends StateComponent {
                     this.updateScatterplot();
                   } else if (
                     this.sharedState.scatterDatasets.selected.axis.y ===
-                      selectedDataset.filter.label &&
-                    selectedDataset.filter.type === "number" &&
+                      selectedDataset.filter?.label &&
+                    selectedDataset.filter?.type === "number" &&
                     (axis === "y" || axis === "xy_xstr_ynum")
                   ) {
                     updateColorForFilter(
@@ -3849,52 +4186,39 @@ export class ScatterplotChart extends StateComponent {
         }
 
         // Select the color table body
-        const colorFormulaRoot =
-          this.shadowRoot.querySelector(".color-formulas");
+        const legendContainer = this.shadowRoot.querySelector(".legend-items");
         if (
+          selectedDataset.filter &&
           selectedDataset.filter.label &&
-          selectedDataset.filter.type !== "none"
+          selectedDataset.filter.index_in_labels !== -1 &&
+          selectedDataset.filter.type === "string"
         ) {
-          [...colorFormulaRoot.children].forEach((child) => child.remove());
-          if (selectedDataset.filter.type === "number") {
-            selectedDataset.filter.rangesandcolors.forEach(
-              (rangeandcolor, i) => {
-                const tr = document.createElement("tr");
-                const td1 = document.createElement("td");
-                const td2 = document.createElement("td");
-                tr.appendChild(td1);
-                tr.appendChild(td2);
-                const colorSpan = document.createElement("span");
-                td1.appendChild(colorSpan);
-                const rangeSpan = document.createElement("span");
-                td2.appendChild(rangeSpan);
-                colorFormulaRoot.appendChild(tr);
-                colorSpan.classList.add("color-span");
-                colorSpan.style.background = rangeandcolor.color;
-                rangeSpan.innerText =
-                  i === selectedDataset.filter.rangesandcolors.length - 1
-                    ? `[${rangeandcolor.range.min} - ${rangeandcolor.range.max}]`
-                    : `[${rangeandcolor.range.min} - ${rangeandcolor.range.max})`;
-              }
-            );
+          if (!legendContainer) {
+            return; // Exit the function if the element is not found
           }
-          if (selectedDataset.filter.type === "string") {
-            selectedDataset.filter.labelsandcolors.forEach((labelandcolor) => {
-              const tr = document.createElement("tr");
-              const td1 = document.createElement("td");
-              const td2 = document.createElement("td");
-              tr.appendChild(td1);
-              tr.appendChild(td2);
-              const colorSpan = document.createElement("span");
-              td1.appendChild(colorSpan);
-              const labelSpan = document.createElement("span");
-              td2.appendChild(labelSpan);
-              colorFormulaRoot.appendChild(tr);
-              colorSpan.classList.add("color-span");
-              colorSpan.style.background = labelandcolor.color;
-              labelSpan.innerText = `${labelandcolor.label}`;
-            });
-          }
+          [...legendContainer.children].forEach((child) => child.remove());
+
+          selectedDataset.filter.labelsandcolors.forEach((labelandcolor) => {
+            const legendItem = document.createElement("div");
+            legendItem.classList.add("legend-item");
+
+            // Create color box
+            const colorBox = document.createElement("span");
+            colorBox.classList.add("legend-color-box");
+            colorBox.style.backgroundColor = labelandcolor.color;
+
+            // Create label
+            const label = document.createElement("span");
+            label.classList.add("legend-label");
+            label.innerText = labelandcolor.label;
+
+            // Append the color box and label
+            legendItem.appendChild(colorBox);
+            legendItem.appendChild(label);
+
+            // Add the legend item to the container
+            legendContainer.appendChild(legendItem);
+          });
         }
       }
     }
