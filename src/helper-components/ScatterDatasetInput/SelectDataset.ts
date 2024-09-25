@@ -194,6 +194,10 @@ export class SelectDataset extends StateComponent {
                         },
                       };
                     }
+                    // every time the selected datasets change, the line datasets should be reset to avoid confusion
+                    updatedState.lineDatasets = {
+                      sets: [],
+                    };
                     this.sharedState = updatedState;
 
                     this.dispatchStateChange();

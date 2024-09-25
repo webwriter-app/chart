@@ -961,7 +961,7 @@ export class ScatterplotChart extends StateComponent {
             <h2 style="font-size: 12px; text-align: center;">${
               filterTableVisible &&
               firstSelectedDataset?.filter.type === "string"
-                ? firstSelectedDataset?.filter.label
+                ? clampLabel(firstSelectedDataset?.filter.label, 15)
                 : ""
             }</h2> 
           ${
@@ -979,7 +979,7 @@ export class ScatterplotChart extends StateComponent {
             ${
               filterTableVisible &&
               firstSelectedDataset?.filter.type === "number"
-                ? firstSelectedDataset?.filter.label
+                ? clampLabel(firstSelectedDataset?.filter.label, 15)
                 : ""
             }
           </h2>
@@ -1274,8 +1274,12 @@ export class ScatterplotChart extends StateComponent {
                 });
               })
           : [];
+      // condition: both x and y axis are numbers, and there is at least one selected dataset
       const lineDatasetsWithCenterPoint: PointOnlyNumbers[][] =
-        this.sharedState.lineDatasets.sets.length > 0
+        this.sharedState.lineDatasets.sets.length > 0 &&
+        this.sharedState.scatterDatasets.selected.dataset_indexes.length > 0 &&
+        x_axis_type === "number" &&
+        y_axis_type === "number"
           ? this.sharedState.lineDatasets.sets.map((dataset) =>
               dataset.data.concat([
                 {
@@ -1719,7 +1723,7 @@ export class ScatterplotChart extends StateComponent {
                   // Create label
                   const label = document.createElement("span");
                   label.classList.add("legend-label");
-                  label.innerText = labelandcolor.label;
+                  label.innerText = clampLabel(labelandcolor.label, 15);
 
                   // Append the color box and label
                   legendItem.appendChild(colorBox);
@@ -4210,7 +4214,7 @@ export class ScatterplotChart extends StateComponent {
             // Create label
             const label = document.createElement("span");
             label.classList.add("legend-label");
-            label.innerText = labelandcolor.label;
+            label.innerText = clampLabel(labelandcolor.label, 15);
 
             // Append the color box and label
             legendItem.appendChild(colorBox);
