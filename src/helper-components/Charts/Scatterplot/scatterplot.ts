@@ -98,11 +98,9 @@ export class ScatterplotChart extends StateComponent {
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor hideSelected: boolean;
   @property({ type: Boolean, attribute: true, reflect: true })
-  accessor hideUnselected: boolean;
+  accessor selectAll: boolean;
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor deleteSelected: boolean;
-  @property({ type: Boolean, attribute: true, reflect: true })
-  accessor deleteUnselected: boolean;
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor showAll: boolean;
   @property({ type: Boolean, attribute: true, reflect: true })
@@ -280,7 +278,6 @@ export class ScatterplotChart extends StateComponent {
                         this.deselectByBrushing = false;
                         this.updateScatterplot();
                       }
-
                       if (this.selectedIndextoAddNode >= 0) {
                         this.selectedIndextoAddNode = undefined;
                         this.addNode = false;
@@ -319,7 +316,7 @@ export class ScatterplotChart extends StateComponent {
                 ${
                   this.sharedState.scatterDatasets.sets.length !== 0
                     ? this.sharedState.scatterDatasets.selected.dataset_indexes.map(
-                        (dataset_index, i) => {
+                        (dataset_index) => {
                           const dataset =
                             this.sharedState.scatterDatasets.sets[
                               dataset_index
@@ -330,17 +327,20 @@ export class ScatterplotChart extends StateComponent {
                               @mousedown=${(e: MouseEvent) => {
                                 if (e.button !== 0) return;
 
-                                if (this.selectedIndextoAddNode === i) {
+                                if (
+                                  this.selectedIndextoAddNode === dataset_index
+                                ) {
                                   this.selectedIndextoAddNode = undefined;
                                 } else {
-                                  this.selectedIndextoAddNode = i;
+                                  this.selectedIndextoAddNode = dataset_index;
                                   this.hoverCursorChange = false;
                                   this.updateScatterplot();
                                 }
                               }}
-                              .checked=${this.selectedIndextoAddNode === i}
+                              .checked=${this.selectedIndextoAddNode ===
+                              dataset_index}
                             >
-                              New data point of
+                              A data point of
                               <span style="color: ${dataset.color};"
                                 >${dataset.name}</span
                               >
@@ -504,9 +504,9 @@ export class ScatterplotChart extends StateComponent {
                     this.selectByBrushing = false;
                     this.deselectByBrushing = false;
                     this.deleteSelected = false;
-                    this.deleteUnselected = false;
+
                     this.hideSelected = false;
-                    this.hideUnselected = false;
+
                     this.showAll = false;
                     this.hoverCursorChange = false;
                     this.updateScatterplot();
@@ -522,9 +522,9 @@ export class ScatterplotChart extends StateComponent {
                     this.selectByClicking = false;
                     this.deselectByBrushing = false;
                     this.deleteSelected = false;
-                    this.deleteUnselected = false;
+
                     this.hideSelected = false;
-                    this.hideUnselected = false;
+
                     this.showAll = false;
                     this.updateScatterplot();
                   }}
@@ -540,9 +540,9 @@ export class ScatterplotChart extends StateComponent {
                     this.selectByBrushing = false;
                     this.selectByClicking = false;
                     this.deleteSelected = false;
-                    this.deleteUnselected = false;
+
                     this.hideSelected = false;
-                    this.hideUnselected = false;
+
                     this.showAll = false;
                     this.updateScatterplot();
                   }}
@@ -645,28 +645,12 @@ export class ScatterplotChart extends StateComponent {
                     if (e.button !== 0) return;
                     this.hideSelected = !this.hideSelected;
                     this.hideSelected ? (this.showAll = false) : null;
-                    !this.hideSelected && !this.hideUnselected
-                      ? (this.showAll = true)
-                      : null;
+                    !this.hideSelected ? (this.showAll = true) : null;
                     this.updateScatterplot();
                   }}
-                  >Hide Selected</sl-menu-item
+                  >Hide Selected Points</sl-menu-item
                 >
-                <sl-menu-item
-                  type="checkbox"
-                  ?checked=${this.hideUnselected}
-                  .disabled=${this.unselectedDataLength === 0}
-                  @mousedown=${(e: MouseEvent) => {
-                    if (e.button !== 0) return;
-                    this.hideUnselected = !this.hideUnselected;
-                    this.hideUnselected ? (this.showAll = false) : null;
-                    !this.hideSelected && !this.hideUnselected
-                      ? (this.showAll = true)
-                      : null;
-                    this.updateScatterplot();
-                  }}
-                  >Hide Unselected</sl-menu-item
-                >
+
                 <sl-menu-item
                   type="checkbox"
                   ?checked=${this.showAll}
@@ -675,12 +659,65 @@ export class ScatterplotChart extends StateComponent {
                     this.showAll = !this.showAll;
                     if (this.showAll) {
                       this.hideSelected = false;
-                      this.hideUnselected = false;
                     }
                     this.updateScatterplot();
                   }}
-                  >Show All</sl-menu-item
+                  >Show All Points</sl-menu-item
                 >
+                  <sl-menu-item
+                  type="checkbox"
+                  ?checked=${this.selectAll}
+                  @mousedown=${(e: MouseEvent) => {
+                    if (e.button !== 0) return;
+                    this.selectAll = !this.selectAll;
+                    if (this.selectAll) {
+                      this.sharedState.scatterDatasets.sets.forEach(
+                        (dataset, index) => {
+                          for (
+                            let i = dataset.dimensional_data.length - 1;
+                            i >= 0;
+                            i--
+                          ) {
+                            if (
+                              this.sharedState.scatterDatasets.selected.dataset_indexes.includes(
+                                index
+                              )
+                            ) {
+                              if (!dataset.dimensional_data[i].selected) {
+                                dataset.dimensional_data[i].selected = true;
+                              }
+                            }
+                          }
+                        }
+                      );
+                    } else {
+                      // deselect all points
+                      this.sharedState.scatterDatasets.sets.forEach(
+                        (dataset, index) => {
+                          for (
+                            let i = dataset.dimensional_data.length - 1;
+                            i >= 0;
+                            i--
+                          ) {
+                            if (
+                              this.sharedState.scatterDatasets.selected.dataset_indexes.includes(
+                                index
+                              )
+                            ) {
+                              if (dataset.dimensional_data[i].selected) {
+                                dataset.dimensional_data[i].selected = false;
+                              }
+                            }
+                          }
+                        }
+                      );
+                    }
+
+                    this.updateScatterplot();
+                  }}
+                  >Select All Points</sl-menu-item
+                >
+
                 <sl-menu-item
                   type="checkbox"
                   ?checked=${this.deleteSelected}
@@ -712,40 +749,7 @@ export class ScatterplotChart extends StateComponent {
                     }
                     this.updateScatterplot();
                   }}
-                  >Delete Selected</sl-menu-item
-                >
-                <sl-menu-item
-                  type="checkbox"
-                  ?checked=${this.deleteUnselected}
-                  .disabled=${this.unselectedDataLength === 0}
-                  @mousedown=${(e: MouseEvent) => {
-                    if (e.button !== 0) return;
-                    this.deleteUnselected = !this.deleteUnselected;
-                    if (this.deleteUnselected) {
-                      this.sharedState.scatterDatasets.sets.forEach(
-                        (dataset, index) => {
-                          for (
-                            let i = dataset.dimensional_data.length - 1;
-                            i >= 0;
-                            i--
-                          ) {
-                            if (
-                              this.sharedState.scatterDatasets.selected.dataset_indexes.includes(
-                                index
-                              )
-                            ) {
-                              if (!dataset.dimensional_data[i].selected) {
-                                dataset.dimensional_data.splice(i, 1);
-                                dataset.ids.splice(i, 1);
-                              }
-                            }
-                          }
-                        }
-                      );
-                    }
-                    this.updateScatterplot();
-                  }}
-                  >Delete Unselected</sl-menu-item
+                  >Delete Selected Points</sl-menu-item
                 >
               </div>
             </sl-popup>
@@ -1118,9 +1122,8 @@ export class ScatterplotChart extends StateComponent {
     this.deselectByBrushing = false;
     this.selectedIndextoAddNode = undefined;
     this.hideSelected = false;
-    this.hideUnselected = false;
+    this.selectAll = false;
     this.deleteSelected = false;
-    this.deleteUnselected = false;
     this.showAll = true;
     this.editShowing = false;
     this.drawLine = false;
@@ -1167,7 +1170,7 @@ export class ScatterplotChart extends StateComponent {
 
   //Update the scatterplot after dragging a point
   updateScatterplot() {
-    if (!this.hideSelected && !this.hideUnselected) {
+    if (!this.hideSelected) {
       this.showAll = true;
     }
 
@@ -1427,14 +1430,7 @@ export class ScatterplotChart extends StateComponent {
               }
             });
           }
-          //Hide unselected points
-          if (this.hideUnselected) {
-            scatter.selectAll("circle").each(function (d: PointOnlyNumbers) {
-              if (!d.selected) {
-                d3.select(this).style("display", "none");
-              }
-            });
-          }
+
           // Show all points
           if (this.showAll) {
             scatter.selectAll("circle").each(function (_) {
@@ -1741,17 +1737,13 @@ export class ScatterplotChart extends StateComponent {
           this.selectedIndextoAddNode !== null &&
           this.selectedIndextoAddNode !== undefined &&
           this.selectedIndextoAddNode >= 0 &&
-          this.selectedIndextoAddNode <
-            this.sharedState.scatterDatasets.selected.dataset_indexes.length
+          this.selectedIndextoAddNode <=
+            this.sharedState.scatterDatasets.sets.length - 1
         ) {
           // Change cursor to a circle with the color of the selected dataset
           let color: string;
           this.sharedState.scatterDatasets.sets.forEach((set, index) => {
-            if (
-              this.sharedState.scatterDatasets.selected.dataset_indexes.indexOf(
-                index
-              ) === this.selectedIndextoAddNode
-            ) {
+            if (index === this.selectedIndextoAddNode) {
               color = set.color;
             }
           });
@@ -1776,22 +1768,21 @@ export class ScatterplotChart extends StateComponent {
               this.selectedIndextoAddNode
             );
             this.addNode = false;
+            const addedDataset =
+              this.sharedState.scatterDatasets.sets[
+                this.selectedIndextoAddNode
+              ];
             if (
-              selectedDatasets.length === 1 &&
-              this.sharedState.scatterDatasets.selected.dataset_indexes[0] ===
-                this.selectedIndextoAddNode &&
-              selectedDatasets[0].filter &&
-              selectedDatasets[0].filter?.label !== "" &&
-              selectedDatasets[0].filter.index_in_labels !== -1 &&
-              (selectedDatasets[0].filter?.type === "number" ||
-                selectedDatasets[0].filter?.type === "string")
+              addedDataset.filter &&
+              addedDataset.filter?.label !== "" &&
+              addedDataset.filter.index_in_labels !== -1 &&
+              (addedDataset.filter?.type === "number" ||
+                addedDataset.filter?.type === "string")
             ) {
               updateColorForFilter(
-                selectedDatasets[0].filter.index_in_labels,
-                selectedDatasets[0].filter.type === "number"
-                  ? "number"
-                  : "string",
-                selectedDatasets[0]
+                addedDataset.filter.index_in_labels,
+                addedDataset.filter.type === "number" ? "number" : "string",
+                addedDataset
               );
               this.updateScatterplot();
             }
@@ -3158,22 +3149,7 @@ export class ScatterplotChart extends StateComponent {
             }
           });
         }
-        //Hide unselected points
-        if (this.hideUnselected) {
-          singeledatasets.forEach((d: OneDimentionalPoint, i) => {
-            if (!d.selected) {
-              scatter.select(`.single-x-${i}`).style("display", "none");
-              scatter.select(`.single-y-${i}`).style("display", "none");
-              scatter.select(`.single-string-x-${i}`).style("display", "none");
-              scatter.select(`.single-string-y-${i}`).style("display", "none");
-            }
-          });
-          datasets.forEach((d: Point, i) => {
-            if (!d.selected) {
-              scatter.select(`.dataset-${i}`).style("display", "none");
-            }
-          });
-        }
+
         // Show all points
         if (this.showAll) {
           singeledatasets.forEach((_, i) => {

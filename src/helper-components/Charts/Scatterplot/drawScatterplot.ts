@@ -1590,10 +1590,7 @@ function addPointListeners(
   scatterplotdatasets.sets[selectedIndextoAddNode].ids.push(1);*/
   // Add the new point to the original scatterdatasets
   scatterdatasets.sets.forEach((set, index) => {
-    if (
-      scatterdatasets.selected.dataset_indexes.indexOf(index) ===
-      selectedIndextoAddNode
-    ) {
+    if (index === selectedIndextoAddNode) {
       const index_x = set.labels.indexOf(scatterdatasets.selected.axis.x);
       const index_y = set.labels.indexOf(scatterdatasets.selected.axis.y);
       // Prepare the new data point for the original dataset
