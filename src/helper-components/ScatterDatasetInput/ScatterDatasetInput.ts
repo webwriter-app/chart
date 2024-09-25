@@ -209,24 +209,29 @@ export class ScatterDatasetInput extends StateComponent {
     const updatedSets = this.sharedState.scatterDatasets.sets.filter(
       (_, i) => i !== index_inset
     );
-    const updatedDatasetIndexes =
+
+    let updatedDatasetIndexes =
       this.sharedState.scatterDatasets.selected.dataset_indexes.filter(
         (index) => index !== index_inset
       );
+    // make index > index_inset -1
+    updatedDatasetIndexes = updatedDatasetIndexes.map((index) =>
+      index > index_inset ? index - 1 : index
+    );
+
     // if there is only dataset, remove line datasets and selected axis to None
     if (
       index_inset ===
         this.sharedState.scatterDatasets.selected.dataset_indexes[0] &&
       this.sharedState.scatterDatasets.selected.dataset_indexes.length === 1
     ) {
+      updatedDatasetIndexes = [];
       this.sharedState = {
         ...this.sharedState,
         scatterDatasets: {
           ...this.sharedState.scatterDatasets,
-          sets: updatedSets,
           selected: {
             ...this.sharedState.scatterDatasets.selected,
-            dataset_indexes: [],
             axis: {
               x: "None",
               y: "None",
@@ -542,7 +547,7 @@ export class ScatterDatasetInput extends StateComponent {
                             type="text"
                             value="${label}"
                             @sl-input=${(e: any) => {
-                              const newValue = String(e.target.value);
+                              let newValue = String(e.target.value);
                               const targetIndex =
                                 this.sharedState.scatterDatasets.sets.length -
                                 1 -
@@ -662,7 +667,43 @@ export class ScatterDatasetInput extends StateComponent {
                                 ];
                               const labels = dataset.labels;
                               const label = labels[index_inlabels];
+                              // if the label is "" or " ", then set it to "Column"
+                              if (label === "" || label === " ") {
+                                const updatedLabels = labels.map((l, i) =>
+                                  i === index_inlabels ? "newAttribute" : l
+                                );
 
+                                const updatedSets =
+                                  this.sharedState.scatterDatasets.sets.map(
+                                    (set, i) =>
+                                      i === targetIndex
+                                        ? { ...set, labels: updatedLabels }
+                                        : set
+                                  );
+
+                                this.sharedState = {
+                                  ...this.sharedState,
+                                  scatterDatasets: {
+                                    ...this.sharedState.scatterDatasets,
+                                    sets: updatedSets,
+                                  },
+                                };
+                                // if one of the axis is "" or " ", then set it to "newAttribute"
+                                if (
+                                  this.sharedState.scatterDatasets.selected.axis
+                                    .x === label
+                                ) {
+                                  this.sharedState.scatterDatasets.selected.axis.x =
+                                    "newAttribute";
+                                } else if (
+                                  this.sharedState.scatterDatasets.selected.axis
+                                    .y === label
+                                ) {
+                                  this.sharedState.scatterDatasets.selected.axis.y =
+                                    "newAttribute";
+                                }
+                                this.dispatchStateChange();
+                              }
                               if (
                                 labels.some(
                                   (l, i) => l === label && i !== index_inlabels

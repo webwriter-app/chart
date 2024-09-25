@@ -1078,7 +1078,7 @@ export class ScatterplotChart extends StateComponent {
         (dataset_index) => {
           length +=
             this.sharedState.scatterDatasets.sets[dataset_index]
-              .dimensional_data.length;
+              ?.dimensional_data.length;
         }
       );
     }
@@ -1340,6 +1340,16 @@ export class ScatterplotChart extends StateComponent {
             y_axis_type === "noDataInSelectedDatasets")) &&
         (datasets_count > 0 || lineDatasets_count > 0)
       ) {
+        const needUpdateFilter = (index_inset: number) => {
+          const dataset = this.sharedState.scatterDatasets.sets[index_inset];
+          // Update the color of the selected filter for all set in selectedDatasets
+          const needUpdate =
+            dataset.filter &&
+            dataset.filter.index_in_labels !== -1 &&
+            (dataset.filter.type === "number" ||
+              dataset.filter.type === "string");
+          return needUpdate;
+        };
         if (
           x_axis_type === "number" &&
           y_axis_type === "number" &&
@@ -1461,24 +1471,31 @@ export class ScatterplotChart extends StateComponent {
               datasets,
               () => {
                 this.updateScatterplot();
-                if (
-                  selectedDatasets.length === 1 &&
-                  (this.sharedState.scatterDatasets.selected.axis.x ===
-                    selectedDatasets[0].filter.label ||
-                    this.sharedState.scatterDatasets.selected.axis.y ===
-                      selectedDatasets[0].filter.label) &&
-                  selectedDatasets[0].filter.type === "number"
-                ) {
-                  updateColorForFilter(
-                    this.sharedState.scatterDatasets.selected.axis.x ===
-                      selectedDatasets[0].filter.label
-                      ? selectedDatasets[0].labels.indexOf(axisLabels.x)
-                      : selectedDatasets[0].labels.indexOf(axisLabels.y),
-                    "number",
-                    selectedDatasets[0]
-                  );
-                  this.updateScatterplot();
-                }
+                // check update filter
+                this.sharedState.scatterDatasets.selected.dataset_indexes.forEach(
+                  (index_inset) => {
+                    if (needUpdateFilter(index_inset)) {
+                      updateColorForFilter(
+                        this.sharedState.scatterDatasets.sets[index_inset]
+                          ?.filter.index_in_labels,
+                        this.sharedState.scatterDatasets.sets[index_inset]
+                          ?.filter.type === "number"
+                          ? "number"
+                          : "string",
+                        this.sharedState.scatterDatasets.sets[index_inset]
+                      );
+                      // only update the scatterplot if the one selected dataset is
+                      if (
+                        this.sharedState.scatterDatasets.selected
+                          .dataset_indexes.length === 1 &&
+                        this.sharedState.scatterDatasets.selected
+                          .dataset_indexes[0] === index_inset
+                      ) {
+                        this.updateScatterplot();
+                      }
+                    }
+                  }
+                );
               },
               axisLabels
             );
@@ -1496,23 +1513,30 @@ export class ScatterplotChart extends StateComponent {
                   );
                   //Re-render
                   this.updateScatterplot();
-                  if (
-                    selectedDatasets.length === 1 &&
-                    selectedDatasets[0].filter &&
-                    selectedDatasets[0].filter?.label !== "" &&
-                    selectedDatasets[0].filter.index_in_labels !== -1 &&
-                    (selectedDatasets[0].filter?.type === "number" ||
-                      selectedDatasets[0].filter?.type === "string")
-                  ) {
-                    updateColorForFilter(
-                      selectedDatasets[0].filter.index_in_labels,
-                      selectedDatasets[0].filter.type === "number"
-                        ? "number"
-                        : "string",
-                      selectedDatasets[0]
-                    );
-                    this.updateScatterplot();
-                  }
+                  this.sharedState.scatterDatasets.selected.dataset_indexes.forEach(
+                    (index_inset) => {
+                      if (needUpdateFilter(index_inset)) {
+                        updateColorForFilter(
+                          this.sharedState.scatterDatasets.sets[index_inset]
+                            ?.filter.index_in_labels,
+                          this.sharedState.scatterDatasets.sets[index_inset]
+                            ?.filter.type === "number"
+                            ? "number"
+                            : "string",
+                          this.sharedState.scatterDatasets.sets[index_inset]
+                        );
+                        // only update the scatterplot if the one selected dataset is
+                        if (
+                          this.sharedState.scatterDatasets.selected
+                            .dataset_indexes.length === 1 &&
+                          this.sharedState.scatterDatasets.selected
+                            .dataset_indexes[0] === index_inset
+                        ) {
+                          this.updateScatterplot();
+                        }
+                      }
+                    }
+                  );
                 });
             });
           }
@@ -1529,7 +1553,7 @@ export class ScatterplotChart extends StateComponent {
                   this.sharedState.scatterDatasets.selected.dataset_indexes.sort()[
                     i
                   ]
-                ].color ?? "#69b3a2";
+                ]?.color ?? "#69b3a2";
               // calculate the regression line for each dataset and display in the scatter plot
               const result = addRegressionLine(
                 svg,
@@ -1768,24 +1792,32 @@ export class ScatterplotChart extends StateComponent {
               this.selectedIndextoAddNode
             );
             this.addNode = false;
-            const addedDataset =
-              this.sharedState.scatterDatasets.sets[
-                this.selectedIndextoAddNode
-              ];
-            if (
-              addedDataset.filter &&
-              addedDataset.filter?.label !== "" &&
-              addedDataset.filter.index_in_labels !== -1 &&
-              (addedDataset.filter?.type === "number" ||
-                addedDataset.filter?.type === "string")
-            ) {
-              updateColorForFilter(
-                addedDataset.filter.index_in_labels,
-                addedDataset.filter.type === "number" ? "number" : "string",
-                addedDataset
-              );
-              this.updateScatterplot();
-            }
+            // update the filter for all
+            this.sharedState.scatterDatasets.selected.dataset_indexes.forEach(
+              (index_inset) => {
+                if (needUpdateFilter(index_inset)) {
+                  updateColorForFilter(
+                    this.sharedState.scatterDatasets.sets[index_inset]?.filter
+                      .index_in_labels,
+                    this.sharedState.scatterDatasets.sets[index_inset]?.filter
+                      .type === "number"
+                      ? "number"
+                      : "string",
+                    this.sharedState.scatterDatasets.sets[index_inset]
+                  );
+                  // only update the scatterplot if the one selected dataset is
+                  if (
+                    this.sharedState.scatterDatasets.selected.dataset_indexes
+                      .length === 1 &&
+                    this.sharedState.scatterDatasets.selected
+                      .dataset_indexes[0] === index_inset
+                  ) {
+                    this.updateScatterplot();
+                  }
+                }
+              }
+            );
+
             this.selectedIndextoAddNode = undefined;
             this.hoverCursorChange = true;
             this.updateScatterplot();
