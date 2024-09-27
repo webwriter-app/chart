@@ -308,7 +308,7 @@ export class ScatterplotChart extends StateComponent {
                     }
                     @blur=${() => (this.addNode = false)}
                   >
-                    <sl-icon src=${IconPluslg} label="Data"></sl-icon>
+                    <sl-icon src=${IconPluslg} label="Data" style="pointer-events: none;"></sl-icon>
                   </sl-button>
                 </sl-tooltip>
               </span>
@@ -434,67 +434,10 @@ export class ScatterplotChart extends StateComponent {
                     }}
                     @blur=${() => (this.selectNode = false)}
                   >
-                    <sl-icon src=${IconHandIndex} label="Selection"></sl-icon>
+                    <sl-icon src=${IconHandIndex} label="Selection" style="pointer-events: none;"></sl-icon>
                   </sl-button>
                 </sl-tooltip>
               </span>
-              <span slot="anchor">
-              <sl-tooltip
-                hoist
-                placement=${
-                  this.sharedState.chart.options.animation ||
-                  x_axis_type !== "number" ||
-                  y_axis_type !== "number" ||
-                  this.totalDataLength === 0
-                    ? "top-end"
-                    : "top-center"
-                }
-                content=${
-                  this.sharedState.chart.options.animation
-                    ? "To use this option, you must first disable the animation"
-                    : this.sharedState.scatterDatasets.sets.length === 0
-                    ? "To use this option, you must first add dataset"
-                    : this.totalDataLength === 0 &&
-                      this.selectedDatasets_length === 0
-                    ? "To use this option, you must select at least one dataset"
-                    : this.totalDataLength === 0 &&
-                      this.selectedDatasets_length === 1
-                    ? "To use this option, you must first add at least one data point to the selected dataset table"
-                    : this.totalDataLength === 0 &&
-                      this.selectedDatasets_length > 1
-                    ? "To use this option, you must first add at least one data point to the selected dataset tables"
-                    : x_axis_type !== "number" || y_axis_type !== "number"
-                    ? "The x and y axis must be numbers to use this option"
-                    : "Draw a line in the scatterplot"
-                }
-              >
-                <sl-button
-                  
-                  size="small"
-                  circle
-                  id="draw-line-button"
-                  @click=${(e) => {
-                    if (e.button !== 0) return;
-                    this.selectedIndextoAddNode = undefined;
-                    this.selectByClicking = false;
-                    this.selectByBrushing = false;
-                    this.deselectByBrushing = false;
-                    this.hoverCursorChange = false;
-                    this.drawLine = !this.drawLine;
-                    this.updateScatterplot();
-                  }}
-                  variant=${this.drawLine ? "primary" : "default"}
-                  .disabled=${
-                    this.sharedState.chart.options.animation ||
-                    this.totalDataLength === 0 ||
-                    x_axis_type !== "number" ||
-                    y_axis_type !== "number"
-                  }
-                >
-                  <sl-icon src=${IconPencil} label="Draw"></sl-icon>
-                </sl-button>
-              </sl-tooltip>
-            </span>
               <div class="popup-content">
                 <sl-button
                   id="select-by-clicking"
@@ -551,6 +494,60 @@ export class ScatterplotChart extends StateComponent {
                 </sl-button>
               </div>
             </sl-popup>
+
+            <sl-tooltip
+              hoist
+              placement=${
+                this.sharedState.chart.options.animation ||
+                x_axis_type !== "number" ||
+                y_axis_type !== "number" ||
+                this.totalDataLength === 0
+                  ? "top-end"
+                  : "top-center"
+              }
+              content=${
+                this.sharedState.chart.options.animation
+                  ? "To use this option, you must first disable the animation"
+                  : this.sharedState.scatterDatasets.sets.length === 0
+                  ? "To use this option, you must first add dataset"
+                  : this.totalDataLength === 0 &&
+                    this.selectedDatasets_length === 0
+                  ? "To use this option, you must select at least one dataset"
+                  : this.totalDataLength === 0 &&
+                    this.selectedDatasets_length === 1
+                  ? "To use this option, you must first add at least one data point to the selected dataset table"
+                  : this.totalDataLength === 0 &&
+                    this.selectedDatasets_length > 1
+                  ? "To use this option, you must first add at least one data point to the selected dataset tables"
+                  : x_axis_type !== "number" || y_axis_type !== "number"
+                  ? "The x and y axis must be numbers to use this option"
+                  : "Draw a line in the scatterplot"
+              }
+            >
+              <sl-button
+                size="small"
+                circle
+                id="draw-line-button"
+                @click=${() => {
+                  this.selectedIndextoAddNode = undefined;
+                  this.selectByClicking = false;
+                  this.selectByBrushing = false;
+                  this.deselectByBrushing = false;
+                  this.hoverCursorChange = false;
+                  this.drawLine = !this.drawLine;
+                  this.updateScatterplot();
+                }}
+                variant=${this.drawLine ? "primary" : "default"}
+                .disabled=${
+                  this.sharedState.chart.options.animation ||
+                  this.totalDataLength === 0 ||
+                  x_axis_type !== "number" ||
+                  y_axis_type !== "number"
+                }
+              >
+                <sl-icon src=${IconPencil} label="Draw"></sl-icon>
+              </sl-button>
+            </sl-tooltip>
 
             <sl-popup
               placement="bottom"
@@ -632,7 +629,7 @@ export class ScatterplotChart extends StateComponent {
                     }}
                     @blur=${() => (this.editShowing = false)}
                   >
-                    <sl-icon src=${IconEye} label="View"></sl-icon>
+                    <sl-icon src=${IconEye} label="View" style="pointer-events: none;"></sl-icon>
                   </sl-button>
                 </sl-tooltip>
               </span>
@@ -812,7 +809,7 @@ export class ScatterplotChart extends StateComponent {
                     }
                     @blur=${() => (this.filterOn = false)}
                   >
-                    <sl-icon src=${IconFilter} label="Filter"></sl-icon>
+                    <sl-icon src=${IconFilter} label="Filter" style="pointer-events: none;"></sl-icon>
                   </sl-button>
                 </sl-tooltip>
               </span>
@@ -2330,7 +2327,22 @@ export class ScatterplotChart extends StateComponent {
         x: number | string;
         y: number | string;
       }[] = [];
-      const count_labels_in_x_axis = selectedDataset.dimensional_data.length;
+      // save the distinct labels for x axis
+      const distinct_labels = selectedDataset.dimensional_data.map(
+        (dimensional_data) => {
+          const value =
+            dimensional_data.data[
+              selectedDataset.labels.indexOf(
+                this.sharedState.scatterDatasets.selected.axis.x
+              )
+            ];
+          if (typeof value === "string") return value;
+          return "";
+        }
+      );
+      // only count the distinct labels for x axis
+      const count_labels_in_x_axis = [...new Set(distinct_labels)].length;
+
       selectedDataset.dimensional_data.map((dimensional_data) => {
         const d = {
           x: (() => {
@@ -2678,8 +2690,7 @@ export class ScatterplotChart extends StateComponent {
                         6 -
                         d.offset +
                         bandwidth_result.y_bandwidth;
-                  //console.log("Point" + i + "p" + "Cx" + cx + "Cy" + cy);
-                  //console.log("X0 " + x0 + "X1 " + x1 + "Y0 " + y0 + "Y1 " + y1);
+
                   const boolean = x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
 
                   if (boolean) {

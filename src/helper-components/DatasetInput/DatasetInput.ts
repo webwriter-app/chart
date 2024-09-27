@@ -157,17 +157,15 @@ export class DatasetInput extends StateComponent {
                             }}
                           ></sl-input>
                         </div>
-                        ${!this.sharedState.printable
-                          ? html`<sl-icon-button
-                              ?disabled=${!(
-                                this.sharedState.editable ||
-                                this.sharedState.teacherOptions.addRemoveData
-                              )}
-                              src=${IconTrash}
-                              label="Settings"
-                              @click=${() => this.deleteColumn(i)}
-                            ></sl-icon-button>`
-                          : html``}
+                        <sl-icon-button
+                          ?disabled=${!(
+                            this.sharedState.editable ||
+                            this.sharedState.teacherOptions.addRemoveData
+                          )}
+                          src=${IconTrash}
+                          label="Settings"
+                          @click=${() => this.deleteColumn(i)}
+                        ></sl-icon-button>
                       </div>
                     </th>`
                 )}
@@ -182,17 +180,15 @@ export class DatasetInput extends StateComponent {
                       <div
                         style="display: flex; flex-direction: row; align-items: center"
                       >
-                        ${!this.sharedState.printable
-                          ? html` <sl-icon-button
-                              ?disabled=${!(
-                                this.sharedState.editable ||
-                                this.sharedState.teacherOptions.addRemoveData
-                              )}
-                              src=${IconTrash}
-                              label="Settings"
-                              @click=${() => this.deleteDataset(i)}
-                            ></sl-icon-button>`
-                          : html``}
+                        <sl-icon-button
+                          ?disabled=${!(
+                            this.sharedState.editable ||
+                            this.sharedState.teacherOptions.addRemoveData
+                          )}
+                          src=${IconTrash}
+                          label="Settings"
+                          @click=${() => this.deleteDataset(i)}
+                        ></sl-icon-button>
                         <div class="input-wrapper">
                           <sl-input
                             ?disabled=${!(
@@ -226,40 +222,35 @@ export class DatasetInput extends StateComponent {
                             }}
                           ></sl-input>
                         </div>
-
-                        ${!this.sharedState.printable
-                          ? html`
-                              <sl-color-picker
-                                size="small"
-                                ?disabled=${!(
-                                  this.sharedState.editable ||
-                                  this.sharedState.teacherOptions.changeData
-                                )}
-                                value="${this.sharedState.chart.datasets.sets[i]
-                                  .color}"
-                                @sl-input=${(e: any) => {
-                                  const newSets =
-                                    this.sharedState.chart.datasets.sets.map(
-                                      (set, index) =>
-                                        index === i
-                                          ? { ...set, color: e.target.value }
-                                          : set
-                                    );
-                                  this.sharedState = {
-                                    ...this.sharedState, // spread the existing sharedState
-                                    chart: {
-                                      ...this.sharedState.chart, // spread the existing chart
-                                      datasets: {
-                                        ...this.sharedState.chart.datasets, // spread the existing datasets
-                                        sets: newSets, // update the sets array immutably
-                                      },
-                                    },
-                                  };
-                                  this.dispatchStateChange();
-                                }}
-                              ></sl-color-picker>
-                            `
-                          : html``}
+                        <sl-color-picker
+                          size="small"
+                          ?disabled=${!(
+                            this.sharedState.editable ||
+                            this.sharedState.teacherOptions.changeData
+                          )}
+                          value="${this.sharedState.chart.datasets.sets[i]
+                            .color}"
+                          @sl-input=${(e: any) => {
+                            const newSets =
+                              this.sharedState.chart.datasets.sets.map(
+                                (set, index) =>
+                                  index === i
+                                    ? { ...set, color: e.target.value }
+                                    : set
+                              );
+                            this.sharedState = {
+                              ...this.sharedState, // spread the existing sharedState
+                              chart: {
+                                ...this.sharedState.chart, // spread the existing chart
+                                datasets: {
+                                  ...this.sharedState.chart.datasets, // spread the existing datasets
+                                  sets: newSets, // update the sets array immutably
+                                },
+                              },
+                            };
+                            this.dispatchStateChange();
+                          }}
+                        ></sl-color-picker>
                       </div>
                     </td>
                     ${dataset.data.map(
@@ -315,55 +306,52 @@ export class DatasetInput extends StateComponent {
                               ></sl-input>
                             </div>
 
-                            ${!this.sharedState.printable
-                              ? html`<sl-color-picker
-                                  size="small"
-                                  ?disabled=${!(
-                                    this.sharedState.editable ||
-                                    this.sharedState.teacherOptions.changeData
-                                  )}
-                                  value="${this.sharedState.chart.datasets.sets[
-                                    i
-                                  ].colors[j]}"
-                                  @sl-input=${(e: any) => {
-                                    const newSets =
-                                      this.sharedState.chart.datasets.sets.map(
-                                        (set, setIndex) => {
-                                          if (setIndex === i) {
-                                            // Update the specific color at index j in the colors array
-                                            const newColors = set.colors.map(
-                                              (color, colorIndex) =>
-                                                colorIndex === j
-                                                  ? e.target.value
-                                                  : color
-                                            );
+                            <sl-color-picker
+                              size="small"
+                              ?disabled=${!(
+                                this.sharedState.editable ||
+                                this.sharedState.teacherOptions.changeData
+                              )}
+                              value="${this.sharedState.chart.datasets.sets[i]
+                                .colors[j]}"
+                              @sl-input=${(e: any) => {
+                                const newSets =
+                                  this.sharedState.chart.datasets.sets.map(
+                                    (set, setIndex) => {
+                                      if (setIndex === i) {
+                                        // Update the specific color at index j in the colors array
+                                        const newColors = set.colors.map(
+                                          (color, colorIndex) =>
+                                            colorIndex === j
+                                              ? e.target.value
+                                              : color
+                                        );
 
-                                            // Return the updated set with the new colors array
-                                            return {
-                                              ...set,
-                                              colors: newColors,
-                                            };
-                                          }
+                                        // Return the updated set with the new colors array
+                                        return {
+                                          ...set,
+                                          colors: newColors,
+                                        };
+                                      }
 
-                                          // Return the original set if the index doesn't match
-                                          return set;
-                                        }
-                                      );
+                                      // Return the original set if the index doesn't match
+                                      return set;
+                                    }
+                                  );
 
-                                    this.sharedState = {
-                                      ...this.sharedState, // spread the existing sharedState
-                                      chart: {
-                                        ...this.sharedState.chart, // spread the existing chart
-                                        datasets: {
-                                          ...this.sharedState.chart.datasets, // spread the existing datasets
-                                          sets: newSets, // update the sets array immutably with new colors
-                                        },
-                                      },
-                                    };
-                                    this.dispatchStateChange();
-                                  }}
-                                ></sl-color-picker>`
-                              : html``}
+                                this.sharedState = {
+                                  ...this.sharedState, // spread the existing sharedState
+                                  chart: {
+                                    ...this.sharedState.chart, // spread the existing chart
+                                    datasets: {
+                                      ...this.sharedState.chart.datasets, // spread the existing datasets
+                                      sets: newSets, // update the sets array immutably with new colors
+                                    },
+                                  },
+                                };
+                                this.dispatchStateChange();
+                              }}
+                            ></sl-color-picker>
                           </div>
                         </td>`
                     )}
@@ -374,8 +362,7 @@ export class DatasetInput extends StateComponent {
           </table>
 
           ${this.sharedState.editable ||
-          (this.sharedState.teacherOptions.addRemoveData &&
-            !this.sharedState.printable)
+          this.sharedState.teacherOptions.addRemoveData
             ? html`
                 <sl-icon-button
                   @click=${this.addColumn}

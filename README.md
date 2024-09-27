@@ -1,6 +1,6 @@
-# @luiskugel/ww-chart
+# webwriter-chart
 
-This project is a widget for the WebWriter tool that enables teachers to create charts for their students. The Widget supports static charts but also the option to be used as an interactive chart editor with teacher selected features.
+This project is a widget for the WebWriter tool that enables teachers to create charts for their students. The Widget supports static charts but also the option to be used as an interactive chart editor with teacher selected features. The interactive Scatterplot is written with D3. with many interactive features.
 
 ## Supported Charts
 
@@ -10,14 +10,15 @@ This project is a widget for the WebWriter tool that enables teachers to create 
 - Pie Chart
 - Polar Area Chart
 - Radar Chart
+- Interactive Scatterplot
 
 ## Usage
 
-The widget is developed to be used with the [WebWriter](https://webwriter.app/). A demo can be viewed [here](https://ba.luiskugel.de/).
+The widget is developed to be used with the [WebWriter](https://webwriter.app/).
 
 ## For Developers
 
-If you want to create a new widget, it is strongly advised to use the CLI-Tool available [here](https://git.rwth-aachen.de/luis/wwc-cli)
+If you want to create a new widget, it is strongly advised to use the CLI-Tool available [here](https://git.rwth-aachen.de/luis/wwc-cli).
 
 ## Copyright and License
 

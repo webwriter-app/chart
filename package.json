@@ -1,6 +1,6 @@
 {
   "name": "@webwriter/chart",
-  "version": "1.2.3",
+  "version": "1.2.11",
   "description": "ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.",
   "keywords": [
     "webwriter-widget"
@@ -48,8 +48,8 @@
       "source": "./src/widget.ts",
       "default": "./dist/widgets.*"
     },
-    "./snippets/info-sheet": "./src/snippets/info-sheet.html",
-    "./snippets/example-exercise": "./src/snippets/example-exercise.html"
+    "./snippets/scatterplot-exercise": "./src/snippets/scatterplot-exercise.html",
+    "./snippets/mean-median-exercise": "./src/snippets/mean-median-exercise.html"
   },
   "editingConfig": {
     "./widgets/webwriter-chart": {
@@ -57,14 +57,14 @@
         "en": "Charts"
       }
     },
-    "./snippets/info-sheet": {
+    "./snippets/scatterplot-exercise": {
       "label": {
-        "en": "Scatterplot Info Sheet"
+        "en": "Scatterplot-Exercise"
       }
     },
-    "./snippets/example-exercise": {
+    "./snippets/mean-median-exercise": {
       "label": {
-        "en": "Example Exercise"
+        "en": "Mean-Median-Exercise"
       }
     }
   }

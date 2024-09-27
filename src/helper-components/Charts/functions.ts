@@ -67,8 +67,6 @@ export class ChartHelper<T extends Chart<any, number[], string>> {
     // Initialize the chart and chartType
     this.chart = chart;
     this.chartType = type;
-
-    console.log(`ChartHelper initialized for type: ${this.chartType}`);
   }
 
   public setTitle(title: string) {
@@ -117,7 +115,6 @@ export class ChartHelper<T extends Chart<any, number[], string>> {
   }
 
   public setHideExactValues(val: boolean) {
-    console.log({ t: "hideExactValues", v: val });
     if (!val)
       this.chart.options.events = [
         "mousemove",

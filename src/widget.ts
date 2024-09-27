@@ -35,7 +35,7 @@ import { ChartState } from "./interfaces";
 export class WwChart extends LitElementWw {
   constructor() {
     super();
-    console.log("Constructor: webwriter-chart created");
+    console.debug("Constructor: webwriter-chart created");
   }
 
   @property({ type: Object, attribute: true, reflect: true })
@@ -90,28 +90,16 @@ export class WwChart extends LitElementWw {
       optionDefinition: {},
     },
     editable: true,
-    printable: true,
   };
-
-  /**WebWriter API: If true, render the component such that easy printing is possible. */
-  @property({ type: Boolean, attribute: true, reflect: true })
-  accessor printable: boolean;
 
   /**WebWriter API: If true, emit DOM events enriched with xAPI statements. */
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor analyzable: boolean;
-  @property({ type: Boolean, attribute: true, reflect: true })
-  accessor editable: boolean;
 
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor showChart: boolean;
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor showData: boolean;
-
-  // TODO: Convert to image
-  // TODO: printable option (delete?)
-  // TODO: Focus on the chart element when it is clicked
-  // TODO: Button show Data and show Chart wechseln when clicked
 
   @state()
   accessor lastChartType: ChartType = this.sharedState.chart.selectedType;
@@ -120,16 +108,13 @@ export class WwChart extends LitElementWw {
 
   connectedCallback(): void {
     super.connectedCallback();
-    console.log("Adding event listener for wwci-state-change");
     this.addEventListener("wwci-state-change", (e: CustomEvent) => {
-      console.log("Received state change event:", e.detail.state);
       this.onStateChange(e);
     });
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    console.log("Removing event listener for wwci-state-change");
     this.removeEventListener("wwci-state-change", this.onStateChange);
   }
 
@@ -144,36 +129,25 @@ export class WwChart extends LitElementWw {
   initializeDefaultOptions() {
     this.showChart = true;
     this.showData = false;
-    this.editable = true;
   }
 
   protected onStateChange(e: CustomEvent) {
     if (!e.detail || !e.detail.state) {
-      console.log("No state to update. Detail is missing or incomplete.");
+      console.debug("No state to update. Detail is missing or incomplete.");
       return;
     }
 
-    console.log("Received in onStateChange:", e.detail.state);
     this.sharedState = {
       ...this.sharedState,
       ...e.detail.state,
     };
-    console.log("Updated state:", this.sharedState);
 
     e.stopPropagation();
     e.cancelBubble = true;
   }
 
   render() {
-    document.addEventListener("wwci-state-change", (e: CustomEvent) => {
-      console.log(
-        "Global listener received wwci-state-change event",
-        e.detail.state
-      );
-    });
-    console.log("in widget chart options", this.sharedState.chart.options);
-    this.sharedState.editable = this.editable;
-    this.sharedState.printable = this.printable;
+    this.sharedState.editable = this.isContentEditable;
 
     this.sharedState.chart.optionDefinition = getOptionsDefinition(
       this.sharedState.chart.selectedType
@@ -185,15 +159,6 @@ export class WwChart extends LitElementWw {
       >
         <div id="settings-wrapper">
           <h2>Settings</h2>
-          <!-- <sl-checkbox
-            id="Editable"
-            ?checked=${this.sharedState.editable}
-            @sl-change=${() => {
-            this.editable = !this.editable;
-            this.sharedState.editable = this.editable;
-          }}
-            >Editable</sl-checkbox
-          > -->
           <wwci-chart-settings
             .sharedState=${this.sharedState}
             @wwci-state-change=${this.onStateChange}
@@ -211,11 +176,6 @@ export class WwChart extends LitElementWw {
         }}
         @click=${() =>
           this.dispatchEvent(new FocusEvent("focus", { bubbles: true }))}
-        class=${this.sharedState.printable ||
-        (!this.sharedState.editable &&
-          !this.sharedState.teacherOptions.showOptions)
-          ? "print"
-          : ""}
       >
         <!-- <div id="button-group"> -->
         <sl-tab-group>
@@ -225,6 +185,9 @@ export class WwChart extends LitElementWw {
             @click=${() => {
               this.showChart = true;
               this.showData = false;
+              requestAnimationFrame(() => {
+                window.getSelection().empty();
+              });
             }}
             .active=${this.showChart}
             >Chart</sl-tab
@@ -235,6 +198,9 @@ export class WwChart extends LitElementWw {
             @click=${() => {
               this.showChart = false;
               this.showData = true;
+              requestAnimationFrame(() => {
+                window.getSelection().empty();
+              });
             }}
             >Data</sl-tab
           >

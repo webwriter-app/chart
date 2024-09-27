@@ -7,7 +7,6 @@ export default class StateComponent extends LitElementWw {
   accessor sharedState: ChartState;
 
   dispatchStateChange() {
-    console.log("Dispatching state change with state:", this.sharedState);
     this.dispatchEvent(
       new CustomEvent("wwci-state-change", {
         detail: { state: this.sharedState },

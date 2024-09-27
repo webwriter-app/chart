@@ -93,8 +93,12 @@ export default css`
     flex-direction: column;
   }
 
-  #main.print {
+  :host(.ww-printable) #main {
     height: auto;
+  }
+  :host(.ww-printable) #settings,
+  :host(.ww-printable) sl-tab-group {
+    display: none;
   }
 
   #main > * {

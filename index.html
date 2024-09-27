@@ -50,13 +50,7 @@
         .addEventListener("change", (event) => {
           const elmt = document.getElementById("webwriter-chart");
           if (!elmt) console.log("webwriter-chart not found");
-          if (event.target.checked) {
-            elmt.setAttribute("printable", "true");
-            elmt.printable = true;
-          } else {
-            elmt.setAttribute("printable", "false");
-            elmt.printable = false;
-          }
+          elmt.classList.toggle("ww-printable", event.target.checked);
         });
     });
   </script>

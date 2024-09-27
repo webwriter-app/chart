@@ -105,7 +105,6 @@ export interface ChartState {
   };
 
   editable: boolean;
-  printable: boolean;
   lineDatasets: LineDataSets;
   scatterDatasets: ScatterDatasets;
   regressionType: RegressionType;
