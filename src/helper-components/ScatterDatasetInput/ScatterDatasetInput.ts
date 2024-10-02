@@ -471,12 +471,15 @@ export class ScatterDatasetInput extends StateComponent {
                               )}
                               src=${IconTrash}
                               label="Settings"
-                              @click=${() =>
+                              @click=${(e) => {
+                                e.preventDefault(); // Prevent default selection behavior
+                                e.stopPropagation(); // Stop propagation to avoid other side effects
                                 this.deleteTableDataset(
                                   this.sharedState.scatterDatasets.sets.length -
                                     1 -
                                     index_reverse
-                                )}
+                                );
+                              }}
                             ></sl-icon-button>
                             <div class="input-wrapper">
                               <sl-input
@@ -767,8 +770,8 @@ export class ScatterDatasetInput extends StateComponent {
                             <sl-menu-item
                               @mousedown=${(e: MouseEvent) => {
                                 if (e.button !== 0) return;
-                                // e.preventDefault();
-                                // e.stopPropagation();
+                                e.preventDefault();
+                                e.stopPropagation();
                                 this.deleteColumn(
                                   this.sharedState.scatterDatasets.sets.length -
                                     1 -
@@ -801,6 +804,8 @@ export class ScatterDatasetInput extends StateComponent {
                                 : true}
                               @mousedown=${(e: MouseEvent) => {
                                 if (e.button !== 0) return;
+                                e.preventDefault(); // Prevent default selection behavior
+                                e.stopPropagation(); // Stop propagation to avoid other side effects
                                 const targetIndex =
                                   this.sharedState.scatterDatasets.sets.length -
                                   1 -
@@ -973,13 +978,16 @@ export class ScatterDatasetInput extends StateComponent {
                           )}
                           src=${IconTrash}
                           label="Settings"
-                          @click=${() =>
+                          @click=${(e) => {
+                            e.preventDefault(); // Prevent default selection behavior
+                            e.stopPropagation(); // Stop propagation to avoid other side effects
                             this.deleteRow(
                               this.sharedState.scatterDatasets.sets.length -
                                 1 -
                                 index_reverse,
                               index_inscatter
-                            )}
+                            );
+                          }}
                         ></sl-icon-button>
                         <div class="input-wrapper">
                           <sl-input

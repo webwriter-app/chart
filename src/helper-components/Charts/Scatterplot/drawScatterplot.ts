@@ -342,7 +342,6 @@ function createSVG(
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  // TODO: check if this is used / needed
   // Add a transparent rectangle to capture click events
   svg
     .append("rect")
@@ -1213,8 +1212,8 @@ function roundNumber(num: number, decimal: number): number {
     ? Math.abs(num.toFixed(decimal) as unknown as number)
     : -Math.abs(num.toFixed(decimal) as unknown as number);
 }
-//TODO: Must delete the exponential form scince the library is not working correctly
-//TODO: Research for the regression model, which one is important
+//Must delete the exponential form scince the library is not working correctly
+// Only linear regression and LOESS are supported, scince the runtime for other regression types is too long with many datapoints
 function addRegressionLine(
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   scales: Scales,
@@ -1581,14 +1580,6 @@ function addPointListeners(
   const newY = scales.y.invert(clickY);
 
   // Add the new point to the dataset
-  /*scatterplotdatasets.sets[selectedIndextoAddNode].dimensional_data.push({
-    x: newX,
-    y: newY,
-    selected: false,
-  });
-  //TODO: Fix this
-  scatterplotdatasets.sets[selectedIndextoAddNode].ids.push(1);*/
-  // Add the new point to the original scatterdatasets
   scatterdatasets.sets.forEach((set, index) => {
     if (index === selectedIndextoAddNode) {
       const index_x = set.labels.indexOf(scatterdatasets.selected.axis.x);

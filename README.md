@@ -1,6 +1,6 @@
 # webwriter-chart
 
-This project is a widget for the WebWriter tool that enables teachers to create charts for their students. The Widget supports static charts but also the option to be used as an interactive chart editor with teacher selected features. The interactive Scatterplot is written with D3. with many interactive features.
+This project is a widget for the WebWriter tool that enables teachers to create charts for their students. The Widget supports static charts but also the option to be used as an interactive chart editor with teacher selected features. The interactive scatterplot is created using D3.js and includes many interactive features.
 
 ## Supported Charts
 

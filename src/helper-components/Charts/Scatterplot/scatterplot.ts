@@ -1128,28 +1128,8 @@ export class ScatterplotChart extends StateComponent {
     this.hoverCursorChange = true;
     this.isDragging = false;
     this.createScatterPlot();
-    // TODO: remove event listener on unmount
-    /*document.addEventListener("keypress", (e) => {
-      switch (e.key) {
-        case "Backspace":
-        case "Delete":
-      }
-    });*/
   }
   //updatePlot for new animation time
-  //TODO: Add margin right for bigger numbers and margin top
-  // TODO: Add name for scatterplot, maybe use the text feld?
-  // TODO: Name for each dataset unter the scatterplot
-  // TODO: Table for statistics: r, regression folrmula, mean, etc.
-  // TODO: Fix buttons convert and download image
-  // TODO: Given x and calculate y (geogbra)
-  // TODO: Show all regression line when cut
-  // TODO: see friendly error message and user drag, delete, add points from automa (WR)
-  // TODO: Fix edit button
-  // TODO: dymanic and manuell scaling for x and y axis
-  // TODO: Feedback for choose the right point
-  //TODO: Maybe separate the regression and the correlation table
-
   updatePlot() {
     const animationRange = this.shadowRoot.querySelector(
       "#animationRange"
@@ -1179,7 +1159,6 @@ export class ScatterplotChart extends StateComponent {
     this.createScatterPlot();
     this.dispatchStateChange();
   }
-  // !IMPORTANT: TODO: Fix the drag behavior out of scatterplot area ?
   createScatterPlot() {
     const selectedDatasets = this.sharedState.scatterDatasets.sets.filter(
       (_, i) =>
@@ -1593,8 +1572,6 @@ export class ScatterplotChart extends StateComponent {
 
           // Animate the scatter plot
           // For each point appears with a tooltip
-          // TODO: Consider to deactivate the draging and deleting points during the animation
-          // TODO: Fix the problem when during animation the user want to choose regression line by deactivate the regression line?
           if (this.sharedState.chart.options.animation) {
             svg
               .selectAll(`.regression-line`)
@@ -3207,7 +3184,6 @@ export class ScatterplotChart extends StateComponent {
         }
 
         // Draw line for mean of x or y data
-        //TODO: Pos. of the tooltip and the mean line
         if (
           (x_axis_type === "number" || y_axis_type === "number") &&
           this.sharedState.chart.options.showMean
