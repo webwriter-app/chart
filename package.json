@@ -1,6 +1,6 @@
 {
-  "name": "@webwriter/chart",
-  "version": "1.2.11",
+  "name": "webwriter-chart",
+  "version": "1.2.13",
   "description": "ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.",
   "keywords": [
     "webwriter-widget"
