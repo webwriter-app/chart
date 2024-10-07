@@ -1,6 +1,6 @@
 {
   "name": "webwriter-chart",
-  "version": "1.2.13",
+  "version": "1.2.14",
   "description": "ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.",
   "keywords": [
     "webwriter-widget"
@@ -17,7 +17,8 @@
     "check-prettier": "npx prettier --check .",
     "run-prettier": "npx prettier --write .",
     "coverage": "vitest --coverage",
-    "typecheck": "tsc --noEmit --composite false"
+    "typecheck": "tsc --noEmit --composite false",
+    "prepublishOnly": "npx @webwriter/build"
   },
   "dependencies": {
     "@shoelace-style/shoelace": "^2.15.1",
@@ -67,5 +68,6 @@
         "en": "Mean-Median-Exercise"
       }
     }
-  }
+  },
+  "main": "index.js"
 }
