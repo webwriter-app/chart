@@ -1,32 +1,57 @@
 import { css } from "lit";
 export default css`
 :host {
+  display: block;
   width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
 }
 .scatterplot-root {
   width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 .scatterplot-wrapper {
   display: flex;
   gap: 8px;
   flex-direction: row; /* Align items in a row */
-  align-items: flex-start; /* Align items to the top */
+  align-items: stretch;
   justify-content: flex-start; /* Align items to the start */
   height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 .scatterplot-svg {
-  flex-grow: 1; /* Allow the SVG to take available space */
+  flex: 1 1 0;
+  width: 0;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: hidden;
 }
 .right-side {
-  float: left;
+  flex: 0 0 auto;
   width: 12rem;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+  align-items: flex-end;
 }
 .button-container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: space-between;
   gap: 7px;
 }
@@ -122,13 +147,18 @@ table {
 }
 
 svg {
-  border: 1px solid black;
-  flex: 1 0 0
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  max-height: 100%;
+  display: block;
   width: 100%;
 }
 
 text {
   font-family: Helvetica;
+  font-weight: 600;
   font-size: 12px;
   color: #333;
 }

@@ -299,13 +299,13 @@ export class ScatterplotChart extends StateComponent {
                       }
                       e.target.focus();
                     }}
-                    .disabled=${
+                    .disabled=${Boolean(
                       this.sharedState.chart.options.animation ||
                       (this.totalDataLength === 0 &&
                         this.sharedState.lineDatasets.sets.length === 0) ||
                       x_axis_type !== "number" ||
                       y_axis_type !== "number"
-                    }
+                    )}
                     @blur=${() => (this.addNode = false)}
                   >
                     <sl-icon src=${IconPluslg} label="Data" style="pointer-events: none;"></sl-icon>
@@ -401,7 +401,7 @@ export class ScatterplotChart extends StateComponent {
                     size="small"
                     circle
                     id="select-point-button"
-                    .disabled=${
+                    .disabled=${Boolean(
                       this.totalDataLength === 0 ||
                       this.sharedState.chart.options.animation ||
                       (x_axis_type === "none" &&
@@ -409,7 +409,7 @@ export class ScatterplotChart extends StateComponent {
                         this.selectedDatasets_length === 1) ||
                       ((x_axis_type !== "number" || y_axis_type !== "number") &&
                         this.selectedDatasets_length > 1)
-                    }
+                    )}
                     @click=${(e) => {
                       if (this.selectedIndextoAddNode >= 0 || this.drawLine) {
                         this.selectedIndextoAddNode = undefined;
@@ -538,12 +538,12 @@ export class ScatterplotChart extends StateComponent {
                   this.updateScatterplot();
                 }}
                 variant=${this.drawLine ? "primary" : "default"}
-                .disabled=${
+                .disabled=${Boolean(
                   this.sharedState.chart.options.animation ||
                   this.totalDataLength === 0 ||
                   x_axis_type !== "number" ||
                   y_axis_type !== "number"
-                }
+                )}
               >
                 <sl-icon src=${IconPencil} label="Draw"></sl-icon>
               </sl-button>
@@ -599,7 +599,7 @@ export class ScatterplotChart extends StateComponent {
                     size="small"
                     circle
                     id="edit-button"
-                    .disabled=${
+                    .disabled=${Boolean(
                       this.totalDataLength === 0 ||
                       this.sharedState.chart.options.animation ||
                       (x_axis_type === "none" &&
@@ -607,7 +607,7 @@ export class ScatterplotChart extends StateComponent {
                         this.selectedDatasets_length === 1) ||
                       ((x_axis_type !== "number" || y_axis_type !== "number") &&
                         this.selectedDatasets_length > 1)
-                    }
+                    )}
                     @click=${(e) => {
                       if (
                         this.selectedIndextoAddNode >= 0 ||
@@ -799,14 +799,14 @@ export class ScatterplotChart extends StateComponent {
                       this.filterOn = !this.filterOn;
                       e.target.focus();
                     }}
-                    .disabled=${
+                    .disabled=${Boolean(
                       this.sharedState.chart.options.animation ||
                       this.selectedDatasets_length !== 1 ||
                       this.totalDataLength === 0 ||
                       (x_axis_type === "none" &&
                         y_axis_type === "none" &&
                         this.selectedDatasets_length === 1)
-                    }
+                    )}
                     @blur=${() => (this.filterOn = false)}
                   >
                     <sl-icon src=${IconFilter} label="Filter" style="pointer-events: none;"></sl-icon>
@@ -972,11 +972,11 @@ export class ScatterplotChart extends StateComponent {
           }   
         </div>
       
-          <h2 style="font-size: 12px; text-align: center;" ${
+          <h2 style=${
             filterTableVisible && firstSelectedDataset?.filter.type === "number"
-              ? "display: visible;"
-              : "display: none;"
-          }">
+              ? "font-size: 12px; text-align: center; display: block;"
+              : "font-size: 12px; text-align: center; display: none;"
+          }>
             ${
               filterTableVisible &&
               firstSelectedDataset?.filter.type === "number"

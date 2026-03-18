@@ -1,72 +1,75 @@
 {
-  "name": "webwriter-chart",
-  "version": "1.2.17",
-  "description": "ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.",
-  "keywords": [
-    "webwriter-widget"
-  ],
-  "license": "MIT",
-  "author": "Phuong Anh Nguyen",
-  "repository": {
-    "url": "https://git.rwth-aachen.de/learntech-lufgi9/bama/webwriter/ww-chart",
-    "type": "git"
-  },
-  "scripts": {
-    "dev": "vite --open",
-    "build": "tsc && vite build && ./create-files.sh",
-    "check-prettier": "npx prettier --check .",
-    "run-prettier": "npx prettier --write .",
-    "coverage": "vitest --coverage",
-    "typecheck": "tsc --noEmit --composite false",
-    "prepublishOnly": "npx @webwriter/build"
-  },
-  "dependencies": {
-    "@shoelace-style/shoelace": "^2.15.1",
-    "@types/d3": "^7.4.3",
-    "@webwriter/lit": "^2.0.0",
-    "bootstrap-icons": "^1.11.3",
-    "chart.js": "^4.4.2",
-    "d3": "^7.9.0",
-    "d3-regression": "^1.3.10",
-    "lit": "^3.1.4",
-    "random-words": "^1.3.0",
-    "wwc-cli": "^1.0.16"
-  },
-  "devDependencies": {
-    "@vitest/coverage-c8": "^0.30.1",
-    "prettier": "^2.8.7",
-    "typescript": "^4.9.3",
-    "vite": "^4.2.0",
-    "vite-plugin-babel": "^1.1.3",
-    "vitest": "^0.30.1"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "type": "module",
-  "exports": {
-    "./widgets/webwriter-chart.*": {
-      "source": "./src/widget.ts",
-      "default": "./dist/widgets.*"
+    "name": "@webwriter/chart",
+    "version": "1.2.17",
+    "description": "ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.",
+    "keywords": [
+        "webwriter-widget"
+    ],
+    "license": "MIT",
+    "author": "Phuong Anh Nguyen",
+    "repository": {
+        "url": "https://git.rwth-aachen.de/learntech-lufgi9/bama/webwriter/ww-chart",
+        "type": "git"
     },
-    "./snippets/scatterplot-exercise": "./src/snippets/scatterplot-exercise.html",
-    "./snippets/mean-median-exercise": "./src/snippets/mean-median-exercise.html"
-  },
-  "editingConfig": {
-    "./widgets/webwriter-chart": {
-      "label": {
-        "en": "Charts"
-      }
+    "scripts": {
+        "dev": "npx @webwriter/build dev",
+        "build": "tsc && vite build && ./create-files.sh",
+        "check-prettier": "npx prettier --check .",
+        "run-prettier": "npx prettier --write .",
+        "coverage": "vitest --coverage",
+        "typecheck": "tsc --noEmit --composite false",
+        "prepublishOnly": "npx @webwriter/build",
+        "localize": "lit-localize extract && npx @webwriter/build localize && lit-localize build"
     },
-    "./snippets/scatterplot-exercise": {
-      "label": {
-        "en": "Scatterplot-Exercise"
-      }
+    "dependencies": {
+        "@shoelace-style/shoelace": "^2.15.1",
+        "@tabler/icons": "^3.40.0",
+        "@types/d3": "^7.4.3",
+        "@webwriter/lit": "^2.0.0",
+        "bootstrap-icons": "^1.11.3",
+        "chart.js": "^4.4.2",
+        "d3": "^7.9.0",
+        "d3-regression": "^1.3.10",
+        "lit": "^3.1.4",
+        "random-words": "^1.3.0",
+        "wwc-cli": "^1.0.16",
+        "xlsx": "^0.18.5"
     },
-    "./snippets/mean-median-exercise": {
-      "label": {
-        "en": "Mean-Median-Exercise"
-      }
+    "devDependencies": {
+        "@vitest/coverage-c8": "^0.30.1",
+        "prettier": "^2.8.7",
+        "typescript": "^4.9.3",
+        "vite": "^4.2.0",
+        "vite-plugin-babel": "^1.1.3",
+        "vitest": "^0.30.1"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "type": "module",
+    "exports": {
+        "./widgets/webwriter-chart.*": {
+            "source": "./src/widget.ts",
+            "default": "./dist/widgets.*"
+        },
+        "./snippets/scatterplot-exercise": "./src/snippets/scatterplot-exercise.html",
+        "./snippets/mean-median-exercise": "./src/snippets/mean-median-exercise.html"
+    },
+    "editingConfig": {
+        "./widgets/webwriter-chart": {
+            "label": {
+                "en": "Charts"
+            }
+        },
+        "./snippets/scatterplot-exercise": {
+            "label": {
+                "en": "Scatterplot-Exercise"
+            }
+        },
+        "./snippets/mean-median-exercise": {
+            "label": {
+                "en": "Mean-Median-Exercise"
+            }
+        }
     }
-  }
 }

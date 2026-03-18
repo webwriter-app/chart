@@ -56,7 +56,7 @@ export function getChart(
   //@ts-ignore
   const chartName = unsafeStatic(chart.TagName);
 
-  return html`<div style="position: absolute; inset: 0; height: 100%; width: 100%; padding: 10px; box-sizing: border-box; display: flex; justify-content: center; flex-direction: row; align-items: end;">
+  return html`<div style="position: absolute; inset: 0; height: 100%; width: 100%; padding: 10px; box-sizing: border-box; display: flex; justify-content: center; flex-direction: row; align-items: stretch; overflow: hidden;">
 
     <${chartName} 
     id="chart"

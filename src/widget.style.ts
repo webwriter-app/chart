@@ -1,92 +1,14 @@
 import { css } from "lit";
 
 export default css`
-  #main {
-    outline: 1px solid lightgray;
-  }
-
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.lit:hover {
-    filter: drop-shadow(0 0 2em #325cffaa);
-  }
-
-  .card {
-    padding: 2em;
-  }
-
-  .read-the-docs {
-    color: #888;
-  }
-
-  h1 {
-    font-size: 3.2em;
-    line-height: 1.1;
-  }
-
-  a {
-    font-weight: 500;
-    color: #646cff;
-    text-decoration: inherit;
-  }
-  a:hover {
-    color: #535bf2;
-  }
-
-  button {
-    border-radius: 1px;
-    border: 1px solid transparent;
-    padding: 0.6em 1.2em;
-    font-size: 1em;
-    font-weight: 500;
-    font-family: inherit;
-    background-color: #1a1a1a;
-    cursor: pointer;
-    transition: border-color 0.25s;
-  }
-  sl-button {
-    --sl-button-font-size-medium: 1em;
-    --sl-button-height-medium: 2.5em;
-    --sl-button-border-radius-medium: 1px;
-  }
-
-  button:hover {
-    border-color: #646cff;
-  }
-  button:focus,
-  button:focus-visible {
-    outline: 4px auto -webkit-focus-ring-color;
-  }
-
-  @media (prefers-color-scheme: light) {
-    a:hover {
-      color: #747bff;
-    }
-    button {
-      background-color: #f9f9f9;
-    }
-  }
-
   div {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
   }
-  #button-group {
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: row;
-    gap: 1em;
-  }
 
   #main {
+    outline: 1px solid lightgray;
     height: 32rem;
     width: 100%;
     display: flex;
@@ -102,21 +24,11 @@ export default css`
   }
 
   #main > * {
-    padding: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 6px;
+    padding-bottom: 6px;
     box-sizing: border-box;
-  }
-  #display-chart {
-    flex: 1 0 0;
-    position: relative;
-    display: flex;
-  }
-
-  #data-panel {
-    flex: 1;
-    padding: 0 0.5em;
-    background-color: #eaeaea;
-    width: 100%;
-    overflow: auto;
   }
 
   #settings {
@@ -155,7 +67,7 @@ export default css`
     line-height: calc(
       var(--sl-input-height-medium) - var(--sl-input-border-width) * 2
     );
-    font-weight: 500;
+    font-weight: 400;
 
     position: sticky;
     top: 0;
@@ -164,5 +76,129 @@ export default css`
 
     border-bottom: 2px solid var(--sl-color-gray-600);
     color: darkblue;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .chart-settings-host {
+    display: contents;
+  }
+
+  .tab-add-action {
+    display: flex;
+    align-items: center;
+    padding-left: 0.5rem;
+  }
+
+  .tab-add-button {
+    font-size: 1.25rem;
+    color: #888;
+  }
+
+  .tab-label-text {
+    display: inline-block;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .tab-label-editing {
+    display: inline-block;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    outline: none;
+    border: none;
+    box-shadow: none;
+    cursor: text;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  .panel-shell {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 46px);
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .viz-type-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+  }
+
+  .viz-type-label {
+    font-size: 0.8em;
+    color: #666;
+    font-weight: 400;
+  }
+
+  .data-viz-type-row {
+    justify-content: space-between;
+  }
+
+  .data-actions-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 6px 10px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+  }
+
+  .viz-type-divider {
+    width: 1px;
+    height: 24px;
+    background: #ddd;
+    margin: 0 8px;
+  }
+
+  .columns-select {
+    min-width: 250px;
+  }
+
+  .data-content {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    background: #fff;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  .data-content > * {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .chart-display-wrap {
+    flex: 1;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .chart-empty-state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 0.95rem;
+    text-align: center;
+    padding: 1rem;
   }
 `;

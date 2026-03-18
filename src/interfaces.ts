@@ -57,6 +57,13 @@ export interface LineDataSet {
 export interface LineDataSets {
   sets: LineDataSet[];
 }
+
+export interface Visualization {
+  id: string;
+  name: string;
+  selectedType: ChartTypeExternal;
+  visibleColumns?: string[];
+}
 export interface ScatterDatasets {
   title: string;
   sets: ScatterDataset[];
@@ -108,6 +115,8 @@ export interface ChartState {
   lineDatasets: LineDataSets;
   scatterDatasets: ScatterDatasets;
   regressionType: RegressionType;
+  visualizations: Visualization[];
+  activeVisualizationId: string;
   chart: {
     title: string;
     selectedType: ChartTypeExternal;

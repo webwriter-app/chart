@@ -338,7 +338,7 @@ export class Settings extends StateComponent {
                 ?disabled=${isDisabled}
                 max=${max}
                 min=${min}
-                value=${value}
+                value=${Number(value)}
                 @sl-input=${(e: any) => {
                   const updatedOptions = {
                     ...this.sharedState.chart.options,
@@ -362,7 +362,7 @@ export class Settings extends StateComponent {
           case "boolean":
             option.template = html`<wwci-switch
               ?disabled=${isDisabled}
-              ?checked=${value}
+              ?checked=${Boolean(value)}
               @wwci-change=${(e: CustomEvent) => {
                 e.stopPropagation();
                 e.cancelBubble = true;
@@ -452,65 +452,7 @@ export class Settings extends StateComponent {
     return html`
       <sl-details summary="Chart Options">
         <div class="container">
-          <div class="row">
-            <p class="text">Chart</p>
-            ${this.sharedState.editable
-              ? html`<sl-icon-button
-                  class="lock-button ${this.sharedState.chart.optionsLocked[
-                    "chartType"
-                  ]
-                    ? "lock-button-locked"
-                    : "lock-button-unlocked"}"
-                  src=${this.sharedState.chart.optionsLocked["chartType"]
-                    ? IconLock
-                    : IconUnLock}
-                  label="Lock this option"
-                  @click=${() => {
-                    const updatedOptionsLocked = {
-                      ...this.sharedState.chart.optionsLocked,
-                      chartType:
-                        !this.sharedState.chart.optionsLocked["chartType"],
-                    };
-
-                    this.sharedState = {
-                      ...this.sharedState,
-                      chart: {
-                        ...this.sharedState.chart,
-                        optionsLocked: updatedOptionsLocked,
-                      },
-                    };
-
-                    this.dispatchStateChange();
-                  }}
-                ></sl-icon-button>`
-              : html`<div></div>`}
-          </div>
-          <wwci-select
-            value="${this.sharedState.chart.selectedType}"
-            ?disabled=${!(
-              this.sharedState.editable ||
-              (this.sharedState.teacherOptions.changeOptions &&
-                !this.sharedState.chart.optionsLocked["chartType"])
-            )}
-            selectOptions="${attribute(availableCharts)}"
-            @wwci-change=${(e: CustomEvent) => {
-              e.stopPropagation();
-              e.cancelBubble = true;
-              this.sharedState = {
-                ...this.sharedState,
-                chart: {
-                  ...this.sharedState.chart,
-                  selectedType: (e.target as any).value,
-                },
-              };
-
-              this.dispatchStateChange();
-            }}
-          >
-          </wwci-select>
-        </div>
-        <div class="container">
-          <div class="row">
+          <!-- <div class="row">
             <p class="text">Title</p>
             ${this.sharedState.editable
               ? html`<sl-icon-button
@@ -572,7 +514,7 @@ export class Settings extends StateComponent {
 
               this.dispatchStateChange();
             }}
-          ></sl-input>
+          ></sl-input> -->
         </div>
         ${optionInputsToShow.map((input) => {
           return html`

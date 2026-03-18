@@ -9,6 +9,17 @@ import { addAlphaToRGB } from "../../../functions";
 
 @customElement("doughnut-chart")
 export class DoughnutChart extends GenericChart<typeof OptionDefinition> {
+  private isSingleCategoryView(): boolean {
+    return this.datasets.labels.length === 1 && this.datasets.sets.length > 1;
+  }
+
+  private getChartLabels(): string[] {
+    if (this.isSingleCategoryView()) {
+      return this.datasets.sets.map((dataset) => dataset.name);
+    }
+    return this.datasets.labels;
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.sharedState.chart.optionDefinition = OptionDefinition;
@@ -34,7 +45,7 @@ export class DoughnutChart extends GenericChart<typeof OptionDefinition> {
 
     this.chartHelper.setTitle(this.label);
 
-    this.chartHelper.setXLabels(this.datasets.labels);
+    this.chartHelper.setXLabels(this.getChartLabels());
     updateData(datasets, this.chartHelper.chart.data.datasets);
 
     this.chartHelper.update();
@@ -46,7 +57,7 @@ export class DoughnutChart extends GenericChart<typeof OptionDefinition> {
     const chart = new Chart(ctx, {
       type: "doughnut",
       data: {
-        labels: this.datasets.labels,
+        labels: this.getChartLabels(),
         datasets: datasets,
       },
       options: {},
@@ -66,6 +77,25 @@ export class DoughnutChart extends GenericChart<typeof OptionDefinition> {
     borderWidth: number;
     borderRadius: number;
   }[] {
+    if (this.isSingleCategoryView()) {
+      const filled = this.sharedState.chart.options.filled ? 1 : 0.2;
+      const data = this.datasets.sets.map((dataset) => Number(dataset.data[0] ?? 0));
+      const baseColors = this.datasets.sets.map(
+        (dataset) => dataset.colors[0] ?? dataset.color
+      );
+
+      return [
+        {
+          label: this.datasets.labels[0] ?? "Value",
+          data,
+          backgroundColor: baseColors.map((color) => addAlphaToRGB(color, filled)),
+          borderColor: baseColors,
+          borderWidth: Number(this.sharedState.chart.options.borderWidth ?? 1),
+          borderRadius: Number(this.sharedState.chart.options.borderRadius ?? 0),
+        },
+      ];
+    }
+
     const result = this.datasets.sets.map((dataset) => {
       return {
         label: dataset.name,

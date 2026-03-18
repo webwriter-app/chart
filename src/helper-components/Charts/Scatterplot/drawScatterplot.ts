@@ -40,6 +40,27 @@ interface Scales_singleDataset {
   x_none: d3.ScaleLinear<number, number>;
   y_none: d3.ScaleLinear<number, number>;
 }
+
+const AXIS_COLOR = "#cecece";
+const GRID_COLOR = "#e5e5e5";
+const AXIS_LABEL_COLOR = "#666666";
+
+function hexToRgbaHalf(hex: string): string {
+  const hex_clean = hex.replace("#", "");
+  const r = parseInt(hex_clean.substring(0, 2), 16);
+  const g = parseInt(hex_clean.substring(2, 4), 16);
+  const b = parseInt(hex_clean.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, 0.5)`;
+}
+
+function styleAxisGroup(
+  axisGroup: d3.Selection<SVGGElement, unknown, null, undefined>
+) {
+  axisGroup.style("color", AXIS_COLOR);
+  axisGroup.selectAll(".domain, .tick line").attr("stroke", AXIS_COLOR);
+  axisGroup.selectAll(".tick text").attr("fill", AXIS_LABEL_COLOR);
+}
+
 function getScatterplotDataSets(scatterdatasets: ScatterDatasets) {
   const scatterplotdatasets: ScatterplotDataSets = {
     axisLabels: {
@@ -171,6 +192,7 @@ function checkDatasetForScatterplot(
 }
 
 function calculateSVGDimensions(
+  root: Element,
   data: PointOnlyNumbers[][],
   line_datasets: LineDataSets,
   datasets_count: number,
@@ -224,9 +246,17 @@ function calculateSVGDimensions(
   }
 
   // set the dimensions and margins of the graph
-  const margin = { top: 50, right: 55, bottom: 50, left: 70 },
-    width = 575 - margin.left - margin.right,
-    height = 420 - margin.top - margin.bottom;
+  const margin = { top: 50, right: 55, bottom: 50, left: 70 };
+  const rootRect = root.getBoundingClientRect();
+  const fallbackOuterWidth = 575;
+  const fallbackOuterHeight = 420;
+  const outerWidth =
+    rootRect.width > 0 ? rootRect.width : fallbackOuterWidth;
+  const outerHeight =
+    rootRect.height > 0 ? rootRect.height : fallbackOuterHeight;
+
+  const width = Math.max(220, outerWidth - margin.left - margin.right);
+  const height = Math.max(180, outerHeight - margin.top - margin.bottom);
   let tick_x = -1;
   let tick_y = -1;
 
@@ -387,9 +417,8 @@ function drawAxis(
 ) {
   const gx = svg
     .append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .style("color", "#a29e9e");
-  const gy = svg.append("g").style("color", "#a29e9e");
+    .attr("transform", "translate(0," + height + ")");
+  const gy = svg.append("g");
   // count the points in datasets
   if (
     ((x_axis_type === "noSelectedDataset" &&
@@ -484,7 +513,7 @@ function drawAxis(
         .attr("x2", scales.x(0))
         .attr("y2", scales.y(maxY))
         .attr("class", "line-x")
-        .style("stroke", "#000000")
+        .style("stroke", AXIS_COLOR)
         .style("stroke-width", 0.7)
         .style("opacity", 1);
     } else if (minX === 0 && maxX > 0) {
@@ -508,6 +537,7 @@ function drawAxis(
       .attr("x", width / 2)
       .attr("y", height + 40)
       .attr("style", "text-align: center;")
+      .attr("fill", AXIS_LABEL_COLOR)
       .text(axisLabels.x ? axisLabels.x : "X-axis");
 
     // Add Y axis
@@ -554,7 +584,7 @@ function drawAxis(
         .attr("x2", scales.x(maxX))
         .attr("y2", scales.y(0))
         .attr("class", "line-y")
-        .style("stroke", "#080808")
+        .style("stroke", AXIS_COLOR)
         .style("stroke-width", 0.7)
         .style("opacity", 1);
     } else if (minY === 0 && maxY > 0) {
@@ -571,6 +601,8 @@ function drawAxis(
       // only 0
       gy.call(d3.axisLeft(scales.y));
     }
+    styleAxisGroup(gx);
+    styleAxisGroup(gy);
     svg
       .append("text")
       .attr("class", "y label")
@@ -578,6 +610,7 @@ function drawAxis(
       .attr("x", -((height + margin.bottom) / 2)) // to my x axis
       .attr("y", maxY - minY <= 1999 ? -50 : maxY - minY <= 9999 ? -52 : -57) // to my y axis
       .attr("transform", "rotate(-90)")
+      .attr("fill", AXIS_LABEL_COLOR)
       .text(axisLabels.y ? axisLabels.y : "Y-axis");
   }
   svg
@@ -585,6 +618,7 @@ function drawAxis(
     .attr("x", width / 2)
     .attr("y", -20)
     .attr("text-anchor", "middle")
+    .attr("fill", AXIS_LABEL_COLOR)
     .text(title);
   return { gx, gy };
 }
@@ -649,6 +683,7 @@ function drawScatterplot(
   title: string
 ) {
   const dimensions = calculateSVGDimensions(
+    root,
     datasets,
     line_datasets,
     datasets_count,
@@ -705,8 +740,6 @@ function drawScatterplot(
       // Hover points to make them bigger and show tooltip
       scatter
         .selectAll(`circle.dataset-${i}`)
-        .style("stroke", "black")
-        .style("stroke-width", 0.5)
         .on("mouseover", function (_e, d: PointOnlyNumbers) {
           if (options.hoverCursorChange) {
             d3.select(this).attr("r", 8);
@@ -794,8 +827,8 @@ function drawScatterplot(
         scatter
           .selectAll(`circle.dataset-${i}`)
           .data(outliers, (d: PointOnlyNumbers) => `${d.x}-${d.y}`) // Assuming x and y uniquely identify each circle
-          .style("fill", "#f9080c")
-          .style("opacity", 1)
+          .style("fill", hexToRgbaHalf("#f9080c"))
+          .style("stroke", "#f9080c")
           .on("mouseover", (event, d) => {
             const dx: number =
               Math.abs(d.x) < 10 ** 7
@@ -880,10 +913,9 @@ function drawPoints(
     .attr("cx", (d) => scales.x(d.x))
     .attr("cy", (d) => scales.y(d.y))
     .attr("r", 7)
-    .style("fill", (d) => d.color ?? "#417ca1")
-    .style("opacity", 1)
-    .style("stroke", "back")
-    .style("stroke-width", 0.5)
+    .style("fill", (d) => hexToRgbaHalf(d.color ?? "#417ca1"))
+    .style("stroke", (d) => d.color ?? "#417ca1")
+    .style("stroke-width", 1.5)
     .classed("selected", (d) => d.selected);
 }
 
@@ -1170,7 +1202,7 @@ function addGridListeners(
   dimensions: Dimensions
 ) {
   const grid_y = svg
-    .append("g")
+    .insert("g", ":first-child")
     .attr("class", "grid")
     .call(
       d3
@@ -1178,11 +1210,11 @@ function addGridListeners(
         .tickSize(-dimensions.width)
         .tickFormat(() => "")
     )
-    .style("stroke", "#0a0909")
-    .style("stroke-opacity", "0.15")
+    .style("stroke", GRID_COLOR)
+    .style("stroke-opacity", "1")
     .style("shape-rendering", "crispEdges");
   const grid_x = svg
-    .append("g")
+    .insert("g", ":first-child")
     .attr("class", "grid")
     .attr("transform", "translate(0," + dimensions.height + ")")
     .call(
@@ -1191,9 +1223,18 @@ function addGridListeners(
         .tickSize(-dimensions.height)
         .tickFormat(() => "")
     )
-    .style("stroke", "#0a0909")
-    .style("stroke-opacity", "0.15")
+    .style("stroke", GRID_COLOR)
+    .style("stroke-opacity", "1")
     .style("shape-rendering", "crispEdges");
+
+  grid_x
+    .selectAll(".tick line")
+    .attr("stroke", GRID_COLOR)
+    .attr("stroke-opacity", 1);
+  grid_y
+    .selectAll(".tick line")
+    .attr("stroke", GRID_COLOR)
+    .attr("stroke-opacity", 1);
 
   grid_x.selectAll(".domain").remove(); // Important, since the activities on point are not working
   grid_y.selectAll(".domain").remove();
@@ -1811,6 +1852,7 @@ function checkDatasetForScatterplot_singleDataset(
 
 //  get the max value of the dataset
 function calculateSVGDimensions_singleDataset(
+  root: Element,
   data_for_x_axis_copy: { x: number | string; y: number | string }[],
   data_for_y_axis_copy: { x: number | string; y: number | string }[],
   x_axis_type: string,
@@ -1863,9 +1905,17 @@ function calculateSVGDimensions_singleDataset(
     maxY = 1;
   }
   // set the dimensions and margins of the graph
-  const margin = { top: 50, right: 55, bottom: 50, left: 70 },
-    width = 575 - margin.left - margin.right,
-    height = 420 - margin.top - margin.bottom;
+  const margin = { top: 50, right: 55, bottom: 50, left: 70 };
+  const rootRect = root.getBoundingClientRect();
+  const fallbackOuterWidth = 575;
+  const fallbackOuterHeight = 420;
+  const outerWidth =
+    rootRect.width > 0 ? rootRect.width : fallbackOuterWidth;
+  const outerHeight =
+    rootRect.height > 0 ? rootRect.height : fallbackOuterHeight;
+
+  const width = Math.max(220, outerWidth - margin.left - margin.right);
+  const height = Math.max(180, outerHeight - margin.top - margin.bottom);
   let tick_x = -1;
   let tick_y = -1;
   if (result.x_axis_data === "only_negative") {
@@ -2022,7 +2072,8 @@ function drawAxis_singleDataset(
     grid
       .selectAll(".tick line")
       .attr("transform", `translate(${offset})`)
-      .attr("stroke", "lightgrey");
+      .attr("stroke", GRID_COLOR)
+      .attr("stroke-opacity", 1);
     grid.selectAll(".domain").remove();
   };
   // Add X axis
@@ -2081,6 +2132,7 @@ function drawAxis_singleDataset(
         // only 0
         gx.call(d3.axisBottom(scales_x_num));
       }
+      styleAxisGroup(gx);
     } else {
       // x_axis_type === "string"
       let x = d3
@@ -2111,6 +2163,7 @@ function drawAxis_singleDataset(
         `translate(0, ${height})`,
         `${-x.bandwidth() / 2}, 0`
       );
+      styleAxisGroup(axis_x);
     }
     svg
       .append("text")
@@ -2119,6 +2172,7 @@ function drawAxis_singleDataset(
       .attr("x", width / 2)
       .attr("y", height + 40)
       .attr("style", "text-align: center;")
+      .attr("fill", AXIS_LABEL_COLOR)
       .text(axisLabels.x);
   }
   // Add Y axis
@@ -2174,6 +2228,7 @@ function drawAxis_singleDataset(
         // only 0
         gy.call(d3.axisLeft(scales_y_num));
       }
+      styleAxisGroup(gy);
       svg
         .append("text")
         .attr("class", "y label")
@@ -2181,6 +2236,7 @@ function drawAxis_singleDataset(
         .attr("x", -((height + margin.bottom) / 2)) // to my x axis
         .attr("y", maxY - minY <= 1999 ? -50 : maxY - minY <= 9999 ? -52 : -57) // to my y axis
         .attr("transform", "rotate(-90)")
+        .attr("fill", AXIS_LABEL_COLOR)
         .text(axisLabels.y);
     } else {
       // y_axis_type === "string"
@@ -2201,6 +2257,7 @@ function drawAxis_singleDataset(
       }
       // Add Gridlines
       addGrid(d3.axisLeft, y, width, null, `0, ${y.bandwidth() / 2}`);
+      styleAxisGroup(axis_y);
       svg
         .append("text")
         .attr("class", "y label")
@@ -2208,6 +2265,7 @@ function drawAxis_singleDataset(
         .attr("x", -((height + margin.bottom) / 2)) // to my x axis
         .attr("y", -57) // to my y axis
         .attr("transform", "rotate(-90)")
+        .attr("fill", AXIS_LABEL_COLOR)
         .text(axisLabels.y);
     }
   }
@@ -2246,13 +2304,16 @@ function drawAxis_singleDataset(
       .attr("text-anchor", "middle")
       .text("Please add data to the selected dataset");
   }
-  svg.selectAll(".domain, .tick line").attr("stroke", "lightgrey");
+  svg
+    .selectAll("g:not(.grid) .domain, g:not(.grid) .tick line")
+    .attr("stroke", AXIS_COLOR);
 
   svg
     .append("text")
     .attr("x", width / 2)
     .attr("y", -20)
     .attr("text-anchor", "middle")
+    .attr("fill", AXIS_LABEL_COLOR)
     .text(title);
 
   return { x_bandwidth, y_bandwidth };
@@ -2268,6 +2329,7 @@ function drawScatterplot_singleDataset(
   title: string
 ) {
   const dimensions = calculateSVGDimensions_singleDataset(
+    root,
     data_for_x_axis_copy,
     data_for_y_axis_copy,
     x_axis_type,
@@ -2372,9 +2434,8 @@ function drawScatterplot_singleDataset2(
                   bandwidth_result.y_bandwidth
           )
           .attr("r", 6)
-          .style("fill", d.color ?? "#417ca1")
-          .style("opacity", 1)
-          .style("stroke", "black")
+          .style("fill", hexToRgbaHalf(d.color ?? "#417ca1"))
+          .style("stroke", d.color ?? "#417ca1")
           .style("stroke-width", 0.5)
           .classed("selected", d.selected ?? false);
 
@@ -2452,9 +2513,8 @@ function drawScatterplot_singleDataset2(
           .attr("cx", 6 + d.offset)
           .attr("cy", scales.y_num(d.p as number))
           .attr("r", 6)
-          .style("fill", d.color ?? "#417ca1")
-          .style("opacity", 1)
-          .style("stroke", "black")
+          .style("fill", hexToRgbaHalf(d.color ?? "#417ca1"))
+          .style("stroke", d.color ?? "#417ca1")
           .style("stroke-width", 0.5)
           .classed("selected", d.selected ?? false);
         scatter
@@ -2502,9 +2562,8 @@ function drawScatterplot_singleDataset2(
             scales.y_band(d.p as string) + bandwidth_result.y_bandwidth / 2
           )
           .attr("r", 6)
-          .style("fill", d.color ?? "#417ca1")
-          .style("opacity", 1)
-          .style("stroke", "black")
+          .style("fill", hexToRgbaHalf(d.color ?? "#417ca1"))
+          .style("stroke", d.color ?? "#417ca1")
           .style("stroke-width", 0.5)
           .classed("selected", d.selected ?? false);
         scatter
@@ -2538,9 +2597,8 @@ function drawScatterplot_singleDataset2(
           .attr("cx", scales.x_num(d.p as number))
           .attr("cy", -6 + dimensions.height - d.offset)
           .attr("r", 6)
-          .style("fill", d.color ?? "#417ca1")
-          .style("opacity", 1)
-          .style("stroke", "black")
+          .style("fill", hexToRgbaHalf(d.color ?? "#417ca1"))
+          .style("stroke", d.color ?? "#417ca1")
           .style("stroke-width", 0.5)
           .classed("selected", d.selected ?? false);
         scatter
@@ -2588,9 +2646,8 @@ function drawScatterplot_singleDataset2(
           )
           .attr("cy", -6 + dimensions.height - d.offset)
           .attr("r", 6)
-          .style("fill", d.color ?? "#417ca1")
-          .style("opacity", 1)
-          .style("stroke", "black")
+          .style("fill", hexToRgbaHalf(d.color ?? "#417ca1"))
+          .style("stroke", d.color ?? "#417ca1")
           .style("stroke-width", 0.5)
           .classed("selected", d.selected ?? false);
         scatter

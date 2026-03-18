@@ -11,7 +11,7 @@ import SlOption from "@shoelace-style/shoelace/dist/components/option/option.com
 
 @customElement("wwci-select")
 export class Select extends LitElementWw {
-  @property({ type: Array<string>, converter })
+  @property({ type: Array, converter })
   accessor selectOptions: Array<string> = [];
 
   @property()
@@ -28,6 +28,9 @@ export class Select extends LitElementWw {
 
   @property({ type: Boolean })
   accessor disabled: boolean = false;
+
+  @property()
+  accessor size: "small" | "medium" | "large" = "medium";
 
   changeSelected(e: any) {
     this.selectedIndex = this.selectOptions.findIndex(
@@ -48,6 +51,7 @@ export class Select extends LitElementWw {
       : 0;
     return html`
       <sl-select
+        size=${this.size}
         ?disabled="${this.disabled}"
         placeholder="${this.placeholder}"
         label="${this.label}"
