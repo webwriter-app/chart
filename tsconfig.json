@@ -1,17 +1,21 @@
 {
   "compilerOptions": {
     "module": "ESNext",
+    "paths": {
+      "@webwriter/lit": ["./src/webwriter-lit-compat.d.ts"]
+    },
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "target": "ES2022",
+    "rootDir": "./src",
     "declaration": false,
     "emitDeclarationOnly": false,
     "outDir": "./types",
     "strict": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": false,
@@ -21,6 +25,5 @@
     "esModuleInterop": true,
     "stripInternal": false
   },
-  "include": ["src/**/*.ts"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src/**/*.ts"]
 }

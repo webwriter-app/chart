@@ -1,0 +1,21 @@
+import { chartOption } from "../../../utils";
+export const OptionDefinition = {
+  //radius: chartOption("number", 0, "Radius", 0, 10),
+  //filled: chartOption("boolean", true, "Filled"),
+  listRegressionLine: chartOption("array", false, "Regression Model"),
+  dynamicSize: chartOption("boolean", true, "Dynamic Scalling"),
+  // hoverTooltip: chartOption("boolean", true, "Hover Tooltip"),
+  showGrid: chartOption("boolean", true, "Show Grid"),
+  animation: chartOption("boolean", false, "Animation"),
+  showCorrelation: chartOption("boolean", false, "Show Correlation"),
+  showOutliers: chartOption("boolean", false, "Show Outliers"),
+  showMean: chartOption("boolean", true, "Show Mean"),
+};
+export const Definition = {
+  animationTime: 2000,
+};
+
+export const Name = "Scatterplot";
+export const TagName = "scatterplot-chart";
+export const Align: ChartAlignment = "center";
+export const Description = `d3.js Scatterplot Chart`;

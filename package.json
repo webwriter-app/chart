@@ -12,13 +12,10 @@
         "type": "git"
     },
     "scripts": {
-        "dev": "npx @webwriter/build dev",
-        "build": "tsc && vite build && ./create-files.sh",
-        "check-prettier": "npx prettier --check .",
-        "run-prettier": "npx prettier --write .",
-        "coverage": "vitest --coverage",
-        "typecheck": "tsc --noEmit --composite false",
+        "build": "npx @webwriter/build",
+        "typecheck": "tsc --noEmit",
         "prepublishOnly": "npx @webwriter/build",
+        "dev": "npx @webwriter/build dev",
         "localize": "lit-localize extract && npx @webwriter/build localize && lit-localize build"
     },
     "dependencies": {
@@ -36,12 +33,7 @@
         "xlsx": "^0.18.5"
     },
     "devDependencies": {
-        "@vitest/coverage-c8": "^0.30.1",
-        "prettier": "^2.8.7",
-        "typescript": "^4.9.3",
-        "vite": "^4.2.0",
-        "vite-plugin-babel": "^1.1.3",
-        "vitest": "^0.30.1"
+        "typescript": "^5.6.3"
     },
     "publishConfig": {
         "access": "public"
@@ -49,11 +41,11 @@
     "type": "module",
     "exports": {
         "./widgets/webwriter-chart.*": {
-            "source": "./src/widget.ts",
+            "source": "./src/widget/webwriter-chart.ts",
             "default": "./dist/widgets.*"
         },
-        "./snippets/scatterplot-exercise": "./src/snippets/scatterplot-exercise.html",
-        "./snippets/mean-median-exercise": "./src/snippets/mean-median-exercise.html"
+        "./snippets/scatterplot-exercise.html": "./src/snippets/scatterplot-exercise.html",
+        "./snippets/mean-median-exercise.html": "./src/snippets/mean-median-exercise.html"
     },
     "editingConfig": {
         "./widgets/webwriter-chart": {
@@ -61,12 +53,12 @@
                 "en": "Charts"
             }
         },
-        "./snippets/scatterplot-exercise": {
+        "./snippets/scatterplot-exercise.html": {
             "label": {
                 "en": "Scatterplot-Exercise"
             }
         },
-        "./snippets/mean-median-exercise": {
+        "./snippets/mean-median-exercise.html": {
             "label": {
                 "en": "Mean-Median-Exercise"
             }
