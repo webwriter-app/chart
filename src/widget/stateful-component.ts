@@ -1,6 +1,6 @@
 import { LitElementWw } from "@webwriter/lit";
 import { property } from "lit/decorators.js";
-import { ChartState } from "./chart-models";
+import { ChartState } from "./state/models";
 
 export default class StateComponent extends LitElementWw {
   @property({ type: Object, attribute: true, reflect: true })

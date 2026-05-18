@@ -1,1 +1,0 @@
-export { ChartSettingsPanel as Settings } from "./ChartSettingsPanel";

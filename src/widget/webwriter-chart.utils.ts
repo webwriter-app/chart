@@ -1,4 +1,4 @@
-import { ChartState, ScatterDatasets } from "./chart-models";
+import { ChartState, ScatterDatasets } from "./state/models";
 
 export function normalizeColumnsInput(value: unknown): string[] {
   if (Array.isArray(value)) {

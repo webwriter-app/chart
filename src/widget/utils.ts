@@ -1,4 +1,4 @@
-import { ChartData, ChartDataSet, ChartDataSets } from "./chart-models";
+import { ChartData, ChartDataSet, ChartDataSets } from "./state/models";
 import randomWords from "random-words";
 
 export const converter = {
