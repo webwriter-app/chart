@@ -2,14 +2,13 @@
 // CircularChart holds all shared logic; the two subclasses just declare the type.
 import { customElement, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
-import { ChartHelper, CHART_PALETTE, getContext, updateData } from "./chart-helpers";
+import { ChartHelper, CHART_PALETTE, getContext, updateData, makeCircularLegendCallbacks } from "./chart-helpers";
 import { GenericChart } from "./chart-base";
 import { addAlphaToRGB, chartOption } from "../../utils";
 
 const CIRCULAR_OPTIONS = {
   borderRadius: chartOption("number", 0, "Border Radius", 0, 10),
   borderWidth: chartOption("number", 1, "Border Width", 0, 5),
-  filled: chartOption("boolean", false, "Filled"),
 };
 
 type CircularChartType = "pie" | "doughnut";
@@ -30,7 +29,11 @@ abstract class CircularChart extends GenericChart<typeof CIRCULAR_OPTIONS> {
     const chart = new Chart(ctx, {
       type: this.chartJsType,
       data: { labels: xLabels, datasets: this.prepareDataset() },
-      options: { responsive: true, maintainAspectRatio: false },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: makeCircularLegendCallbacks() },
+      },
     });
     this.chartHelper = ChartHelper.create(this.chartJsType, chart) as any;
     this.chartHelper.setTitle(this.label);
@@ -48,16 +51,13 @@ abstract class CircularChart extends GenericChart<typeof CIRCULAR_OPTIONS> {
 
   private prepareDataset() {
     const opts = this.sharedState.chart.options;
-    const filled = opts.filled ? 1 : 0.2;
     const borderWidth = Number(opts.borderWidth ?? 1);
     const borderRadius = Number(opts.borderRadius ?? 0);
     const { columns } = this.transformByXAxis();
     return columns.map((col) => ({
       label: col.label,
       data: col.data,
-      backgroundColor: col.data.map((_, si) =>
-        addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], filled)
-      ),
+      backgroundColor: col.data.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length] + "33"),
       hoverBackgroundColor: col.data.map((_, si) => addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], 0.7)),
       borderColor: col.data.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length]),
       borderWidth,

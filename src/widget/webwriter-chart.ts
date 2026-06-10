@@ -23,6 +23,9 @@ import SlTab from "@shoelace-style/shoelace/dist/components/tab/tab.component.js
 import SlSelect from "@shoelace-style/shoelace/dist/components/select/select.component.js";
 import SlOption from "@shoelace-style/shoelace/dist/components/option/option.component.js";
 
+if (!customElements.get("sl-option")) customElements.define("sl-option", SlOption);
+if (!customElements.get("sl-select")) customElements.define("sl-select", SlSelect);
+
 // Icons
 import IconPlus from "bootstrap-icons/icons/plus.svg";
 import IconArrowsRightLeft from "@tabler/icons/outline/arrows-right-left.svg";
@@ -641,7 +644,6 @@ export class WwChart extends LitElementWw {
                             `
                           : html`
                               ${(() => {
-                                const rawLabels = this.sharedState.chart.datasets.labels ?? [];
                                 const rawSets = this.sharedState.chart.datasets.sets ?? [];
                                 const selectedType = activeViz?.selectedType ?? "Bar";
                                 const showXYAxis = (selectedType === "Bar" || selectedType === "Line") && rawLabels.length >= 1;
@@ -673,40 +675,43 @@ export class WwChart extends LitElementWw {
                                 }
 
                                 const currentYColumns = activeViz?.yColumns ?? [];
-                                const selectedYSeries = currentYColumns.length > 0 ? currentYColumns : availableYSeries;
+                                const validYColumns = currentYColumns.filter((c) => availableYSeries.includes(c));
+                                const selectedYSeries = validYColumns.length > 0 ? validYColumns : [];
 
                                 const currentXCategories = activeViz?.xCategories ?? [];
 
-                                // Radar spokes = all column names (xAxisIndex is not user-selectable for radar)
                                 const availableSpokes = [...rawLabels];
-                                const selectedSpokes = currentXCategories.length > 0 ? currentXCategories : availableSpokes;
+                                const validSpokes = currentXCategories.filter((s) => availableSpokes.includes(s));
+                                const selectedSpokes = validSpokes.length > 0 ? validSpokes : [];
 
                                 const xAxisLabel = showCategoryAxis ? "Category" : showYAxisOnly ? "Segments" : "X-Axis";
-                                const yAxisLabel = showYAxisOnly ? "Levels" : "Y-Axis";
+                                const yAxisLabel = showYAxisOnly ? "Levels" : "Selected Series";
 
                                 return html`
                                   <div class="viz-type-divider"></div>
 
                                   ${showRadarSpokes ? html`
                                     <span class="viz-type-label">Spokes</span>
-                                    <sl-select
+                                    ${keyed(availableSpokes.join('|'), html`<sl-select
                                       class="select-axis"
                                       size="small"
                                       ?multiple=${true}
                                       max-options-visible="2"
                                       placeholder="All spokes"
+                                      clearable
                                       .value=${selectedSpokes}
                                       ?disabled=${!canChangeOptions}
                                       hoist
                                       @sl-change=${(e: Event) => {
                                         if (!activeViz) return;
                                         const sl = e.target as any;
-                                        const selected: string[] = Array.isArray(sl.value) ? sl.value : sl.value ? [sl.value] : [];
-                                        this.changeVizXCategories(activeViz.id, selected.length === availableSpokes.length ? [] : selected);
+                                        const opts: any[] = [...sl.querySelectorAll("sl-option")];
+                                        const selected = opts.filter(o => o.selected).map(o => o.value);
+                                        this.changeVizXCategories(activeViz.id, selected);
                                       }}
                                     >
-                                      ${availableSpokes.map((s) => html`<sl-option value=${s}>${s}</sl-option>`)}
-                                    </sl-select>
+                                      ${availableSpokes.map((s) => html`<sl-option value=${s} ?selected=${selectedSpokes.includes(s)}>${s}</sl-option>`)}
+                                    </sl-select>`)}
                                   ` : html`
                                     <span class="viz-type-label">${xAxisLabel}</span>
                                     <wwci-select
@@ -730,24 +735,26 @@ export class WwChart extends LitElementWw {
 
                                     ${(showXYAxis || showYAxisOnly) && availableYSeries.length > 1 ? html`
                                       <span class="viz-type-label">${yAxisLabel}</span>
-                                      <sl-select
+                                      ${keyed(availableYSeries.join('|'), html`<sl-select
                                         class="select-axis"
                                         size="small"
                                         ?multiple=${true}
                                         max-options-visible="2"
                                         placeholder="All series"
+                                        clearable
                                         .value=${selectedYSeries}
                                         ?disabled=${!canChangeOptions}
                                         hoist
                                         @sl-change=${(e: Event) => {
                                           if (!activeViz) return;
                                           const sl = e.target as any;
-                                          const selected: string[] = Array.isArray(sl.value) ? sl.value : sl.value ? [sl.value] : [];
-                                          this.changeVizYColumns(activeViz.id, selected.length === availableYSeries.length ? [] : selected);
+                                          const opts: any[] = [...sl.querySelectorAll("sl-option")];
+                                          const selected = opts.filter(o => o.selected).map(o => o.value);
+                                          this.changeVizYColumns(activeViz.id, selected);
                                         }}
                                       >
-                                        ${availableYSeries.map((s) => html`<sl-option value=${s}>${s}</sl-option>`)}
-                                      </sl-select>
+                                        ${availableYSeries.map((s) => html`<sl-option value=${s} ?selected=${selectedYSeries.includes(s)}>${s}</sl-option>`)}
+                                      </sl-select>`)}
                                     ` : ""}
                                   `}
                                 `;
@@ -786,8 +793,13 @@ export class WwChart extends LitElementWw {
                               const chartXAxis = _xai < 0
                                 ? _xai
                                 : Math.min(_xai, (this.sharedState.chart.datasets.labels?.length ?? 1) - 1);
-                              const chartYColumns = activeViz?.yColumns ?? [];
-                              const chartXCategories = activeViz?.xCategories ?? [];
+                              const _cRawLabels = (this.sharedState.chart.datasets.labels ?? []).map(l => l.replace(/_/g, " ").trim());
+                              const _cRawSets = (this.sharedState.chart.datasets.sets ?? []) as any[];
+                              const _cAvailSeries = _xai === -2
+                                ? _cRawSets.map((s) => s.name)
+                                : [..._cRawLabels];
+                              const chartYColumns = (activeViz?.yColumns ?? []).filter((c) => _cAvailSeries.includes(c));
+                              const chartXCategories = (activeViz?.xCategories ?? []).filter((s) => _cRawLabels.includes(s));
                               const chartScaleLabel = activeViz?.scaleLabel ?? "";
                               const chartKey = `${activeViz?.id ?? "default"}-${activeViz?.selectedType ?? "Bar"}`;
                               return keyed(

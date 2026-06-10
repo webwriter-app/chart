@@ -1,7 +1,7 @@
 import { customElement, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
-import { addAlphaToRGB, chartOption } from "../../utils";
-import { ChartHelper, CHART_PALETTE, getContext, updateData } from "./chart-helpers";
+import { chartOption } from "../../utils";
+import { ChartHelper, CHART_PALETTE, getContext, updateData, makeCircularLegendCallbacks } from "./chart-helpers";
 import { GenericChart } from "./chart-base";
 
 const POLAR_OPTIONS = {
@@ -24,14 +24,56 @@ export class PolarChart extends GenericChart<typeof POLAR_OPTIONS> {
   accessor chartHelper: ChartHelper<Chart<"polarArea", number[], string>> | undefined;
 
   protected getOptionDefinition() { return POLAR_OPTIONS; }
+  
+  private buildPolarData(): { sectorLabels: string[]; sectorData: number[] } {
+    const { labels, sets } = this.datasets ?? {};
+    if (!labels?.length || !sets?.length) return { sectorLabels: [], sectorData: [] };
+    const norm = (s: string) => s.replace(/_/g, " ").trim();
+
+    let sectorLabels: string[];
+    let sectorData: number[];
+
+    if (this.xAxisIndex === -2) {
+      sectorLabels = labels.map(norm);
+      sectorData = labels.map((_, ci) =>
+        sets.reduce((sum, set) => sum + (Number(set.data[ci]) || 0), 0)
+      );
+    } else if (this.xAxisIndex >= 0) {
+      const xIdx = Math.max(0, Math.min(this.xAxisIndex, labels.length - 1));
+      sectorLabels = sets.map((set) => norm(set.name));
+      sectorData = sets.map((set) => Number(set.data[xIdx]) || 0);
+    } else {
+      sectorLabels = sets.map((set) => norm(set.name));
+      sectorData = sets.map((set) =>
+        labels.reduce((sum, _, ci) => sum + (Number(set.data[ci]) || 0), 0)
+      );
+    }
+
+    if (this.xCategories?.length) {
+      const catNorm = this.xCategories.map(norm);
+      const keepIdxs = sectorLabels.reduce((acc: number[], label, i) => {
+        if (catNorm.includes(norm(label))) acc.push(i);
+        return acc;
+      }, []);
+      sectorLabels = keepIdxs.map((i) => sectorLabels[i]);
+      sectorData = keepIdxs.map((i) => sectorData[i]);
+    }
+
+    return { sectorLabels, sectorData };
+  }
 
   firstUpdated() {
-    const { xLabels } = this.transformByXAxis();
+    const { sectorLabels, sectorData } = this.buildPolarData();
     const ctx = getContext(this);
     const chart = new Chart(ctx, {
       type: "polarArea",
-      data: { labels: xLabels, datasets: this.prepareDataset() },
-      options: { responsive: true, maintainAspectRatio: false },
+      data: { labels: sectorLabels, datasets: this.prepareDataset(sectorData) },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: makeCircularLegendCallbacks() },
+        interaction: { mode: "nearest", intersect: false, axis: "r" } as any,
+      },
     });
     const opts0 = this.sharedState.chart.options;
     this.chartHelper = ChartHelper.create("polarArea", chart);
@@ -49,7 +91,7 @@ export class PolarChart extends GenericChart<typeof POLAR_OPTIONS> {
   updated(): void {
     if (!this.chartHelper) return;
     const opts = this.sharedState.chart.options;
-    const { xLabels } = this.transformByXAxis();
+    const { sectorLabels, sectorData } = this.buildPolarData();
     this.chartHelper.setTitle(this.label);
     this.chartHelper.setRScales(
       opts.dynamicSize !== false,
@@ -58,26 +100,19 @@ export class PolarChart extends GenericChart<typeof POLAR_OPTIONS> {
       Number(opts.scaleStepSize ?? 10),
       this.scaleLabel
     );
-    this.chartHelper.setXLabels(xLabels);
-    updateData(this.prepareDataset(), this.chartHelper.chart.data.datasets);
+    this.chartHelper.setXLabels(sectorLabels);
+    updateData(this.prepareDataset(sectorData), this.chartHelper.chart.data.datasets);
     this.chartHelper.update();
   }
 
-  private prepareDataset() {
+  private prepareDataset(sectorData: number[]) {
     const opts = this.sharedState.chart.options;
-    const { columns } = this.transformByXAxis();
-    const datasets = columns.map((col) => ({
-      label: col.label,
-      data: col.data,
-      backgroundColor: col.data.map((_, si) =>
-        addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], opts.filled ? 1 : 0.2)
-      ),
-      borderColor: col.data.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length]),
+    return [{
+      data: sectorData,
+      backgroundColor: sectorData.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length] + "33"),
+      borderColor: sectorData.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length]),
       borderWidth: Number(opts.borderWidth ?? 1),
       borderRadius: Number(opts.borderRadius ?? 0),
-    }));
-    // Render highest-value datasets first (behind) so smaller values stay visible on top
-    datasets.sort((a, b) => Math.max(...b.data) - Math.max(...a.data));
-    return datasets;
+    }];
   }
 }

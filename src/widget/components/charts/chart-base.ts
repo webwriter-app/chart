@@ -53,8 +53,10 @@ export class GenericChart<
     let xLabels: string[];
     let columns: Array<{ label: string; data: number[]; colIdx: number; color?: string; colors?: string[] }>;
 
+    const normLabel = (s: string) => s.replace(/_/g, " ").trim();
+
     if (this.xAxisIndex === -2) {
-      xLabels = [...labels];
+      xLabels = labels.map(normLabel);
       columns = sets.map((set, i) => ({
         label: set.name,
         data: labels.map((_, j) => Number(set.data[j]) || 0),
@@ -65,7 +67,7 @@ export class GenericChart<
     } else if (this.xAxisIndex < 0) {
       xLabels = sets.map((set) => set.name);
       columns = labels.map((label, colIdx) => ({
-        label,
+        label: normLabel(label),
         data: sets.map((set) => Number(set.data[colIdx]) || 0),
         colIdx,
       }));
@@ -74,14 +76,17 @@ export class GenericChart<
       xLabels = sets.map((set) => String(set.data[xIdx]));
       const yColIndexes = Array.from({ length: labels.length }, (_, i) => i).filter((i) => i !== xIdx);
       columns = yColIndexes.map((colIdx) => ({
-        label: labels[colIdx],
+        label: normLabel(labels[colIdx]),
         data: sets.map((set) => Number(set.data[colIdx]) || 0),
         colIdx,
       }));
     }
 
     if (this.yColumns?.length) {
-      columns = columns.filter((col) => this.yColumns.includes(col.label));
+      // Normalize underscores→spaces (WebWriter attribute serialization corrupts spaces)
+      const norm = (s: string) => s.replace(/_/g, " ").trim();
+      const yNorm = this.yColumns.map(norm);
+      columns = columns.filter((col) => yNorm.includes(norm(col.label)));
     }
 
     // Deduplicate xLabels: merge rows with the same label (case-insensitive), summing values
@@ -106,8 +111,10 @@ export class GenericChart<
     }
 
     if (this.xCategories?.length) {
+      const norm = (s: string) => s.replace(/_/g, " ").trim();
+      const catNorm = this.xCategories.map(norm);
       const keepIdxs = xLabels.reduce((acc: number[], label, i) => {
-        if (this.xCategories.includes(label)) acc.push(i);
+        if (catNorm.includes(norm(label))) acc.push(i);
         return acc;
       }, []);
       xLabels = keepIdxs.map((i) => xLabels[i]);

@@ -17,13 +17,11 @@ import "./polar-area-chart";
 const PIE_OPTIONS = {
   borderRadius: chartOption("number", 0, "Border Radius", 0, 10),
   borderWidth: chartOption("number", 1, "Border Width", 0, 5),
-  filled: chartOption("boolean", false, "Filled"),
 };
 
 const DOUGHNUT_OPTIONS = {
   borderRadius: chartOption("number", 0, "Border Radius", 0, 10),
   borderWidth: chartOption("number", 1, "Border Width", 0, 5),
-  filled: chartOption("boolean", false, "Filled"),
 };
 
 const BAR_OPTIONS = {
@@ -58,9 +56,8 @@ const POLAR_OPTIONS = {
 
 const RADAR_OPTIONS = {
   borderWidth: chartOption("number", 1, "Border Width", 0, 5),
-  pointRadius: chartOption("number", 1, "Point Radius", 0, 10),
+  pointRadius: chartOption("number", 3, "Point Radius", 0, 10),
   fill: chartOption("boolean", false, "Fill"),
-  pointColors: chartOption("boolean", false, "Point Colors"),
   smoothTheLine: chartOption("boolean", false, "Smooth The Line"),
 };
 

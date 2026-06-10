@@ -8,7 +8,6 @@ export const CHART_PALETTE = [
   "#8bc34a", "#ffc107",
 ];
 
-// Softer palette for line charts (Material Design 300-level tones)
 export const LINE_PALETTE = [
   "#7986cb", "#ef9a9a", "#81c784", "#ffb74d", "#ce93d8",
   "#4dd0e1", "#a1887f", "#90a4ae", "#f48fb1", "#64b5f6",
@@ -17,10 +16,10 @@ export const LINE_PALETTE = [
 
 function dimColor(c: string): string {
   if (typeof c !== "string" || c.length < 4) return c;
-  if (c.startsWith("rgba(")) return c.replace(/,\s*[\d.]+\)$/, ", 0.6)");
-  if (c.startsWith("rgb(")) return c.replace("rgb(", "rgba(").replace(")", ", 0.6)");
+  if (c.startsWith("rgba(")) return c.replace(/,\s*[\d.]+\)$/, ", 0.15)");
+  if (c.startsWith("rgb(")) return c.replace("rgb(", "rgba(").replace(")", ", 0.15)");
   const hex = c.length === 4 ? `#${c[1]}${c[1]}${c[2]}${c[2]}${c[3]}${c[3]}` : c;
-  return hex.slice(0, 7) + "99"; // 60% opacity
+  return hex.slice(0, 7) + "26"; 
 }
 
 function dimDataset(ds: any) {
@@ -68,6 +67,51 @@ export function updateData(
   targets.forEach((target: any, i: number) => {
     Object.keys(sources[i]).forEach((key) => (target[key] = sources[i][key]));
   });
+}
+
+export function makeCircularLegendCallbacks() {
+  let saved: { backgroundColor: string[]; borderWidth: any }[] = [];
+
+  return {
+    onHover(_e: any, item: any, legend: any) {
+      if (legend.chart.canvas) legend.chart.canvas.style.cursor = "pointer";
+      const c = legend.chart;
+      if (saved.length === 0) {
+        c.data.datasets.forEach((ds: any) => {
+          saved.push({ backgroundColor: [...ds.backgroundColor], borderWidth: ds.borderWidth });
+        });
+      }
+      c.data.datasets.forEach((ds: any, dsIdx: number) => {
+        const origBw = saved[dsIdx]?.borderWidth ?? 1;
+        const bwArr: number[] = Array.isArray(origBw)
+          ? origBw
+          : Array(ds.backgroundColor.length).fill(origBw);
+        ds.backgroundColor = ds.backgroundColor.map((color: string, index: number) =>
+          index === item.index
+            ? color.slice(0, 7) + "80" 
+            : color.slice(0, 7) + "26" 
+        );
+        ds.borderWidth = bwArr.map((_: number, index: number) =>
+          index === item.index ? origBw : 0
+        );
+      });
+      c.update("none");
+    },
+    onLeave(_e: any, _item: any, legend: any) {
+      if (legend.chart.canvas) legend.chart.canvas.style.cursor = "";
+      const c = legend.chart;
+      if (saved.length > 0) {
+        c.data.datasets.forEach((ds: any, i: number) => {
+          if (saved[i]) {
+            ds.backgroundColor = [...saved[i].backgroundColor];
+            ds.borderWidth = saved[i].borderWidth;
+          }
+        });
+        saved = [];
+      }
+      c.update("none");
+    },
+  };
 }
 
 export class ChartHelper<T extends Chart<any, number[], string>> {
@@ -177,16 +221,21 @@ export class ChartHelper<T extends Chart<any, number[], string>> {
 
   public setLegendHoverHighlight() {
     const chart = this.chart;
-    const isPieOrDoughnut = this.chartType === "pie" || this.chartType === "doughnut";
+    const isCircular =
+      this.chartType === "pie" ||
+      this.chartType === "doughnut" ||
+      this.chartType === "polarArea";
 
     if (!chart.options.plugins) chart.options.plugins = {};
     if (!chart.options.plugins.legend) chart.options.plugins.legend = {};
 
-    // Position: right for circular/polar, bottom for everything else
     const rightLegendTypes: ChartType[] = ["pie", "doughnut", "polarArea", "radar"];
     (chart.options.plugins.legend as any).position =
       rightLegendTypes.includes(this.chartType) ? "right" : "bottom";
 
+    if (isCircular) {
+      return;
+    }
     let saved: { borderColor: any; backgroundColor: any; borderWidth: any }[] = [];
 
     (chart.options.plugins.legend as any).onHover = (_e: any, item: any, legend: any) => {
@@ -203,38 +252,13 @@ export class ChartHelper<T extends Chart<any, number[], string>> {
         });
       }
 
-      if (isPieOrDoughnut) {
-        // setActiveElements triggers hoverBorderWidth (+3) and hoverBackgroundColor natively
-        c.setActiveElements([{ datasetIndex: item.datasetIndex, index: item.index }]);
-        c.data.datasets.forEach((ds: any, dsIdx: number) => {
-          if (dsIdx !== item.datasetIndex) {
-            dimDataset(ds);
-          } else {
-            // Dim all arcs except the hovered one; leave hovered arc untouched so
-            // Chart.js can apply hoverBackgroundColor on top of the original color
-            if (Array.isArray(ds.backgroundColor)) {
-              ds.backgroundColor = ds.backgroundColor.map((col: string, si: number) =>
-                si === item.index ? col : dimColor(col)
-              );
-            }
-            if (Array.isArray(ds.borderColor)) {
-              ds.borderColor = ds.borderColor.map((col: string, si: number) =>
-                si === item.index ? col : dimColor(col)
-              );
-            }
-          }
-        });
-      } else {
-        // For all other chart types legend items map to datasets
-        c.data.datasets.forEach((ds: any, i: number) => {
-          if (i !== item.datasetIndex) {
-            dimDataset(ds);
-          } else {
-            // Keep original colors; increase border width by +1
-            ds.borderWidth = (typeof ds.borderWidth === "number" ? ds.borderWidth : 1) + 1;
-          }
-        });
-      }
+      c.data.datasets.forEach((ds: any, i: number) => {
+        if (i !== item.datasetIndex) {
+          dimDataset(ds);
+        } else {
+          ds.borderWidth = (typeof ds.borderWidth === "number" ? ds.borderWidth : 1) * 1.5;
+        }
+      });
 
       c.update("none");
     };
@@ -242,8 +266,6 @@ export class ChartHelper<T extends Chart<any, number[], string>> {
     (chart.options.plugins.legend as any).onLeave = (_e: any, _item: any, legend: any) => {
       const c = legend.chart;
       if (c.canvas) c.canvas.style.cursor = "";
-
-      if (isPieOrDoughnut) c.setActiveElements([]);
 
       c.data.datasets.forEach((ds: any, i: number) => {
         if (saved[i]) {

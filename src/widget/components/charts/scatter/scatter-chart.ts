@@ -597,6 +597,8 @@ private _createChart() {
     let legendSaved: Array<{ bc: any; bgc: any; pr: any }> | null = null;
     const dimLegendColor = (c: any): any => {
       if (typeof c !== "string" || c.length < 4) return c;
+      if (c.startsWith("rgba(")) return c.replace(/,\s*[\d.]+\)$/, ", 0.25)");
+      if (c.startsWith("rgb(")) return c.replace("rgb(", "rgba(").replace(")", ", 0.25)");
       const hex = c.length === 4 ? `#${c[1]}${c[1]}${c[2]}${c[2]}${c[3]}${c[3]}` : c;
       return hex.slice(0, 7) + "40";
     };
