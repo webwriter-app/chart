@@ -644,6 +644,7 @@ export class WwChart extends LitElementWw {
                             `
                           : html`
                               ${(() => {
+                                const rawLabels = (this.sharedState.chart.datasets.labels ?? []).map(l => l.replace(/_/g, " ").trim());
                                 const rawSets = this.sharedState.chart.datasets.sets ?? [];
                                 const selectedType = activeViz?.selectedType ?? "Bar";
                                 const showXYAxis = (selectedType === "Bar" || selectedType === "Line") && rawLabels.length >= 1;
