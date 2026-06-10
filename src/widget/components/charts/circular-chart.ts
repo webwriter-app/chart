@@ -2,7 +2,7 @@
 // CircularChart holds all shared logic; the two subclasses just declare the type.
 import { customElement, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
-import { ChartHelper, getContext, updateData } from "./chart-helpers";
+import { ChartHelper, CHART_PALETTE, getContext, updateData } from "./chart-helpers";
 import { GenericChart } from "./chart-base";
 import { addAlphaToRGB, chartOption } from "../../utils";
 
@@ -25,11 +25,12 @@ abstract class CircularChart extends GenericChart<typeof CIRCULAR_OPTIONS> {
   }
 
   firstUpdated() {
+    const { xLabels } = this.transformByXAxis();
     const ctx = getContext(this);
     const chart = new Chart(ctx, {
       type: this.chartJsType,
-      data: { labels: this.getChartLabels(), datasets: this.prepareDataset() },
-      options: {},
+      data: { labels: xLabels, datasets: this.prepareDataset() },
+      options: { responsive: true, maintainAspectRatio: false },
     });
     this.chartHelper = ChartHelper.create(this.chartJsType, chart) as any;
     this.chartHelper.setTitle(this.label);
@@ -38,47 +39,29 @@ abstract class CircularChart extends GenericChart<typeof CIRCULAR_OPTIONS> {
 
   updated(): void {
     if (!this.chartHelper) return;
+    const { xLabels } = this.transformByXAxis();
     this.chartHelper.setTitle(this.label);
-    this.chartHelper.setXLabels(this.getChartLabels());
+    this.chartHelper.setXLabels(xLabels);
     updateData(this.prepareDataset(), this.chartHelper.chart.data.datasets);
     this.chartHelper.update();
   }
 
-  private isSingleCategoryView(): boolean {
-    return this.datasets.labels?.length === 1 && this.datasets.sets?.length > 1;
-  }
-
-  private getChartLabels(): string[] {
-    if (this.isSingleCategoryView()) {
-      return this.datasets.sets?.map((d) => d.name) ?? [];
-    }
-    return this.datasets.labels;
-  }
-
   private prepareDataset() {
-    const filled = this.sharedState.chart.options.filled ? 1 : 0.2;
-    const borderWidth = Number(this.sharedState.chart.options.borderWidth ?? 1);
-    const borderRadius = Number(this.sharedState.chart.options.borderRadius ?? 0);
-
-    if (this.isSingleCategoryView()) {
-      const data = this.datasets.sets.map((d) => Number(d.data[0] ?? 0));
-      const baseColors = this.datasets.sets.map((d) => d.colors[0] ?? d.color);
-      return [{
-        label: this.datasets.labels[0] ?? "Value",
-        data,
-        backgroundColor: baseColors.map((c) => addAlphaToRGB(c, filled)),
-        borderColor: baseColors,
-        borderWidth,
-        borderRadius,
-      }];
-    }
-
-    return this.datasets.sets.map((dataset) => ({
-      label: dataset.name,
-      data: dataset.data,
-      backgroundColor: dataset.colors.map((c) => addAlphaToRGB(c, filled)),
-      borderColor: dataset.colors,
+    const opts = this.sharedState.chart.options;
+    const filled = opts.filled ? 1 : 0.2;
+    const borderWidth = Number(opts.borderWidth ?? 1);
+    const borderRadius = Number(opts.borderRadius ?? 0);
+    const { columns } = this.transformByXAxis();
+    return columns.map((col) => ({
+      label: col.label,
+      data: col.data,
+      backgroundColor: col.data.map((_, si) =>
+        addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], filled)
+      ),
+      hoverBackgroundColor: col.data.map((_, si) => addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], 0.7)),
+      borderColor: col.data.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length]),
       borderWidth,
+      hoverBorderWidth: borderWidth + 1,
       borderRadius,
     }));
   }

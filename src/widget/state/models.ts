@@ -1,6 +1,6 @@
 // All chart type definitions. RegressionType is defined here directly
 // to avoid a circular dependency with chart-registry.ts.
-export type RegressionType = "none" | "linear" | "loess" | "quadratic";
+export type RegressionType = "none" | "Linear Regression" | "Polynomial Regression" | "Local Regression" | "Exponential Regression" | "Logarithmic Regression";
 
 export interface ChartData {
   [key: string]: {
@@ -35,12 +35,12 @@ export type InternalChartType =
   | "Line"
   | "Polar Area"
   | "Radar"
-  | "Scatterplot";
+  | "Scatter plot";
 
 export interface ChartDataSet {
   name: string;
   color: string;
-  data: number[];
+  data: (number | string)[];
   colors: string[];
 }
 
@@ -76,6 +76,11 @@ export interface Visualization {
   name: string;
   selectedType: InternalChartType;
   visibleColumns?: string[];
+  xAxisIndex?: number;
+  yColumns?: string[];
+  xCategories?: string[];
+  scaleLabel?: string;
+  options?: Record<string, any>;
 }
 
 export interface ScatterDatasets {
@@ -107,6 +112,10 @@ export interface ScatterDataset {
   };
 }
 
+export interface DrawnLine {
+  x1: number; y1: number; x2: number; y2: number; name?: string;
+}
+
 export interface ChartState {
   teacherOptions: {
     showOptions: boolean;
@@ -120,6 +129,8 @@ export interface ChartState {
   lineDatasets: LineDataSets;
   scatterDatasets: ScatterDatasets;
   regressionType: RegressionType;
+  scatterLines: DrawnLine[];
+  hasPendingScatterChanges?: boolean;
   visualizations: Visualization[];
   activeVisualizationId: string;
   chart: {

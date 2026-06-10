@@ -378,10 +378,13 @@ render() {
                         type="text"
                         .value=${value === null ? "" : String(value)}
                         placeholder="0"
-                        ?disabled=${!canEdit}                        @focus=${(e: FocusEvent) => {
+                        ?disabled=${!canEdit}
+                        @mousedown=${(e: MouseEvent) => { (e.target as HTMLInputElement).focus(); }}
+                        @focus=${(e: FocusEvent) => {
                           const input = e.target as HTMLInputElement;
                           setTimeout(() => input.select(), 0);
-                        }}                        @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter') (e.target as HTMLElement).blur(); }}
+                        }}
+                        @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter') (e.target as HTMLElement).blur(); }}
                         @change=${(e: Event) => {
                           const rawVal = (e.target as HTMLInputElement).value.trim();
                           const newSets = JSON.parse(JSON.stringify(sets));

@@ -204,73 +204,18 @@ getRegressionErrorState(): {
   } {
     let regressionErrorMessages = html``;
     let regressionError = false;
-    let color = "";
+    const color = "";
     const regressionType = this.sharedState.regressionType;
-    // Incase no dataset
-    if (
-      this.sharedState.scatterDatasets.sets.length === 0 ||
-      this.getSelectedDatasetCount() === 0 ||
-      this.getTotalDataLength() === 0
-    ) {
+    if (regressionType === "none") return { regressionErrorMessages, regressionError, color };
+
+    // Regression runs over all visible data points combined — check total count
+    let requiredPoints = 2;
+    if (regressionType === "Polynomial Regression") requiredPoints = 3;
+
+    const totalPoints = this.sharedState.chart.datasets.sets.length;
+    if (totalPoints < requiredPoints) {
       regressionError = true;
-      regressionErrorMessages = html`Cannot perform ${regressionType}
-      regression: Insufficient data points.`;
-    } else {
-      let requiredPoints = 2; // Default to 2 for most regression types
-      switch (regressionType) {
-        case "none":
-          return { regressionErrorMessages, regressionError, color };
-        case "linear":
-          break;
-        case "quadratic":
-          requiredPoints = 3;
-          break;
-        /*case "polynomial":
-          requiredPoints = 4;
-          break;
-        case "logarithmic":
-          break;
-        case "power":
-          break;*/
-        case "loess":
-          break;
-      }
-      const regressionErrorDatasetsnameArray =
-        this.sharedState.scatterDatasets.selected.dataset_indexes
-          .sort()
-          .map((dataset_index) => {
-            const dataset =
-              this.sharedState.scatterDatasets.sets[dataset_index];
-            color = dataset.color;
-            if (dataset.dimensional_data.length < requiredPoints) {
-              regressionError = true;
-              return html`<span style="color: ${color};"
-                >${dataset.name}</span
-              >`;
-            }
-            return null;
-          })
-          .filter((el) => el !== null); // Filter out the null values
-      // If the array length is greater than 1, join the elements with a comma
-      const regressionErrorDatasetsname =
-        regressionErrorDatasetsnameArray.length > 1
-          ? regressionErrorDatasetsnameArray.reduce(
-              (acc, curr, index) => [
-                ...acc,
-                curr,
-                index < regressionErrorDatasetsnameArray.length - 1
-                  ? html`, `
-                  : null, // Add comma except after the last item
-              ],
-              []
-            )
-          : regressionErrorDatasetsnameArray;
-      // Combine all the regression error messages
-      regressionErrorMessages = html`
-        Cannot perform ${this.sharedState.regressionType} regression on
-        ${regressionErrorDatasetsnameArray.length > 1 ? "datasets" : "dataset"}
-        ${regressionErrorDatasetsname}: Insufficient data points.
-      `;
+      regressionErrorMessages = html`Cannot perform ${regressionType} regression: need at least ${requiredPoints} data point${requiredPoints > 1 ? "s" : ""} (have ${totalPoints}).`;
     }
 
     return { regressionErrorMessages, regressionError, color };
@@ -334,7 +279,7 @@ render() {
     const optionInputs: TOptionInput[] = Object.keys(optionDefinition).map(
       (key) => {
         const { max, min, type } = optionDefinition[key];
-        const value = this.sharedState.chart.options[key];
+        const value = this.sharedState.chart.options[key] ?? optionDefinition[key].default;
         const isDisabled = !(
           this.sharedState.editable ||
           (this.sharedState.teacherOptions.changeOptions &&
@@ -466,7 +411,11 @@ render() {
           this.sharedState.teacherOptions.showLockedOptions ||
           !input.locked) &&
         !this.isOptionHiddenForAxes(input.key, x_axis_type, y_axis_type) &&
-        !disabledOptionKeys.has(input.key)
+        !disabledOptionKeys.has(input.key) &&
+        !(
+          (input.key === "showCorrelation" || input.key === "showOutliers") &&
+          this.sharedState.regressionType === "none"
+        )
     );
 
     return html`
@@ -510,11 +459,11 @@ render() {
               (this.sharedState.teacherOptions.changeOptions &&
                 !this.sharedState.chart.optionsLocked["title"])
             )}
-            value=${this.sharedState.chart.selectedType === "Scatterplot"
+            value=${this.sharedState.chart.selectedType === "Scatter plot"
               ? this.sharedState.scatterDatasets.title
               : this.sharedState.chart.title}
             @sl-input=${(e: any) => {
-              if (this.sharedState.chart.selectedType === "Scatterplot") {
+              if (this.sharedState.chart.selectedType === "Scatter plot") {
                 this.sharedState = {
                   ...this.sharedState,
                   scatterDatasets: {

@@ -1,13 +1,12 @@
 import { customElement, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
-import { fillArray, chartOption } from "../../utils";
-import { ChartHelper, getContext, updateData } from "./chart-helpers";
+import { chartOption } from "../../utils";
+import { ChartHelper, LINE_PALETTE, getContext, updateData } from "./chart-helpers";
 import { GenericChart } from "./chart-base";
 
 const LINE_OPTIONS = {
-  borderWidth: chartOption("number", 1, "Line Border Width", 0, 5),
-  pointRadius: chartOption("number", 1, "Point Radius", 0, 10),
-  pointColors: chartOption("boolean", false, "Point Colors"),
+  borderWidth: chartOption("number", 2, "Line Width", 0, 5),
+  pointRadius: chartOption("number", 3, "Point Size", 0, 10),
   dynamicSize: chartOption("boolean", true, "Dynamic Scalling"),
   scaleMin: chartOption("number", 0, "Scale Min", Infinity, Infinity),
   scaleMax: chartOption("number", 100, "Scale Max", Infinity, Infinity),
@@ -27,22 +26,23 @@ export class LineChart extends GenericChart<typeof LINE_OPTIONS> {
   protected getOptionDefinition() { return LINE_OPTIONS; }
 
   firstUpdated() {
+    const { xLabels } = this.transformByXAxis();
+    const opts = this.sharedState.chart.options;
     const ctx = getContext(this);
     const chart = new Chart(ctx, {
       type: "line",
-      data: { labels: this.datasets.labels, datasets: this.prepareDataset() },
-      options: {},
+      data: { labels: xLabels, datasets: this.prepareDataset() },
+      options: { responsive: true, maintainAspectRatio: false },
     });
     // @ts-ignore
     this.chartHelper = ChartHelper.create("line", chart);
-    const opts = this.sharedState.chart.options;
     this.chartHelper.setTitle(this.label);
     this.chartHelper.setLineSmooth(opts.smoothTheLine as boolean);
     this.chartHelper.setYScales(
       opts.dynamicSize as boolean,
       opts.scaleMin as number,
       opts.scaleMax as number,
-      opts.scaleStepSize as number
+      opts.scaleStepSize as number,
     );
     this.chartHelper.update();
   }
@@ -50,31 +50,34 @@ export class LineChart extends GenericChart<typeof LINE_OPTIONS> {
   updated(): void {
     if (!this.chartHelper) return;
     const opts = this.sharedState.chart.options;
+    const { xLabels } = this.transformByXAxis();
     this.chartHelper.setTitle(this.label);
     this.chartHelper.setLineSmooth(opts.smoothTheLine as boolean);
     this.chartHelper.setYScales(
       opts.dynamicSize as boolean,
       opts.scaleMin as number,
       opts.scaleMax as number,
-      opts.scaleStepSize as number
+      opts.scaleStepSize as number,
     );
-    this.chartHelper.setXLabels(this.datasets.labels);
+    this.chartHelper.setXLabels(xLabels);
     updateData(this.prepareDataset(), this.chartHelper.chart.data.datasets);
     this.chartHelper.update();
   }
 
   private prepareDataset() {
     const opts = this.sharedState.chart.options;
-    return this.datasets.sets.map((dataset) => ({
-      label: dataset.name,
-      data: dataset.data,
-      backgroundColor: opts.pointColors
-        ? dataset.colors
-        : fillArray(dataset.colors.length, dataset.color),
-      borderColor: dataset.color,
-      borderWidth: Number(opts.borderWidth ?? 1),
-      pointBorderColor: "transparent",
-      pointRadius: Number(opts.pointRadius ?? 0),
-    }));
+    const { columns } = this.transformByXAxis();
+    return columns.map((col, i) => {
+      const color = col.color ?? LINE_PALETTE[i % LINE_PALETTE.length];
+      return {
+        label: col.label,
+        data: col.data,
+        backgroundColor: color,
+        borderColor: color,
+        borderWidth: Number(opts.borderWidth ?? 1),
+        pointBorderColor: "transparent",
+        pointRadius: Number(opts.pointRadius ?? 0),
+      };
+    });
   }
 }

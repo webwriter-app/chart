@@ -9,7 +9,7 @@ export default css`
 
   #main {
     outline: 1px solid lightgray;
-    height: 32rem;
+    min-height: 32rem;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -123,7 +123,8 @@ export default css`
   .panel-shell {
     display: flex;
     flex-direction: column;
-    height: calc(100% - 46px);
+    flex: 1;
+    min-height: 24rem;
     overflow: hidden;
     background: #fff;
   }
@@ -136,6 +137,18 @@ export default css`
     background: #fff;
     border-bottom: 1px solid #eee;
     flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .select-chart-type {
+    max-width: 135px;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .select-axis {
+    flex: 1;
+    min-width: 80px;
   }
 
   .viz-type-label {
@@ -167,6 +180,24 @@ export default css`
 
   .axis-select {
     width: 150px;
+  }
+
+  .axis-select-native {
+    width: 150px;
+    height: 28px;
+    font-size: 0.875rem;
+    border: 1px solid var(--sl-color-neutral-300, #d4d4d8);
+    border-radius: var(--sl-border-radius-medium, 4px);
+    background: #fff;
+    color: var(--sl-color-neutral-700, #3f3f46);
+    padding: 0 28px 0 8px;
+    cursor: pointer;
+    appearance: auto;
+    outline: none;
+  }
+  .axis-select-native:focus {
+    border-color: var(--sl-color-primary-500, #3b82f6);
+    box-shadow: 0 0 0 2px var(--sl-color-primary-200, #bfdbfe);
   }
 
   .columns-select {

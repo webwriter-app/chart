@@ -37,9 +37,8 @@ const BAR_OPTIONS = {
 };
 
 const LINE_OPTIONS = {
-  borderWidth: chartOption("number", 1, "Line Border Width", 0, 5),
-  pointRadius: chartOption("number", 1, "Point Radius", 0, 10),
-  pointColors: chartOption("boolean", false, "Point Colors"),
+  borderWidth: chartOption("number", 2, "Line Width", 0, 5),
+  pointRadius: chartOption("number", 3, "Point Size", 0, 10),
   dynamicSize: chartOption("boolean", true, "Dynamic Scalling"),
   scaleMin: chartOption("number", 0, "Scale Min", Infinity, Infinity),
   scaleMax: chartOption("number", 100, "Scale Max", Infinity, Infinity),
@@ -51,6 +50,10 @@ const POLAR_OPTIONS = {
   borderRadius: chartOption("number", 0, "Border Radius", 0, 10),
   borderWidth: chartOption("number", 1, "Border Width", 0, 5),
   filled: chartOption("boolean", false, "Filled"),
+  dynamicSize: chartOption("boolean", true, "Dynamic Scaling"),
+  scaleMin: chartOption("number", 0, "Scale Min", undefined, undefined),
+  scaleMax: chartOption("number", 100, "Scale Max", undefined, undefined),
+  scaleStepSize: chartOption("number", 10, "Step Size", 1, undefined),
 };
 
 const RADAR_OPTIONS = {
@@ -61,17 +64,16 @@ const RADAR_OPTIONS = {
   smoothTheLine: chartOption("boolean", false, "Smooth The Line"),
 };
 
-// Scatterplot tab options — not user-selectable as a visualization type,
-// but needed by getOptionsDefinition("Scatterplot").
+// Scatter plot tab options — not user-selectable as a visualization type,
+// but needed by getOptionsDefinition("Scatter plot").
 const SCATTERPLOT_OPTIONS = {
   listRegressionLine: chartOption("array", false, "Regression Model"),
-  dynamicSize: chartOption("boolean", true, "Dynamic Scalling"),
+  snapToGrid: chartOption("boolean", true, "Snap to Grid"),
   showGrid: chartOption("boolean", true, "Show Grid"),
   animation: chartOption("boolean", false, "Animation"),
   showCorrelation: chartOption("boolean", false, "Show Correlation"),
   showOutliers: chartOption("boolean", false, "Show Outliers"),
-  showMean: chartOption("boolean", true, "Show Mean"),
-  snapToGrid: chartOption("boolean", true, "Integer Values"),
+  showMean: chartOption("boolean", false, "Show Mean"),
 };
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
@@ -91,10 +93,10 @@ const USER_CHARTS: ChartConfig[] = [
   { name: "Radar",      tagName: "radar-chart",  optionDefinition: RADAR_OPTIONS },
 ];
 
-// Only the option definition is needed for Scatterplot here;
+// Only the option definition is needed for Scatter plot here;
 // the element itself is rendered directly in webwriter-chart.ts.
 const SCATTERPLOT_CONFIG: ChartConfig = {
-  name: "Scatterplot",
+  name: "Scatter plot",
   tagName: "scatter-chart-js",
   optionDefinition: SCATTERPLOT_OPTIONS,
 };
@@ -104,7 +106,14 @@ const ALL_CHARTS = [...USER_CHARTS, SCATTERPLOT_CONFIG];
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export const availableCharts = USER_CHARTS.map((c) => c.name);
-export const availableRegressions = ["none", "linear", "quadratic", "loess"] as const;
+export const availableRegressions = [
+  "none",
+  "Linear Regression",
+  "Polynomial Regression",
+  "Local Regression",
+  "Exponential Regression",
+  "Logarithmic Regression",
+] as const;
 export type RegressionType = (typeof availableRegressions)[number];
 export type ChartType = (typeof availableCharts)[number];
 
@@ -121,7 +130,11 @@ export function getChart(
   options: any,
   teacherOptions: TeacherOptions,
   onChange: (e: CustomEvent) => void,
-  sharedState: ChartState
+  sharedState: ChartState,
+  xAxisIndex: number = 0,
+  yColumns: string[] = [],
+  xCategories: string[] = [],
+  scaleLabel: string = ""
 ) {
   const config = USER_CHARTS.find((c) => c.name === chartType);
   if (!config) return html`<div>Chart not found!</div>`;
@@ -129,17 +142,18 @@ export function getChart(
   const chartName = unsafeStatic(config.tagName);
 
   return html`
-    <div style="position: absolute; inset: 0; height: 100%; width: 100%; padding: 10px;
-                box-sizing: border-box; display: flex; justify-content: center;
-                flex-direction: row; align-items: stretch; overflow: hidden;">
+    <div style="position: absolute; inset: 0; padding: 10px; box-sizing: border-box; overflow: hidden;">
       <${chartName}
         id="chart"
         hide_excat_values="${attribute(!teacherOptions.showData)}"
         datasets="${attribute(datasets)}"
         label=${title}
-        style="display: flex; flex-grow: 1; max-height: 100%; max-width: 100%;
-               justify-content: center; align-items: center;"
+        style="display: block; width: 100%; height: 100%;"
         options="${attribute(options)}"
+        .xAxisIndex=${xAxisIndex}
+        .yColumns=${yColumns}
+        .xCategories=${xCategories}
+        .scaleLabel=${scaleLabel}
         .sharedState=${sharedState}
         @wwci-state-change=${onChange}
       ></${chartName}>

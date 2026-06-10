@@ -46,7 +46,7 @@
         },
         "./snippets/scatterplot-exercise.html": "./src/snippets/scatterplot-exercise.html",
         "./snippets/mean-median-exercise.html": "./src/snippets/mean-median-exercise.html",
-        "./icon": "./src/chart-dots-2.svg"
+        "./icon": "./chart-dots-2.svg"
     },
     "editingConfig": {
         "./widgets/webwriter-chart": {

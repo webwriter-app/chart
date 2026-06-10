@@ -4,18 +4,15 @@ import Chart from "chart.js/auto";
 import * as d3regression from "d3-regression";
 import { getContext } from "../chart-helpers";
 import { GenericChart } from "../chart-base";
-import { ChartDataSets } from "../../../state/models";
+import { ChartDataSets, DrawnLine } from "../../../state/models";
 import SlButton from "@shoelace-style/shoelace/dist/components/button/button.component.js";
 import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.component.js";
 import SlPopup from "@shoelace-style/shoelace/dist/components/popup/popup.component.js";
-import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item.component.js";
 import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import IconPluslg from "bootstrap-icons/icons/plus-lg.svg";
-import IconHandIndex from "bootstrap-icons/icons/hand-index.svg";
-import IconEye from "bootstrap-icons/icons/eye.svg";
-import IconPencil from "bootstrap-icons/icons/pencil.svg";
 import IconTrash from "bootstrap-icons/icons/trash.svg";
-import IconArrowsTransferDown from "@tabler/icons/outline/arrows-transfer-down.svg";
+import IconArrowsMove from "@tabler/icons/outline/arrows-move.svg";
+import IconLine from "@tabler/icons/outline/line.svg";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -23,20 +20,8 @@ declare global {
   }
 }
 
-type Mode =
-  | "none"
-  | "add-point"
-  | "select-click"
-  | "select-brush"
-  | "draw-line";
+type Mode = "none" | "add-point" | "draw-line";
 
-interface DrawnLine {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  name?: string;
-}
 
 const SNAP_PX = 12;
 const HIT_PX = 8;
@@ -46,7 +31,7 @@ const COLORS = [
 ];
 
 function r3(n: number) {
-  return Math.round(n * 1000) / 1000;
+  return Math.round(n * 100) / 100;
 }
 
 function lineFormula(l: DrawnLine, xL: string, yL: string): string {
@@ -73,13 +58,11 @@ export class ScatterChartJs extends GenericChart<Record<string, never>> {
 
 @state() private accessor _mode: Mode = "none";
 
-@state() private accessor _showEditMenu = false;
 
 @state() private accessor _lines: DrawnLine[] = [];
 
 @state() private accessor _selCount = 0;
 
-@state() private accessor _hidCount = 0;
 
 @state() private accessor _selLineIdx: number | null = null;
 
@@ -89,7 +72,6 @@ export class ScatterChartJs extends GenericChart<Record<string, never>> {
 /** True when there are uncommitted local plot changes. */
 @state() private accessor _hasPendingChanges = false;
 
-@state() private accessor _showSelectMenu = false;
 
 /** Index of line currently hovered by mouse (for formula tooltip). */
 @state() private accessor _hoveredLineIdx: number | null = null;
@@ -98,6 +80,9 @@ export class ScatterChartJs extends GenericChart<Record<string, never>> {
 @state() private accessor _editPopup: {
   pointIdx: number; x: number; y: number; px: number; py: number;
 } | null = null;
+
+/** Canvas pixel where "Connect data points" tooltip should appear (when 2+ points selected in select-click mode). */
+@state() private accessor _connectTooltipPx: { x: number; y: number } | null = null;
 
 private _chart: Chart<"scatter", any, unknown> | null = null;
 
@@ -108,6 +93,8 @@ private _hid = new Set<number>();
 private _brushStartPx: { x: number; y: number } | null = null;
 
 private _brushCurrPx: { x: number; y: number } | null = null;
+
+private _brushCursorTimer: ReturnType<typeof setTimeout> | null = null;
 
 private _lineStart: { x: number; y: number } | null = null;
 
@@ -123,10 +110,17 @@ private _dragLine: { idx: number; start: { x: number; y: number }; line: DrawnLi
 
 private _dragLinePos: DrawnLine | null = null;
 
+private _dragLineMoved = false;
+
+private _connectTooltipTimer: ReturnType<typeof setTimeout> | null = null;
+
 private _dragPoint: { setIdx: number } | null = null;
 
-/** Raw (un-snapped) position during an active point drag — for smooth visual feedback. */
+/** Snapped position during an active point drag — used for visual rendering. */
 private _dragPos: { x: number; y: number } | null = null;
+
+/** Raw (un-snapped) mouse position during drag — used for scale expansion target. */
+private _dragRawPos: { x: number; y: number } | null = null;
 
 /** Scale bounds locked at drag-start to prevent chart rescaling during drag. */
 private _lockedScaleBounds: { xMin: number; xMax: number; yMin: number; yMax: number } | null = null;
@@ -134,7 +128,14 @@ private _lockedScaleBounds: { xMin: number; xMax: number; yMin: number; yMax: nu
 /** Last known mouse position over a hovered line — for tooltip placement. */
 private _hoverPx: { x: number; y: number } | null = null;
 
+private _hoveredPointIdx: number | null = null;
+
 private _skipNextClick = false;
+
+/** requestAnimationFrame id for smooth scale expansion during drag. */
+private _scaleExpRAFId = 0;
+/** Timer id for the expansion delay (ms before scale starts growing). */
+private _scaleExpTimer: ReturnType<typeof setTimeout> | null = null;
 
 private _hMD!: (e: MouseEvent) => void;
 
@@ -146,13 +147,17 @@ private _hCK!: (e: MouseEvent) => void;
 
 private _hKD!: (e: KeyboardEvent) => void;
 
-private _hCM!: (e: MouseEvent) => void;
+
 
 private _hML!: () => void; // mouseleave → clear hover
 
 private _resizeObserver: ResizeObserver | null = null;
 
 private _plugin: { id: string; afterDraw: (chart: Chart) => void };
+
+/** Per-point animation progress 0→1 for the dotted-line-to-axis animation. */
+private _animProgress: number[] = [];
+private _animRaf: number | null = null;
 
 constructor() {
     super();
@@ -192,12 +197,45 @@ constructor() {
         const xSc = chart.scales.x;
         const ySc = chart.scales.y;
 
+        // ── Sequential dotted-line-to-axis animation ──────────────────────────
+        if (Boolean(opts.animation) && this._animProgress.length > 0) {
+          ctx.save();
+          ctx.setLineDash([5, 4]);
+          ctx.lineWidth = 1.5;
+          sets.forEach((s: any, i: number) => {
+            const prog = this._animProgress[i] ?? 0;
+            if (prog <= 0 || this._hid.has(i)) return;
+            const dx = Number(s.data[xi]);
+            const dy = Number(s.data[yi]);
+            if (!Number.isFinite(dx) || !Number.isFinite(dy)) return;
+            const px = xSc.getPixelForValue(dx);
+            const py = ySc.getPixelForValue(dy);
+            const color = s.color ?? COLORS[i % COLORS.length];
+            ctx.strokeStyle = color + "bb";
+            // Horizontal line: from y-axis left edge → point x, at point y
+            ctx.beginPath();
+            ctx.moveTo(a.left, py);
+            ctx.lineTo(a.left + (px - a.left) * prog, py);
+            ctx.stroke();
+            // Vertical line: from x-axis bottom → point y, at point x
+            ctx.beginPath();
+            ctx.moveTo(px, a.bottom);
+            ctx.lineTo(px, a.bottom - (a.bottom - py) * prog, );
+            ctx.stroke();
+          });
+          ctx.restore();
+        }
+
         // ── Outlier highlighting (IQR) ────────────────────────────────────────
         if (opts.showOutliers && allPoints.length >= 4) {
+          const pct = (s: number[], p: number) => {
+            const idx = p * (s.length - 1);
+            const lo = Math.floor(idx), hi = Math.ceil(idx);
+            return s[lo] + (s[hi] - s[lo]) * (idx - lo);
+          };
           const iqrBounds = (vals: number[]) => {
             const s = [...vals].sort((a, b) => a - b);
-            const q1 = s[Math.floor(s.length * 0.25)];
-            const q3 = s[Math.floor(s.length * 0.75)];
+            const q1 = pct(s, 0.25), q3 = pct(s, 0.75);
             const iqr = q3 - q1;
             return { lo: q1 - 1.5 * iqr, hi: q3 + 1.5 * iqr };
           };
@@ -258,17 +296,25 @@ constructor() {
         if (regressionType !== "none" && allPoints.length >= 2) {
           let reg: any;
           try {
-            if (regressionType === "linear") {
+            if (regressionType === "Linear Regression") {
               reg = (d3regression.regressionLinear() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
-            } else if (regressionType === "quadratic") {
+            } else if (regressionType === "Polynomial Regression") {
               reg = (d3regression.regressionQuad() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
-            } else if (regressionType === "loess") {
+            } else if (regressionType === "Local Regression") {
               reg = (d3regression.regressionLoess() as any).bandwidth(0.3).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
+            } else if (regressionType === "Exponential Regression") {
+              reg = (d3regression.regressionExp() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
+            } else if (regressionType === "Logarithmic Regression") {
+              reg = (d3regression.regressionLog() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
             }
           } catch { reg = null; }
 
           if (reg && reg.length >= 2) {
             ctx.save();
+            // Clip regression line to chart area so it doesn't extend beyond bounds
+            ctx.beginPath();
+            ctx.rect(a.left, a.top, a.right - a.left, a.bottom - a.top);
+            ctx.clip();
             ctx.strokeStyle = "#e91e63";
             ctx.lineWidth = 2;
             ctx.setLineDash([]);
@@ -281,37 +327,57 @@ constructor() {
               else ctx.lineTo(px, py);
             });
             ctx.stroke();
-
-            // Regression formula label
-            let formula = "";
-            if (regressionType === "linear" && reg.a !== undefined) {
-              const m = r3(reg.a), b = r3(reg.b);
-              formula = `y = ${m}·x ${b >= 0 ? "+" : "−"} ${Math.abs(b)}`;
-            } else if (regressionType === "quadratic" && reg.a !== undefined) {
-              formula = `y = ${r3(reg.a)}x² + ${r3(reg.b)}x + ${r3(reg.c)}`;
-            }
-            if (formula) {
-              ctx.fillStyle = "#e91e63";
-              ctx.font = "bold 11px sans-serif";
-              ctx.fillText(formula, a.left + 6, a.bottom - 8);
-            }
             ctx.restore();
           }
         }
+        // Correlation and regression formula are rendered as HTML below the legend
 
-        // ── Correlation coefficient ───────────────────────────────────────────
-        if (opts.showCorrelation && allPoints.length >= 2) {
-          const n = allPoints.length;
-          const mx = allPoints.reduce((s: number, p: any) => s + p.x, 0) / n;
-          const my = allPoints.reduce((s: number, p: any) => s + p.y, 0) / n;
-          const num = allPoints.reduce((s: number, p: any) => s + (p.x - mx) * (p.y - my), 0);
-          const dx = Math.sqrt(allPoints.reduce((s: number, p: any) => s + (p.x - mx) ** 2, 0));
-          const dy = Math.sqrt(allPoints.reduce((s: number, p: any) => s + (p.y - my) ** 2, 0));
-          const corr = (dx * dy) > 0 ? num / (dx * dy) : 0;
-          const label = `r = ${(Math.round(corr * 1000) / 1000).toFixed(3)}`;
-          ctx.fillStyle = "#3f51b5";
-          ctx.font = "bold 12px sans-serif";
-          ctx.fillText(label, a.right - ctx.measureText(label).width - 6, a.top + 16);
+        // ── Line endpoint handles (drawn last so data points always win) ─────
+        if (this._lines.length > 0) {
+          const epXSc = chart.scales?.x;
+          const epYSc = chart.scales?.y;
+          if (epXSc && epYSc) {
+            // Collect pixel positions of all visible scatter points
+            const scatterPxs = this._getWorkingSets()
+              .map((s: any, idx: number) => {
+                if (this._hid.has(idx)) return null;
+                const sx = Number(s.data[xi]);
+                const sy = Number(s.data[yi]);
+                if (!Number.isFinite(sx) || !Number.isFinite(sy)) return null;
+                return { px: epXSc.getPixelForValue(sx), py: epYSc.getPixelForValue(sy) };
+              })
+              .filter(Boolean) as Array<{ px: number; py: number }>;
+
+            ctx.save();
+            const ca = chart.chartArea;
+            ctx.beginPath();
+            ctx.rect(ca.left, ca.top, ca.right - ca.left, ca.bottom - ca.top);
+            ctx.clip();
+
+            this._lines.forEach((line: any, i: number) => {
+              const isSel = i === this._selLineIdx;
+              const al = this._getActiveLine(line, i);
+              const color = isSel ? "#ff6600" : "#666";
+              [[al.x1, al.y1], [al.x2, al.y2]].forEach(([lx, ly]) => {
+                const px = epXSc.getPixelForValue(lx);
+                const py = epYSc.getPixelForValue(ly);
+                // If this endpoint sits on a scatter data point, skip the dot —
+                // the data point itself is the visible anchor.
+                const onPoint = scatterPxs.some(
+                  (pp) => Math.hypot(px - pp.px, py - pp.py) < 7
+                );
+                if (onPoint) return;
+                ctx.beginPath();
+                ctx.arc(px, py, 5, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+              });
+            });
+            ctx.restore();
+          }
         }
 
         ctx.restore();
@@ -333,12 +399,31 @@ static styles = css`
       gap: 8px;
       overflow: hidden;
     }
+    .chart-col {
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
     .chart-area {
       flex: 1 1 0;
-      height: 100%;
+      min-height: 0;
       min-width: 0;
       position: relative;
     }
+    .chart-annotations {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      flex-shrink: 0;
+      gap: 12px;
+    }
+    .annotation-regression { color: #e91e63; }
+    .annotation-correlation { color: #3f51b5; margin-left: auto; }
     canvas {
       display: block;
       width: 100% !important;
@@ -375,9 +460,6 @@ static styles = css`
     }
     .line-edit-bar {
       position: absolute;
-      bottom: 8px;
-      left: 50%;
-      transform: translateX(-50%);
       background: white;
       border: 1px solid #ddd;
       border-radius: 6px;
@@ -388,6 +470,7 @@ static styles = css`
       gap: 10px;
       font-size: 12px;
       z-index: 60;
+      white-space: nowrap;
     }
     .line-edit-bar input {
       border: 1px solid #ccc;
@@ -460,6 +543,17 @@ static styles = css`
       color: white;
       border-color: #2196f3;
     }
+    .connect-tooltip {
+      position: absolute;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      padding: 4px 8px;
+      z-index: 200;
+      pointer-events: auto;
+      white-space: nowrap;
+    }
   `;
 
 public static get scopedElements() {
@@ -467,9 +561,20 @@ public static get scopedElements() {
       "sl-button": SlButton,
       "sl-tooltip": SlTooltip,
       "sl-popup": SlPopup,
-      "sl-menu-item": SlMenuItem,
       "sl-icon": SlIcon,
     };
+  }
+
+/** Return the effective line position for index i, accounting for active drags. */
+  private _getActiveLine(line: DrawnLine, i: number): DrawnLine {
+    if (this._dragLine?.idx === i && this._dragLinePos) return this._dragLinePos;
+    if (this._dragLineEP?.idx === i && this._dragLineEPPos) {
+      const p = this._dragLineEPPos;
+      return this._dragLineEP.ep === "start"
+        ? { ...line, x1: p.x, y1: p.y }
+        : { ...line, x2: p.x, y2: p.y };
+    }
+    return line;
   }
 
 private _createChart() {
@@ -480,7 +585,6 @@ private _createChart() {
       oldCanvas.removeEventListener("mousemove", this._hMM);
       oldCanvas.removeEventListener("mouseup", this._hMU);
       oldCanvas.removeEventListener("click", this._hCK);
-      oldCanvas.removeEventListener("contextmenu", this._hCM);
       oldCanvas.removeEventListener("mouseleave", this._hML);
       this._chart.destroy();
       this._chart = null;
@@ -488,6 +592,14 @@ private _createChart() {
 
     let ctx: CanvasRenderingContext2D;
     try { ctx = getContext(this); } catch { return; }
+
+    // Saved colors/sizes for legend hover — restored on leave
+    let legendSaved: Array<{ bc: any; bgc: any; pr: any }> | null = null;
+    const dimLegendColor = (c: any): any => {
+      if (typeof c !== "string" || c.length < 4) return c;
+      const hex = c.length === 4 ? `#${c[1]}${c[1]}${c[2]}${c[2]}${c[3]}${c[3]}` : c;
+      return hex.slice(0, 7) + "40";
+    };
 
     this._chart = new Chart<"scatter", any, unknown>(ctx as any, {
       type: "scatter",
@@ -498,8 +610,50 @@ private _createChart() {
         animation: false,
         events: ["click", "mousemove", "mouseout"],
         plugins: {
-          legend: { position: "bottom" },
-          title: { display: !!this.label, text: this.label },
+          legend: {
+            position: "bottom",
+            onHover: (_e: any, item: any, legend: any) => {
+              if (legend.chart.canvas) legend.chart.canvas.style.cursor = "pointer";
+              const chart = legend.chart;
+              if (!legendSaved) {
+                legendSaved = chart.data.datasets.map((ds: any) => ({
+                  bc: ds.borderColor,
+                  bgc: ds.backgroundColor,
+                  pr: (ds as any).pointRadius,
+                }));
+              }
+              chart.data.datasets.forEach((ds: any, i: number) => {
+                if (i !== item.datasetIndex) {
+                  ds.borderColor = dimLegendColor(ds.borderColor);
+                  ds.backgroundColor = dimLegendColor(ds.backgroundColor);
+                } else {
+                  // Boost hovered: brighter fill + larger point
+                  if (typeof ds.backgroundColor === "string" && ds.backgroundColor.length >= 7) {
+                    ds.backgroundColor = ds.backgroundColor.slice(0, 7) + "CC";
+                  }
+                  if ((ds as any).type !== "line") {
+                    (ds as any).pointRadius = ((ds as any).pointRadius ?? 6) + 2;
+                  }
+                }
+              });
+              chart.update("none");
+            },
+            onLeave: (_e: any, _item: any, legend: any) => {
+              this._updateCursor();
+              const chart = legend.chart;
+              if (legendSaved) {
+                chart.data.datasets.forEach((ds: any, i: number) => {
+                  if (!legendSaved![i]) return;
+                  ds.borderColor = legendSaved![i].bc;
+                  ds.backgroundColor = legendSaved![i].bgc;
+                  (ds as any).pointRadius = legendSaved![i].pr;
+                });
+                legendSaved = null;
+              }
+              chart.update("none");
+            },
+          },
+          title: { display: false },
           tooltip: {
             enabled: true,
             mode: "nearest",
@@ -528,18 +682,23 @@ private _createChart() {
     canvas.addEventListener("mousemove", this._hMM);
     canvas.addEventListener("mouseup", this._hMU);
     canvas.addEventListener("click", this._hCK);
-    canvas.addEventListener("contextmenu", this._hCM);
     canvas.addEventListener("mouseleave", this._hML);
   }
 
   override firstUpdated() {
+    // Restore lines persisted across page reloads via sharedState
+    const saved = this.sharedState?.scatterLines;
+    if (Array.isArray(saved) && saved.length > 0) this._lines = saved;
+
     this._hMD = this._handleMousedown.bind(this);
     this._hMM = this._handleMousemove.bind(this);
     this._hMU = this._handleMouseup.bind(this);
     this._hCK = this._handleClick.bind(this);
     this._hKD = this._handleKeydown.bind(this);
-    this._hCM = this._handleContextMenu.bind(this);
-    this._hML = () => { if (this._hoveredLineIdx !== null) this._hoveredLineIdx = null; };
+    this._hML = () => {
+      if (this._hoveredLineIdx !== null) this._hoveredLineIdx = null;
+      if (this._hoveredPointIdx !== null) { this._hoveredPointIdx = null; this._updateCursor(); }
+    };
 
     window.addEventListener("mouseup", this._hMU);
     this.tabIndex = -1;
@@ -551,7 +710,6 @@ private _createChart() {
     // visible, and to resize the chart whenever the container changes size.
     const canvas = this.shadowRoot?.getElementById("chart-canvas") as HTMLCanvasElement | null;
     if (canvas) {
-      canvas.addEventListener("contextmenu", this._hCM);
       canvas.addEventListener("mouseleave", this._hML);
       this._resizeObserver = new ResizeObserver((entries) => {
         for (const entry of entries) {
@@ -581,8 +739,26 @@ private _createChart() {
     setTimeout(applyLegendCursor, 300);
   }
 
+private _showConnectTooltip(px: { x: number; y: number }) {
+    if (this._connectTooltipTimer !== null) clearTimeout(this._connectTooltipTimer);
+    this._connectTooltipPx = px;
+    this._connectTooltipTimer = setTimeout(() => {
+      this._connectTooltipPx = null;
+      this._connectTooltipTimer = null;
+    }, 1500);
+  }
+
+  private _hideConnectTooltip() {
+    if (this._connectTooltipTimer !== null) { clearTimeout(this._connectTooltipTimer); this._connectTooltipTimer = null; }
+    this._connectTooltipPx = null;
+  }
+
 override disconnectedCallback() {
     super.disconnectedCallback();
+    this._stopScaleExp();
+    if (this._connectTooltipTimer !== null) clearTimeout(this._connectTooltipTimer);
+    if (this._brushCursorTimer !== null) { clearTimeout(this._brushCursorTimer); this._brushCursorTimer = null; }
+    if (this._animRaf !== null) { cancelAnimationFrame(this._animRaf); this._animRaf = null; }
     this._resizeObserver?.disconnect();
     this._resizeObserver = null;
     if (this._chart && this._hMD) {
@@ -591,17 +767,14 @@ override disconnectedCallback() {
       canvas.removeEventListener("mousemove", this._hMM);
       canvas.removeEventListener("mouseup", this._hMU);
       canvas.removeEventListener("click", this._hCK);
-      canvas.removeEventListener("contextmenu", this._hCM);
       canvas.removeEventListener("mouseleave", this._hML);
     }
     if (this._hMU) window.removeEventListener("mouseup", this._hMU);
+    if (this._hMM) window.removeEventListener("mousemove", this._hMM);
     if (this._hKD) this.removeEventListener("keydown", this._hKD);
     // Also remove from the static canvas element (registered in firstUpdated)
     const staticCanvas = this.shadowRoot?.getElementById("chart-canvas") as HTMLCanvasElement | null;
-    if (staticCanvas) {
-      if (this._hCM) staticCanvas.removeEventListener("contextmenu", this._hCM);
-      if (this._hML) staticCanvas.removeEventListener("mouseleave", this._hML);
-    }
+    if (staticCanvas && this._hML) staticCanvas.removeEventListener("mouseleave", this._hML);
     this._chart?.destroy();
     this._chart = null;
   }
@@ -611,6 +784,15 @@ override updated(changed: PropertyValues) {
     const dataChanged = changed.has("datasets") || axisChanged;
     const lineChanged = changed.has("_lines") || changed.has("_selLineIdx");
     const optionsChanged = changed.has("sharedState");
+
+    // Persist drawn lines to sharedState so they survive tab switches and page reloads
+    if (changed.has("_lines")) this._persistLines();
+
+    // Notify parent when pending-changes state flips so it can show/hide the Apply button
+    if (changed.has("_hasPendingChanges")) {
+      this.sharedState = { ...this.sharedState, hasPendingScatterChanges: this._hasPendingChanges };
+      this.dispatchStateChange();
+    }
 
     if (!this._chart) return;
 
@@ -622,7 +804,6 @@ override updated(changed: PropertyValues) {
       this._sel.clear();
       this._hid.clear();
       this._selCount = 0;
-      this._hidCount = 0;
     } else if (changed.has("datasets") && !this._hasPendingChanges) {
       // External data update — re-sync local sets (only if no pending changes)
       this._localSets = null;
@@ -634,7 +815,6 @@ override updated(changed: PropertyValues) {
       this._sel.forEach((i) => { if (i >= newCount) this._sel.delete(i); });
       this._hid.forEach((i) => { if (i >= newCount) this._hid.delete(i); });
       this._selCount = this._sel.size;
-      this._hidCount = this._hid.size;
     }
 
     if (dataChanged || lineChanged) {
@@ -653,12 +833,7 @@ override updated(changed: PropertyValues) {
       this._applyFixedPointBounds();
     }
 
-    if (changed.has("label")) {
-      const tp = this._chart.options.plugins?.title as any;
-      if (tp) { tp.text = this.label; tp.display = !!this.label; }
-    }
-
-    if (dataChanged || lineChanged || optionsChanged || changed.has("label")) {
+    if (dataChanged || lineChanged || optionsChanged) {
       this._chart.update("none");
     }
   }
@@ -693,7 +868,6 @@ override updated(changed: PropertyValues) {
   }
 
   private _buildDatasets(): any[] {
-    const labels = this._labels();
     const sets = this._getWorkingSets();
     const xi = this.xAxisIndex;
     const yi = this.yAxisIndex;
@@ -734,30 +908,21 @@ override updated(changed: PropertyValues) {
 
     const lineDatasets = this._lines.map((line, i) => {
       const isSel = i === this._selLineIdx;
-      const activeLine =
-        this._dragLine?.idx === i && this._dragLinePos
-          ? this._dragLinePos
-          : this._dragLineEP?.idx === i && this._dragLineEPPos
-          ? (this._dragLineEP.ep === "start"
-              ? { ...line, x1: this._dragLineEPPos.x, y1: this._dragLineEPPos.y }
-              : { ...line, x2: this._dragLineEPPos.x, y2: this._dragLineEPPos.y })
-          : line;
+      const al = this._getActiveLine(line, i);
       return {
         type: "line",
         label: line.name ?? `Line ${i + 1}`,
-        data: [
-          { x: activeLine.x1, y: activeLine.y1 },
-          { x: activeLine.x2, y: activeLine.y2 },
-        ],
+        data: [{ x: al.x1, y: al.y1 }, { x: al.x2, y: al.y2 }],
         parsing: false,
-        pointRadius: 5,
-        pointHoverRadius: 7,
+        // Endpoints are drawn in beforeDatasetsDraw behind scatter points
+        pointRadius: 0,
+        pointHoverRadius: 0,
         pointHitRadius: 8,
-        pointBackgroundColor: isSel ? "#ff6600" : "#555",
         borderColor: isSel ? "#ff6600" : "#444",
         borderWidth: isSel ? 2.5 : 2,
         tension: 0,
         fill: false,
+        order: -1,
       };
     });
 
@@ -785,7 +950,8 @@ override updated(changed: PropertyValues) {
           })()
         : null;
 
-    return previewLine ? [...pointDatasets, ...lineDatasets, previewLine] : [...pointDatasets, ...lineDatasets];
+    // Lines rendered first (behind points) so points remain clickable when overlapping
+    return previewLine ? [...lineDatasets, ...pointDatasets, previewLine] : [...lineDatasets, ...pointDatasets];
   }
 
 /** Update visual styles in-place without full dataset reconstruction. */
@@ -804,6 +970,17 @@ override updated(changed: PropertyValues) {
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   }
 
+  /** Clamp a popup's (left,top) so it stays within the chart canvas area. */
+  private _clampPopup(left: number, top: number, popupW: number, popupH: number) {
+    const canvas = this._chart?.canvas;
+    const cw = canvas?.offsetWidth ?? 400;
+    const ch = canvas?.offsetHeight ?? 300;
+    return {
+      left: Math.max(4, Math.min(left, cw - popupW - 4)),
+      top: Math.max(4, Math.min(top, ch - popupH - 4)),
+    };
+  }
+
 private _pxToData(
     px: { x: number; y: number }
   ): { x: number; y: number } | null {
@@ -813,15 +990,6 @@ private _pxToData(
     return x !== undefined && y !== undefined ? { x, y } : null;
   }
 
-/** Keep a pixel position inside the plotted grid area. */
-  private _clampToChartAreaPx(px: { x: number; y: number }): { x: number; y: number } {
-    if (!this._chart) return px;
-    const a = this._chart.chartArea;
-    return {
-      x: Math.max(a.left, Math.min(a.right, px.x)),
-      y: Math.max(a.top, Math.min(a.bottom, px.y)),
-    };
-  }
 
 /** Index of nearest visible point within HIT_PX, or null. */
   private _pointAtPx(px: { x: number; y: number }): number | null {
@@ -956,6 +1124,95 @@ private _pxToData(
     ys.max = this._lockedScaleBounds.yMax;
   }
 
+/** Snap a data-space position to the nearest visible grid tick intersection. */
+  private _snapDragPos(data: { x: number; y: number }): { x: number; y: number } {
+    if (!this._chart) return data;
+    const xTicks = this._chart.scales.x.ticks;
+    const yTicks = this._chart.scales.y.ticks;
+    const xStep = xTicks.length >= 2 ? Math.abs(xTicks[1].value - xTicks[0].value) : 1;
+    const yStep = yTicks.length >= 2 ? Math.abs(yTicks[1].value - yTicks[0].value) : 1;
+    return {
+      x: Math.round(data.x / xStep) * xStep,
+      y: Math.round(data.y / yStep) * yStep,
+    };
+  }
+
+/** Stop any running scale expansion (timer + RAF). */
+  private _stopScaleExp() {
+    cancelAnimationFrame(this._scaleExpRAFId);
+    this._scaleExpRAFId = 0;
+    if (this._scaleExpTimer) { clearTimeout(this._scaleExpTimer); this._scaleExpTimer = null; }
+  }
+
+/** Lerp the chart scale toward the position of the dragged item + buffer.
+  *  Runs via requestAnimationFrame so the expansion is smooth and followable. */
+  private _tickScaleExp(dragPos: { x: number; y: number }) {
+    if (!this._chart || !this._lockedScaleBounds) { this._stopScaleExp(); return; }
+    const xScale = this._chart.options.scales!.x as any;
+    const yScale = this._chart.options.scales!.y as any;
+
+    const target = {
+      xMin: Math.min(xScale.min, dragPos.x - 1),
+      xMax: Math.max(xScale.max, dragPos.x + 1),
+      yMin: Math.min(yScale.min, dragPos.y - 1),
+      yMax: Math.max(yScale.max, dragPos.y + 1),
+    };
+
+    // 4% lerp per frame (~60 fps) → smooth, unhurried scale growth
+    const f = 0.04;
+    xScale.min += (target.xMin - xScale.min) * f;
+    xScale.max += (target.xMax - xScale.max) * f;
+    yScale.min += (target.yMin - yScale.min) * f;
+    yScale.max += (target.yMax - yScale.max) * f;
+
+    this._lockedScaleBounds = { xMin: xScale.min, xMax: xScale.max, yMin: yScale.min, yMax: yScale.max };
+
+    this._chart.data.datasets = this._buildDatasets();
+    this._chart.update("none");
+
+    const converged =
+      Math.abs(xScale.min - target.xMin) < 0.05 &&
+      Math.abs(xScale.max - target.xMax) < 0.05 &&
+      Math.abs(yScale.min - target.yMin) < 0.05 &&
+      Math.abs(yScale.max - target.yMax) < 0.05;
+
+    if (!converged) {
+      this._scaleExpRAFId = requestAnimationFrame(() => {
+        // Use raw (unsnapped) position so the target tracks the actual cursor, not the snapped tick
+        const pos = this._dragRawPos ?? (this._dragLinePos
+          ? { x: (this._dragLinePos.x1 + this._dragLinePos.x2) / 2, y: (this._dragLinePos.y1 + this._dragLinePos.y2) / 2 }
+          : dragPos);
+        this._tickScaleExp(pos);
+      });
+    } else {
+      xScale.min = target.xMin; xScale.max = target.xMax;
+      yScale.min = target.yMin; yScale.max = target.yMax;
+      this._lockedScaleBounds = { ...target };
+      this._chart.update("none");
+      this._scaleExpRAFId = 0;
+    }
+  }
+
+/** Check if a data position is outside locked bounds and trigger delayed smooth expansion. */
+  private _maybeExpandScale(pos: { x: number; y: number }) {
+    if (!this._lockedScaleBounds) return;
+    const { xMin, xMax, yMin, yMax } = this._lockedScaleBounds;
+    const outside = pos.x < xMin || pos.x > xMax || pos.y < yMin || pos.y > yMax;
+    if (!outside) { this._stopScaleExp(); return; }
+    if (this._scaleExpRAFId !== 0) {
+      // Already animating — let RAF pick up latest _dragPos automatically
+      return;
+    }
+    if (!this._scaleExpTimer) {
+      // 700 ms delay so the user can see the current scale before it expands
+      this._scaleExpTimer = setTimeout(() => {
+        this._scaleExpTimer = null;
+        const p = this._dragPos ?? pos;
+        this._scaleExpRAFId = requestAnimationFrame(() => this._tickScaleExp(p));
+      }, 700);
+    }
+  }
+
 private _snapDataCoord(coord: { x: number; y: number }): { x: number; y: number } {
     if (!this._chart) return coord;
     const px = {
@@ -976,35 +1233,45 @@ private _applyOptions() {
     if (xScale?.grid) xScale.grid.display = showGrid;
     if (yScale?.grid) yScale.grid.display = showGrid;
 
-    // Animation
-    const doAnimate = Boolean(opts.animation ?? false);
-    (this._chart.options as any).animation = doAnimate ? { duration: 800 } : false;
+    // Animation — always disable Chart.js built-in; use custom sequential dotted-line animation
+    (this._chart.options as any).animation = false;
+    if (Boolean(opts.animation ?? false)) this._startAnimation();
+  }
+
+  private _startAnimation() {
+    if (this._animRaf !== null) { cancelAnimationFrame(this._animRaf); this._animRaf = null; }
+    const sets = this._getWorkingSets();
+    const count = sets.length;
+    if (count === 0 || !this._chart) return;
+    this._animProgress = new Array(count).fill(0);
+    const PER_POINT_MS = 500;   // animation duration per point
+    const DELAY_MS = 160;       // stagger between points
+    const startTime = performance.now();
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      let anyActive = false;
+      for (let i = 0; i < count; i++) {
+        const t = (elapsed - i * DELAY_MS) / PER_POINT_MS;
+        this._animProgress[i] = Math.min(1, Math.max(0, t));
+        if (this._animProgress[i] < 1) anyActive = true;
+      }
+      this._chart?.update("none");
+      if (anyActive) this._animRaf = requestAnimationFrame(animate);
+      else this._animRaf = null;
+    };
+    this._animRaf = requestAnimationFrame(animate);
   }
 
 private _applyFixedPointBounds() {
     if (!this._chart) return;
     this._applyOptions();
-    const dynamicSize = Boolean(this.sharedState.chart.options.dynamicSize ?? true);
-    const xScale = this._chart.options.scales?.x as any;
-    const yScale = this._chart.options.scales?.y as any;
-
-    if (dynamicSize) {
-      if (xScale) {
-        xScale.min = undefined;
-        xScale.max = undefined;
-        xScale.grace = 1;
-      }
-      if (yScale) {
-        yScale.min = undefined;
-        yScale.max = undefined;
-        yScale.grace = 1;
-      }
-      return;
-    }
 
     const xi = this.xAxisIndex;
     const yi = this.yAxisIndex;
     if (xi < 0 || yi < 0) return;
+
+    const xScale = this._chart.options.scales?.x as any;
+    const yScale = this._chart.options.scales?.y as any;
 
     const points = this._getWorkingSets()
       .map((set) => ({
@@ -1012,6 +1279,7 @@ private _applyFixedPointBounds() {
         y: Number(set.data[yi]),
       }))
       .filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y));
+
     if (points.length === 0) return;
 
     let xMin = Math.min(...points.map((p) => p.x));
@@ -1019,32 +1287,27 @@ private _applyFixedPointBounds() {
     let yMin = Math.min(...points.map((p) => p.y));
     let yMax = Math.max(...points.map((p) => p.y));
 
-    if (xMin === xMax) {
-      xMin -= 1;
-      xMax += 1;
-    }
-    if (yMin === yMax) {
-      yMin -= 1;
-      yMax += 1;
-    }
+    if (xMin === xMax) { xMin -= 1; xMax += 1; }
+    if (yMin === yMax) { yMin -= 1; yMax += 1; }
 
-    const pad = 1;
+    // Proportional buffer: 5% of range, minimum 1 unit
+    const xPad = Math.max(1, (xMax - xMin) * 0.05);
+    const yPad = Math.max(1, (yMax - yMin) * 0.05);
+
     if (xScale) {
       xScale.grace = undefined;
-      xScale.min = xMin - pad;
-      xScale.max = xMax + pad;
+      xScale.min = xMin - xPad;
+      xScale.max = xMax + xPad;
     }
     if (yScale) {
       yScale.grace = undefined;
-      yScale.min = yMin - pad;
-      yScale.max = yMax + pad;
+      yScale.min = yMin - yPad;
+      yScale.max = yMax + yPad;
     }
   }
 
 private _setMode(m: Mode) {
     this._mode = m;
-    this._showSelectMenu = false;
-    this._showEditMenu = false;
     this._lineStart = null;
     this._lineCursorPx = null;
     this._brushStartPx = null;
@@ -1054,6 +1317,7 @@ private _setMode(m: Mode) {
     this._dragLine = null;
     this._dragLinePos = null;
     this._dragPoint = null;
+    this._hideConnectTooltip();
     this._updateCursor();
     if (this._chart) {
       this._chart.data.datasets = this._buildDatasets();
@@ -1069,29 +1333,21 @@ private _toggle(m: Mode) {
 private _updateCursor() {
     const canvas = this._chart?.canvas;
     if (!canvas) return;
-    if (this._dragPoint) { canvas.style.cursor = "grabbing"; return; }
-    switch (this._mode) {
-      case "add-point":
-      case "select-brush":
-      case "draw-line":
-        canvas.style.cursor = "crosshair"; break;
-      case "select-click":
-        canvas.style.cursor = "pointer"; break;
-      default:
-        canvas.style.cursor = "default";
+    if (this._dragPoint || this._dragLine || this._dragLineEP) { canvas.style.cursor = "grabbing"; return; }
+    if (this._brushStartPx) { canvas.style.cursor = "crosshair"; return; }
+    if (this._mode === "add-point" || this._mode === "draw-line") { canvas.style.cursor = "crosshair"; return; }
+    if (this._hoveredPointIdx !== null && this._sel.has(this._hoveredPointIdx)) {
+      canvas.style.cursor = "grab"; return;
     }
+    if (this._hoveredPointIdx !== null || this._hoveredLineIdx !== null) {
+      canvas.style.cursor = "pointer"; return;
+    }
+    canvas.style.cursor = "default";
   }
 
 private _handleMousedown(e: MouseEvent) {
     if (e.button !== 0) return;
     const px = this._canvasPx(e);
-
-    if (this._mode === "select-brush") {
-      this._brushStartPx = px;
-      this._brushCurrPx = { ...px };
-      e.preventDefault();
-      return;
-    }
 
     if (this._mode === "draw-line") {
       // Mousedown near an existing endpoint → start endpoint drag
@@ -1100,6 +1356,8 @@ private _handleMousedown(e: MouseEvent) {
         this._dragLineEP = ep;
         this._dragLineEPPos = this._snapData(px);
         this._dragLineEPMoved = false;
+        this._updateCursor();
+        window.addEventListener("mousemove", this._hMM);
         e.preventDefault();
         return;
       }
@@ -1111,6 +1369,8 @@ private _handleMousedown(e: MouseEvent) {
         if (start) {
           this._dragLine = { idx: li, start, line: { ...this._lines[li] } };
           this._dragLinePos = { ...this._lines[li] };
+          this._updateCursor();
+          window.addEventListener("mousemove", this._hMM);
           e.preventDefault();
           return;
         }
@@ -1120,43 +1380,58 @@ private _handleMousedown(e: MouseEvent) {
     }
 
     if (this._mode === "none") {
+      // Line endpoint drag
       const ep = this._lineEPAtPx(px);
       if (ep) {
         this._dragLineEP = ep;
         this._dragLineEPPos = this._snapData(px);
         this._dragLineEPMoved = false;
+        this._updateCursor();
+        window.addEventListener("mousemove", this._hMM);
         e.preventDefault();
         return;
       }
+      // Line body drag
       const li = this._lineAtPx(px);
       if (li !== null) {
         const start = this._pxToData(px);
         if (start) {
           this._dragLine = { idx: li, start, line: { ...this._lines[li] } };
           this._dragLinePos = { ...this._lines[li] };
+          this._updateCursor();
+          window.addEventListener("mousemove", this._hMM);
           e.preventDefault();
           return;
         }
       }
-    }
-
-    // In none/select-click mode: drag selected points only.
-    if (this._mode === "none") {
+      // Selected point drag — blocked when coordinate-edit popup is open
       const pi = this._pointAtPx(px);
-      if (pi !== null && this._sel.has(pi)) {
+      if (pi !== null && this._sel.has(pi) && !this._editPopup) {
         this._dragPoint = { setIdx: pi };
         this._lockScaleBounds();
         this._updateCursor();
+        window.addEventListener("mousemove", this._hMM);
         e.preventDefault();
+        return;
       }
-    } else if (this._mode === "select-click") {
-      const pi = this._pointAtPx(px);
-      if (pi !== null && this._sel.has(pi)) {
-        this._dragPoint = { setIdx: pi };
-        this._lockScaleBounds();
-        this._updateCursor();
-        e.preventDefault();
-      }
+      // Fallback: start brush selection on empty area or unselected point
+      this._brushStartPx = px;
+      this._brushCurrPx = { ...px };
+      this._updateCursor();
+      // If mouse doesn't move within 500ms, revert crosshair back to default
+      if (this._brushCursorTimer !== null) clearTimeout(this._brushCursorTimer);
+      this._brushCursorTimer = setTimeout(() => {
+        this._brushCursorTimer = null;
+        if (!this._brushStartPx) return;
+        const dx = (this._brushCurrPx?.x ?? px.x) - this._brushStartPx.x;
+        const dy = (this._brushCurrPx?.y ?? px.y) - this._brushStartPx.y;
+        if (Math.hypot(dx, dy) <= 4) {
+          this._brushStartPx = null;
+          this._brushCurrPx = null;
+          this._updateCursor();
+        }
+      }, 500);
+      e.preventDefault();
     }
   }
 
@@ -1169,6 +1444,7 @@ private _handleMousemove(e: MouseEvent) {
       const hli = this._lineAtPx(px);
       if (hli !== this._hoveredLineIdx) {
         this._hoveredLineIdx = hli; // @state triggers Lit re-render for show/hide
+        this._updateCursor();
       }
       if (hli !== null) {
         this._hoverPx = { x: px.x, y: px.y };
@@ -1183,19 +1459,35 @@ private _handleMousemove(e: MouseEvent) {
       this._hoveredLineIdx = null;
     }
 
+    // ── Point hover detection (for cursor) ───────────────────────────────
+    if (!isActive) {
+      const pi = this._pointAtPx(px);
+      if (pi !== this._hoveredPointIdx) {
+        this._hoveredPointIdx = pi;
+        this._updateCursor();
+      }
+    } else if (this._hoveredPointIdx !== null) {
+      this._hoveredPointIdx = null;
+    }
+
     if (this._brushStartPx) {
       this._brushCurrPx = px;
       this._chart?.update("none");
       return;
     }
 
-    // Endpoint drag should work in both draw mode and normal mode.
+    // Endpoint drag — snap to nearby data point (magnet), fall back to raw coords.
     if (this._dragLineEP !== null) {
-      this._dragLineEPPos = this._snapData(px);
+      const epData = this._snapData(px);
+      this._dragLineEPPos = epData;
       this._dragLineEPMoved = true;
       this._skipNextClick = true;
-      this._chart!.data.datasets = this._buildDatasets();
-      this._chart?.update("none");
+      this._maybeExpandScale(epData);
+      if (this._scaleExpRAFId === 0) {
+        this._chart!.data.datasets = this._buildDatasets();
+        this._applyLockedBounds();
+        this._chart?.update("none");
+      }
       return;
     }
 
@@ -1211,9 +1503,15 @@ private _handleMousemove(e: MouseEvent) {
             x2: this._dragLine.line.x2 + dx,
             y2: this._dragLine.line.y2 + dy,
           };
+          this._dragLineMoved = true;
           this._skipNextClick = true;
-          this._chart!.data.datasets = this._buildDatasets();
-          this._chart?.update("none");
+          const mid = { x: (this._dragLinePos.x1 + this._dragLinePos.x2) / 2, y: (this._dragLinePos.y1 + this._dragLinePos.y2) / 2 };
+          this._maybeExpandScale(mid);
+          if (this._scaleExpRAFId === 0) {
+            this._chart!.data.datasets = this._buildDatasets();
+            this._applyLockedBounds();
+            this._chart?.update("none");
+          }
         }
         return;
       }
@@ -1237,29 +1535,39 @@ private _handleMousemove(e: MouseEvent) {
           x2: this._dragLine.line.x2 + dx,
           y2: this._dragLine.line.y2 + dy,
         };
+        this._dragLineMoved = true;
         this._skipNextClick = true;
-        this._chart!.data.datasets = this._buildDatasets();
-        this._chart?.update("none");
+        const mid = { x: (this._dragLinePos.x1 + this._dragLinePos.x2) / 2, y: (this._dragLinePos.y1 + this._dragLinePos.y2) / 2 };
+        this._maybeExpandScale(mid);
+        if (this._scaleExpRAFId === 0) {
+          this._chart!.data.datasets = this._buildDatasets();
+          this._applyLockedBounds();
+          this._chart?.update("none");
+        }
       }
       return;
     }
 
     if (this._dragPoint !== null) {
-      const clampedPx = this._clampToChartAreaPx(px);
-      const data = this._pxToData(clampedPx);
+      const data = this._pxToData(px);
       if (!data || !this._chart) return;
-      // Store raw float for smooth visual; snap on drop
-      this._dragPos = { x: data.x, y: data.y };
-      this._chart.data.datasets = this._buildDatasets();
-      // Apply locked bounds to prevent chart rescaling during drag
-      this._applyLockedBounds();
-      this._chart.update("none");
+      this._dragRawPos = data;
+      // When snap is ON: snap to visible grid tick; when OFF: use raw position
+      this._dragPos = this._snapToGrid ? this._snapDragPos(data) : data;
       this._skipNextClick = true;
+      this._maybeExpandScale(data);                  // use raw so snapping can't hide out-of-bounds
+      if (this._scaleExpRAFId === 0) {
+        this._chart.data.datasets = this._buildDatasets();
+        this._applyLockedBounds();
+        this._chart.update("none");
+      }
     }
   }
 
 private _handleMouseup(e: MouseEvent) {
     if (e.button !== 0) return;
+    window.removeEventListener("mousemove", this._hMM);
+    if (this._brushCursorTimer !== null) { clearTimeout(this._brushCursorTimer); this._brushCursorTimer = null; }
 
     // ── End brush selection ────────────────────────────────────────────────
     if (this._brushStartPx && this._brushCurrPx) {
@@ -1269,7 +1577,7 @@ private _handleMouseup(e: MouseEvent) {
         this._brushCurrPx.x - this._brushStartPx.x,
         this._brushCurrPx.y - this._brushStartPx.y
       );
-      if (s && c) {
+      if (s && c && brushDist > 4) {
         const xMin = Math.min(s.x, c.x), xMax = Math.max(s.x, c.x);
         const yMin = Math.min(s.y, c.y), yMax = Math.max(s.y, c.y);
         const xi = this.xAxisIndex;
@@ -1302,13 +1610,16 @@ private _handleMouseup(e: MouseEvent) {
 
     // ── End point drag: commit position to _localSets ───────────────────────
     if (this._dragPoint !== null) {
+      this._stopScaleExp(); // stop any in-progress scale expansion
       const actuallyMoved = this._dragPos !== null;
       if (actuallyMoved) {
         const si = this._dragPoint.setIdx;
         const xi = this.xAxisIndex;
         const yi = this.yAxisIndex;
-        const finalX = this._snapToGrid ? Math.round(this._dragPos!.x) : this._dragPos!.x;
-        const finalY = this._snapToGrid ? Math.round(this._dragPos!.y) : this._dragPos!.y;
+        // When snap ON: _dragPos is already at the grid tick. When OFF: round raw to 3 decimals.
+        const raw = this._dragRawPos ?? this._dragPos!;
+        const finalX = this._snapToGrid ? this._dragPos!.x : Math.round(raw.x * 100) / 100;
+        const finalY = this._snapToGrid ? this._dragPos!.y : Math.round(raw.y * 100) / 100;
         this._ensureLocalSets();
         this._localSets = this._localSets!.map((s: any, i: number) => {
           if (i !== si) return s;
@@ -1321,15 +1632,20 @@ private _handleMouseup(e: MouseEvent) {
         this._skipNextClick = true; // only skip click after an actual drag
       }
       this._dragPos = null;
+      this._dragRawPos = null;
       this._dragPoint = null;
       this._lockedScaleBounds = null;
       this._updateCursor();
-      if (this._chart) this._chart.data.datasets = this._buildDatasets();
-      this._chart?.update("none");
+      if (this._chart) {
+        this._chart.data.datasets = this._buildDatasets();
+        this._applyFixedPointBounds();
+        this._chart.update("none");
+      }
     }
 
     // ── End line endpoint drag: commit to _lines ───────────────────────────
     if (this._dragLineEP !== null) {
+      this._stopScaleExp();
       if (this._dragLineEPMoved && this._dragLineEPPos !== null) {
         const { idx, ep } = this._dragLineEP;
         const pos = this._dragLineEPPos;
@@ -1350,17 +1666,20 @@ private _handleMouseup(e: MouseEvent) {
 
     // ── End whole-line drag: commit translated and snapped endpoints ───────
     if (this._dragLine !== null) {
-      if (this._dragLinePos !== null) {
+      this._stopScaleExp();
+      if (this._dragLineMoved && this._dragLinePos !== null) {
         const idx = this._dragLine.idx;
         const s1 = this._snapDataCoord({ x: this._dragLinePos.x1, y: this._dragLinePos.y1 });
         const s2 = this._snapDataCoord({ x: this._dragLinePos.x2, y: this._dragLinePos.y2 });
         this._lines = this._lines.map((l, i) => (i === idx ? { ...l, x1: s1.x, y1: s1.y, x2: s2.x, y2: s2.y } : l));
-        this._skipNextClick = true; // only skip click if line actually moved
+        this._skipNextClick = true;
       }
       this._dragLine = null;
       this._dragLinePos = null;
+      this._dragLineMoved = false;
     }
 
+    this._updateCursor();
   }
 
 private _handleClick(e: MouseEvent) {
@@ -1374,19 +1693,6 @@ private _handleClick(e: MouseEvent) {
       return;
     }
 
-    // ── Select by click: toggle nearest point ────────────────────────────
-    if (this._mode === "select-click") {
-      const pi = this._pointAtPx(px);
-      if (pi !== null) {
-        if (this._sel.has(pi)) this._sel.delete(pi);
-        else this._sel.add(pi);
-        this._selCount = this._sel.size;
-        this._refreshStyles();
-        this.requestUpdate();
-      }
-      return;
-    }
-
     // ── Draw line: two-click flow ─────────────────────────────────────────
     if (this._mode === "draw-line") {
       if (this._lineStart === null) {
@@ -1396,7 +1702,7 @@ private _handleClick(e: MouseEvent) {
         this._chart!.data.datasets = this._buildDatasets();
         this._chart?.update("none");
       } else {
-        // Second click: create line
+        // Second click: create line, then immediately deactivate draw-line mode
         const end = this._snapData(px);
         const length = Math.hypot(end.x - this._lineStart.x, end.y - this._lineStart.y);
         if (length > 1e-10) {
@@ -1405,37 +1711,28 @@ private _handleClick(e: MouseEvent) {
             { x1: this._lineStart.x, y1: this._lineStart.y, x2: end.x, y2: end.y, name: `Line ${this._lines.length + 1}` },
           ];
         }
-        this._lineStart = null;
-        this._lineCursorPx = null;
-        this._chart!.data.datasets = this._buildDatasets();
-        this._chart?.update("none");
+        this._setMode("none"); // deactivates button immediately
       }
       return;
     }
 
-    // ── None mode: select a line (priority) or toggle point ─────────────
+    // ── None mode: line body has priority, then point click ─────────────
     if (this._mode === "none") {
-      // Lines take priority over points — check line body first
       const li = this._lineAtPx(px);
       if (li !== null) {
         this._selLineIdx = li === this._selLineIdx ? null : li;
         this._chart?.update("none");
         return;
       }
-      // Then check line endpoints
-      const ep = this._lineEPAtPx(px);
-      if (ep) {
-        this._selLineIdx = ep.idx === this._selLineIdx ? null : ep.idx;
-        this._chart?.update("none");
-        return;
-      }
-      // Then toggle point selection
       const pi = this._pointAtPx(px);
       if (pi !== null) {
         if (this._sel.has(pi)) this._sel.delete(pi);
         else this._sel.add(pi);
         this._selCount = this._sel.size;
+        if (this._selCount >= 2) this._showConnectTooltip(px);
+        else this._hideConnectTooltip();
         this._refreshStyles();
+        this.focus(); // ensure keyboard events (Delete/Backspace) work
         this.requestUpdate();
         return;
       }
@@ -1451,32 +1748,10 @@ private _handleKeydown(e: KeyboardEvent) {
       if (this._selLineIdx !== null) {
         this._lines = this._lines.filter((_, i) => i !== this._selLineIdx);
         this._selLineIdx = null;
-        // _lines @state() triggers chart.update via updated()
+      } else if (this._selCount > 0) {
+        this._deleteSelected();
       }
     }
-  }
-
-private _hideSelected() {
-    this._sel.forEach((i) => this._hid.add(i));
-    this._sel.clear();
-    this._selCount = 0;
-    this._hidCount = this._hid.size;
-    this._refreshStyles();
-    this.requestUpdate();
-  }
-
-private _showAll() {
-    this._hid.clear();
-    this._hidCount = 0;
-    this._refreshStyles();
-    this.requestUpdate();
-  }
-
-private _selectAll(total: number) {
-    for (let i = 0; i < total; i++) this._sel.add(i);
-    this._selCount = this._sel.size;
-    this._refreshStyles();
-    this.requestUpdate();
   }
 
 private _deleteSelected() {
@@ -1490,10 +1765,35 @@ private _deleteSelected() {
     });
     this._localSets = this._localSets!.filter((_: any, i: number) => !this._sel.has(i));
     this._hid = newHid;
-    this._hidCount = newHid.size;
     this._sel.clear();
     this._selCount = 0;
     this._hasPendingChanges = true;
+    if (this._chart) {
+      this._chart.data.datasets = this._buildDatasets();
+      this._applyFixedPointBounds();
+      this._chart.update("none");
+    }
+    this.requestUpdate();
+  }
+
+private _connectSelected() {
+    const xi = this.xAxisIndex;
+    const yi = this.yAxisIndex;
+    const sets = this._getWorkingSets();
+    const selPts = [...this._sel]
+      .map(i => ({ i, x: Number(sets[i]?.data[xi]), y: Number(sets[i]?.data[yi]) }))
+      .filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+    if (selPts.length < 2) return;
+    // Outermost = leftmost and rightmost by x (tie-break by y)
+    selPts.sort((a, b) => a.x - b.x || a.y - b.y);
+    const p1 = selPts[0];
+    const p2 = selPts[selPts.length - 1];
+    this._lines = [...this._lines, { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, name: `Line ${this._lines.length + 1}` }];
+    this._hideConnectTooltip();
+    this._sel.clear();
+    this._selCount = 0;
+    this._refreshStyles();
+    this.requestUpdate();
   }
 
 private _addPoint(x: number, y: number) {
@@ -1501,7 +1801,13 @@ private _addPoint(x: number, y: number) {
     const yi = this.yAxisIndex;
     if (xi < 0 || yi < 0) return;
 
-    if (this._snapToGrid) { x = Math.round(x); y = Math.round(y); }
+    if (this._snapToGrid && this._chart) {
+      const s = this._snapDragPos({ x, y });
+      x = s.x; y = s.y;
+    } else {
+      x = Math.round(x * 100) / 100;
+      y = Math.round(y * 100) / 100;
+    }
 
     this._ensureLocalSets();
     const newData = this._labels().map((_, i) => (i === xi ? x : i === yi ? y : 0));
@@ -1522,7 +1828,14 @@ private _addPoint(x: number, y: number) {
     this.requestUpdate();
   }
 
-private _applyToData() {
+private _persistLines() {
+    // Only dispatch if the lines actually differ from what's already in sharedState
+    if (JSON.stringify(this._lines) === JSON.stringify(this.sharedState?.scatterLines)) return;
+    this.sharedState = { ...this.sharedState, scatterLines: [...this._lines] };
+    this.dispatchStateChange();
+  }
+
+applyToData() {
     const local = this._localSets;
     if (!local) return;
     const ds = this.datasets as ChartDataSets;
@@ -1538,28 +1851,69 @@ private _applyToData() {
     this._localSets = null; // re-init from parent (which now has our data)
   }
 
-private _handleContextMenu(e: MouseEvent) {
-    e.preventDefault();
-    const px = this._canvasPx(e);
-    const pi = this._pointAtPx(px);
-    if (pi !== null) {
-      const ws = this._getWorkingSets();
-      const xi = this.xAxisIndex;
-      const yi = this.yAxisIndex;
-      const x = Number(ws[pi].data[xi]);
-      const y = Number(ws[pi].data[yi]);
-      this._editPopup = { pointIdx: pi, x, y, px: px.x, py: px.y };
-    } else {
-      this._editPopup = null;
+
+private _computeChartAnnotations(): { formula: string; correlation: string } {
+    const opts = this.sharedState?.chart?.options ?? {};
+    const xi = this.xAxisIndex;
+    const yi = this.yAxisIndex;
+    if (xi < 0 || yi < 0) return { formula: "", correlation: "" };
+    const sets = this._getWorkingSets();
+    const allPoints = sets
+      .filter((_: any, i: number) => !this._hid.has(i))
+      .map((s: any) => ({ x: Number(s.data[xi]), y: Number(s.data[yi]) }))
+      .filter((p: any) => Number.isFinite(p.x) && Number.isFinite(p.y));
+
+    let formula = "";
+    const regressionType = this.sharedState?.regressionType ?? "none";
+    if (regressionType !== "none" && allPoints.length >= 2) {
+      let reg: any;
+      try {
+        if (regressionType === "Linear Regression")
+          reg = (d3regression.regressionLinear() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
+        else if (regressionType === "Polynomial Regression")
+          reg = (d3regression.regressionQuad() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
+        else if (regressionType === "Exponential Regression")
+          reg = (d3regression.regressionExp() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
+        else if (regressionType === "Logarithmic Regression")
+          reg = (d3regression.regressionLog() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
+      } catch { reg = null; }
+      if (reg) {
+        const sgn = (v: number) => v < 0 ? "−" : "+";
+        if (regressionType === "Linear Regression" && reg.a !== undefined) {
+          formula = `y = ${r3(reg.a)}·x ${sgn(reg.b)} ${Math.abs(r3(reg.b))}`;
+        } else if (regressionType === "Polynomial Regression" && reg.a !== undefined) {
+          formula = `y = ${r3(reg.a)}x² ${sgn(reg.b)} ${Math.abs(r3(reg.b))}x ${sgn(reg.c)} ${Math.abs(r3(reg.c))}`;
+        } else if (regressionType === "Exponential Regression" && reg.a !== undefined) {
+          formula = `y = ${r3(reg.a)}·e^(${r3(reg.b)}·x)`;
+        } else if (regressionType === "Logarithmic Regression" && reg.a !== undefined) {
+          formula = `y = ${r3(reg.a)} ${sgn(reg.b)} ${Math.abs(r3(reg.b))}·ln(x)`;
+        }
+      }
     }
+
+    let correlation = "";
+    if (opts.showCorrelation && allPoints.length >= 2) {
+      const n = allPoints.length;
+      const mx = allPoints.reduce((s: number, p: any) => s + p.x, 0) / n;
+      const my = allPoints.reduce((s: number, p: any) => s + p.y, 0) / n;
+      const num = allPoints.reduce((s: number, p: any) => s + (p.x - mx) * (p.y - my), 0);
+      const dx = Math.sqrt(allPoints.reduce((s: number, p: any) => s + (p.x - mx) ** 2, 0));
+      const dy = Math.sqrt(allPoints.reduce((s: number, p: any) => s + (p.y - my) ** 2, 0));
+      const corr = (dx * dy) > 0 ? num / (dx * dy) : 0;
+      correlation = `r = ${(Math.round(corr * 100) / 100).toFixed(2)}`;
+    }
+
+    return { formula, correlation };
   }
 
 override render() {
     const sets = this._getWorkingSets();
     const hasData = sets.length > 0;
+    const { formula, correlation } = this._computeChartAnnotations();
 
     return html`
       <div class="root" @click=${() => { if (this._editPopup) this._editPopup = null; }}>
+        <div class="chart-col">
         <div class="chart-area" style="position:relative;">
           <canvas id="chart-canvas"></canvas>
 
@@ -1571,12 +1925,35 @@ override render() {
             </div>
           ` : ""}
 
-          <!-- ── Selected line name editor ─────────────────────── -->
-          ${this._selLineIdx !== null && this._lines[this._selLineIdx] ? html`
-            <div class="line-edit-bar" @click=${(e: Event) => e.stopPropagation()}>
+          <!-- ── Connect data points tooltip ──────────────────── -->
+          ${this._connectTooltipPx && this._selCount >= 2 ? (() => {
+            const cc = this._clampPopup(this._connectTooltipPx.x + 14, this._connectTooltipPx.y - 20, 180, 36);
+            return html`
+            <div class="connect-tooltip"
+              style="left:${cc.left}px;top:${cc.top}px;"
+              @click=${(e: Event) => e.stopPropagation()}>
+              <sl-button size="small" @click=${() => this._connectSelected()}>Connect data points</sl-button>
+            </div>`;
+          })() : ""}
+
+          <!-- ── Selected line name editor (positioned near line midpoint) ── -->
+          ${this._selLineIdx !== null && this._lines[this._selLineIdx] && !this._dragLine && !this._dragLineEP ? (() => {
+            const sl = this._lines[this._selLineIdx!]!;
+            let leftPx = "50%", topPx = "8px";
+            if (this._chart) {
+              const mx = this._chart.scales.x.getPixelForValue((sl.x1 + sl.x2) / 2);
+              const my = this._chart.scales.y.getPixelForValue((sl.y1 + sl.y2) / 2);
+              const clamped = this._clampPopup(mx + 12, my - 36, 300, 36);
+              leftPx = `${clamped.left}px`;
+              topPx = `${clamped.top}px`;
+            }
+            return html`
+            <div class="line-edit-bar"
+              style="left:${leftPx};top:${topPx};"
+              @click=${(e: Event) => e.stopPropagation()}>
               <input
                 type="text"
-                .value=${this._lines[this._selLineIdx].name ?? `Line ${this._selLineIdx + 1}`}
+                .value=${sl.name ?? `Line ${this._selLineIdx! + 1}`}
                 placeholder="Line name"
                 @input=${(e: Event) => {
                   const val = (e.target as HTMLInputElement).value;
@@ -1585,17 +1962,19 @@ override render() {
                   );
                 }}
               />
-              <span class="line-formula">${lineFormula(this._lines[this._selLineIdx], "x", "y")}</span>
-            </div>
-          ` : ""}
+              <span class="line-formula">${lineFormula(sl, "x", "y")}</span>
+            </div>`;
+          })() : ""}
 
-          ${this._editPopup ? html`
-            <div class="coord-popup" style="left:${this._editPopup.px + 8}px;top:${this._editPopup.py}px;"
+          ${this._editPopup ? (() => {
+            const cp = this._clampPopup(this._editPopup.px + 8, this._editPopup.py, 180, 130);
+            return html`
+            <div class="coord-popup" style="left:${cp.left}px;top:${cp.top}px;"
               @click=${(e: Event) => e.stopPropagation()}>
               <div class="coord-popup-title">Edit coordinates</div>
               <div class="coord-popup-row">
                 <label>X</label>
-                <input type="number" step="any"
+                <input type="number" step=${"any"}
                   .value=${String(this._editPopup.x)}
                   @input=${(e: Event) => {
                     const v = parseFloat((e.target as HTMLInputElement).value);
@@ -1605,7 +1984,7 @@ override render() {
               </div>
               <div class="coord-popup-row">
                 <label>Y</label>
-                <input type="number" step="any"
+                <input type="number" step=${"any"}
                   .value=${String(this._editPopup.y)}
                   @input=${(e: Event) => {
                     const v = parseFloat((e.target as HTMLInputElement).value);
@@ -1619,8 +1998,9 @@ override render() {
                   const { pointIdx, x, y } = this._editPopup;
                   const xi = this.xAxisIndex;
                   const yi = this.yAxisIndex;
-                  const finalX = this._snapToGrid ? Math.round(x) : x;
-                  const finalY = this._snapToGrid ? Math.round(y) : y;
+                  const snapped = this._snapToGrid && this._chart ? this._snapDragPos({ x, y }) : { x, y };
+                  const finalX = this._snapToGrid ? snapped.x : x;
+                  const finalY = this._snapToGrid ? snapped.y : y;
                   this._ensureLocalSets();
                   this._localSets = this._localSets!.map((s: any, i: number) => {
                     if (i !== pointIdx) return s;
@@ -1631,14 +2011,24 @@ override render() {
                   });
                   this._hasPendingChanges = true;
                   this._editPopup = null;
-                  if (this._chart) this._chart.data.datasets = this._buildDatasets();
-                  this._chart?.update("none");
+                  if (this._chart) {
+                    this._chart.data.datasets = this._buildDatasets();
+                    this._applyFixedPointBounds();
+                    this._chart.update("none");
+                  }
                 }}>Apply</button>
                 <button @click=${() => { this._editPopup = null; }}>Cancel</button>
               </div>
             </div>
-          ` : ""}
+          `; })() : ""}
         </div>
+
+        ${(formula || correlation) ? html`
+          <div class="chart-annotations">
+            ${formula ? html`<span class="annotation-regression">${formula}</span>` : ""}
+            ${correlation ? html`<span class="annotation-correlation">${correlation}</span>` : ""}
+          </div>` : ""}
+        </div><!-- end .chart-col -->
 
         <!-- ── Button column ──────────────────────────────────── -->
         <div class="btn-col">
@@ -1660,52 +2050,31 @@ override render() {
             </sl-button>
           </sl-tooltip>
 
-          <!-- ── Select (popup: by clicking / by brushing / all) ── -->
-          <sl-popup placement="left" strategy="fixed" .active=${this._showSelectMenu} distance="7">
-            <span slot="anchor">
-              <sl-tooltip hoist placement="top-end"
-                content=${!hasData
-                  ? "Add data first"
-                  : this._mode === "select-click" || this._mode === "select-brush"
-                  ? "Click to exit selection mode"
-                  : "Select points"}
-              >
-                <sl-button size="small" circle
-                  variant=${this._mode === "select-click" || this._mode === "select-brush" ? "primary" : "default"}
-                  .disabled=${!hasData}
-                  @click=${(e: MouseEvent) => {
-                    if (this._mode === "select-click" || this._mode === "select-brush") {
-                      this._setMode("none");
-                      this._showSelectMenu = false;
-                    } else {
-                      this._showSelectMenu = !this._showSelectMenu;
-                    }
-                    (e.target as any)?.focus();
-                  }}
-                  @blur=${() => setTimeout(() => { this._showSelectMenu = false; }, 150)}
-                >
-                  <sl-icon src=${IconHandIndex} label="Select" style="pointer-events:none"></sl-icon>
-                </sl-button>
-              </sl-tooltip>
-            </span>
-            <div class="popup-content">
-              <sl-button @mousedown=${(e: MouseEvent) => {
-                if (e.button !== 0) return;
-                this._setMode("select-click");
-                this._showSelectMenu = false;
-              }}>Select by clicking</sl-button>
-              <sl-button @mousedown=${(e: MouseEvent) => {
-                if (e.button !== 0) return;
-                this._setMode("select-brush");
-                this._showSelectMenu = false;
-              }}>Select by brushing</sl-button>
-              <sl-button @mousedown=${(e: MouseEvent) => {
-                if (e.button !== 0) return;
-                this._selectAll(sets.length);
-                this._showSelectMenu = false;
-              }}>Select all</sl-button>
-            </div>
-          </sl-popup>
+          <!-- ── Edit position of selected point ──────────────── -->
+          <sl-tooltip hoist placement="top-end"
+            content=${this._selCount !== 1 ? "Select exactly one point to edit its position" : "Edit point position"}
+          >
+            <sl-button size="small" circle
+              .disabled=${this._selCount !== 1}
+              @click=${(e: MouseEvent) => {
+                e.stopPropagation();
+                const selIdx = [...this._sel][0];
+                if (selIdx === undefined) return;
+                const ws = this._getWorkingSets();
+                const xi = this.xAxisIndex;
+                const yi = this.yAxisIndex;
+                const x = Number(ws[selIdx]?.data[xi]);
+                const y = Number(ws[selIdx]?.data[yi]);
+                if (!isNaN(x) && !isNaN(y) && this._chart) {
+                  const ppx = this._chart.scales.x.getPixelForValue(x);
+                  const ppy = this._chart.scales.y.getPixelForValue(y);
+                  this._editPopup = { pointIdx: selIdx, x, y, px: ppx, py: ppy };
+                }
+              }}
+            >
+              <sl-icon src=${IconArrowsMove} label="Edit position" style="pointer-events:none"></sl-icon>
+            </sl-button>
+          </sl-tooltip>
 
           <!-- ── Draw line ───────────────────────────────────── -->
           <sl-tooltip hoist placement="top-end"
@@ -1720,48 +2089,9 @@ override render() {
               .disabled=${!hasData}
               @click=${() => this._toggle("draw-line")}
             >
-              <sl-icon src=${IconPencil} label="Draw line" style="pointer-events:none"></sl-icon>
+              <sl-icon src=${IconLine} label="Draw line" style="pointer-events:none"></sl-icon>
             </sl-button>
           </sl-tooltip>
-
-          <!-- ── Eye / visibility ───────────────────────────── -->
-          <sl-popup placement="left" strategy="fixed" .active=${this._showEditMenu} distance="7">
-            <span slot="anchor">
-              <sl-tooltip hoist placement="top-end"
-                content=${!hasData ? "Add data first" : "Show / hide points"}
-              >
-                <sl-button size="small" circle
-                  .disabled=${!hasData}
-                  @click=${(e: MouseEvent) => {
-                    this._setMode("none");
-                    this._showEditMenu = !this._showEditMenu;
-                    (e.target as any)?.focus();
-                  }}
-                  @blur=${() => setTimeout(() => { this._showEditMenu = false; }, 150)}
-                >
-                  <sl-icon src=${IconEye} label="Visibility" style="pointer-events:none"></sl-icon>
-                </sl-button>
-              </sl-tooltip>
-            </span>
-            <div class="popup-content">
-              <sl-menu-item type="checkbox"
-                .disabled=${this._selCount === 0}
-                @mousedown=${(e: MouseEvent) => {
-                  if (e.button !== 0) return;
-                  e.preventDefault();
-                  this._hideSelected();
-                  this._showEditMenu = false;
-                }}>Hide selected</sl-menu-item>
-              <sl-menu-item type="checkbox"
-                ?checked=${this._hidCount === 0 && hasData}
-                @mousedown=${(e: MouseEvent) => {
-                  if (e.button !== 0) return;
-                  e.preventDefault();
-                  this._showAll();
-                  this._showEditMenu = false;
-                }}>Show all</sl-menu-item>
-            </div>
-          </sl-popup>
 
           <!-- ── Delete selected (points or line) ─────────────── -->
           <sl-tooltip hoist placement="top-end"
@@ -1783,21 +2113,6 @@ override render() {
               }}
             >
               <sl-icon src=${IconTrash} label="Delete" style="pointer-events:none"></sl-icon>
-            </sl-button>
-          </sl-tooltip>
-
-          <!-- ── Apply to data ──────────────────────────────── -->
-          <sl-tooltip hoist placement="top-end"
-            content=${this._hasPendingChanges
-              ? "Apply plot changes to the data table"
-              : "No pending changes"}
-          >
-            <sl-button size="small" circle
-              variant=${this._hasPendingChanges ? "primary" : "default"}
-              .disabled=${!this._hasPendingChanges}
-              @click=${() => this._applyToData()}
-            >
-              <sl-icon src=${IconArrowsTransferDown} label="Apply to data" style="pointer-events:none"></sl-icon>
             </sl-button>
           </sl-tooltip>
 

@@ -25,6 +25,8 @@ import SlOption from "@shoelace-style/shoelace/dist/components/option/option.com
 
 // Icons
 import IconPlus from "bootstrap-icons/icons/plus.svg";
+import IconArrowsRightLeft from "@tabler/icons/outline/arrows-right-left.svg";
+import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
 // Charts & types
 import { availableCharts, getChart, getOptionsDefinition } from "./components/charts/chart-registry";
@@ -56,8 +58,9 @@ export class WwChart extends LitElementWw {
   accessor sharedState: ChartState = {
     teacherOptions: { showOptions: true, showData: true, showLockedOptions: true, changeData: true, changeOptions: true, addRemoveData: true },
     lineDatasets: { sets: [] },
-    scatterDatasets: { title: "My Scatterplot", sets: [], selected: { axis: { x: "None", y: "None" }, dataset_indexes: [] } },
+    scatterDatasets: { title: "My Scatter plot", sets: [], selected: { axis: { x: "None", y: "None" }, dataset_indexes: [] } },
     regressionType: "none",
+    scatterLines: [],
     visualizations: [{ id: "viz-1", name: "Chart 1", selectedType: "Bar" }],
     activeVisualizationId: "viz-1",
     chart: { selectedType: "Bar", title: "My Chart", datasets: { labels: [], sets: [] }, options: {}, optionsLocked: {}, optionDefinition: {} },
@@ -76,7 +79,7 @@ export class WwChart extends LitElementWw {
   accessor scatterYAxis: number = 1;
 
   @state() accessor dataTabName = "Data";
-  @state() accessor scatterplotTabName = "Scatterplot";
+  @state() accessor scatterplotTabName = "Scatter plot";
   @state() accessor lastChartType: InternalChartType = this.sharedState.chart.selectedType;
   @state() accessor editingVisualizationId: string | null = null;
   @state() accessor editingVisualizationName = "";
@@ -106,12 +109,31 @@ export class WwChart extends LitElementWw {
       "sl-select": SlSelect,
       "sl-option": SlOption,
       "wwci-select": OptionSelect,
+      "sl-icon": SlIcon,
     };
   }
 
   protected onStateChange = (e: CustomEvent) => {
     if (!e.detail || !e.detail.state) return;
-    this.sharedState = { ...this.sharedState, ...e.detail.state };
+    const incoming = e.detail.state;
+    let nextState = { ...this.sharedState, ...incoming };
+
+    // When chart.options change, persist them to the active visualization so
+    // each chart tab keeps its own independent option values.
+    if (incoming.chart?.options) {
+      const activeVizId = this.sharedState.activeVisualizationId;
+      const isScatter = activeVizId === WwChart.FIXED_SCATTERPLOT_TAB_ID;
+      if (!isScatter) {
+        nextState = {
+          ...nextState,
+          visualizations: (nextState.visualizations ?? []).map((v: Visualization) =>
+            v.id === activeVizId ? { ...v, options: nextState.chart.options } : v
+          ),
+        };
+      }
+    }
+
+    this.sharedState = nextState;
     e.stopPropagation();
     e.cancelBubble = true;
   };
@@ -170,13 +192,22 @@ export class WwChart extends LitElementWw {
     } else if (panelId === WwChart.FIXED_SCATTERPLOT_TAB_ID) {
       this.showData = false;
       this.showChart = true;
+      const optDef = getOptionsDefinition("Scatter plot");
+      // Merge existing option values with defaults so toggles reflect correct initial state
+      const options = Object.entries(optDef).reduce((acc: any, [key, def]) => {
+        acc[key] = this.sharedState.chart.options?.[key] !== undefined
+          ? this.sharedState.chart.options[key]
+          : (def as any).default;
+        return acc;
+      }, {});
       this.sharedState = {
         ...this.sharedState,
         activeVisualizationId: WwChart.FIXED_SCATTERPLOT_TAB_ID,
         chart: {
           ...this.sharedState.chart,
-          selectedType: "Scatterplot",
-          optionDefinition: getOptionsDefinition("Scatterplot"),
+          selectedType: "Scatter plot",
+          optionDefinition: optDef,
+          options,
         },
       };
       this.requestUpdate();
@@ -197,7 +228,11 @@ export class WwChart extends LitElementWw {
   addVisualization() {
     const vizs = this.sharedState.visualizations ?? [];
     const id = `viz-${Date.now()}`;
-    const newViz: Visualization = { id, name: `Chart ${vizs.length + 1}`, selectedType: "Bar" };
+    const defaultType: ChartType = "Bar";
+    const optDef = getOptionsDefinition(defaultType);
+    const defaultOptions: Record<string, any> =
+      Object.fromEntries(Object.entries(optDef).map(([k, d]) => [k, (d as any).default]));
+    const newViz: Visualization = { id, name: `Chart ${vizs.length + 1}`, selectedType: defaultType, options: defaultOptions };
     this.sharedState = {
       ...this.sharedState,
       visualizations: [...vizs, newViz],
@@ -225,33 +260,31 @@ export class WwChart extends LitElementWw {
   }
 
   switchVisualization(id: string) {
-    const selectedType =
-      this.sharedState.visualizations.find((v) => v.id === id)?.selectedType ??
-      this.sharedState.chart.selectedType;
+    const viz = this.sharedState.visualizations.find((v) => v.id === id);
+    const selectedType = viz?.selectedType ?? this.sharedState.chart.selectedType;
+    const optionDefinition = getOptionsDefinition(selectedType);
+    // Restore this tab's saved options, falling back to chart-type defaults
+    const options: Record<string, any> = viz?.options ??
+      Object.fromEntries(Object.entries(optionDefinition).map(([k, d]) => [k, (d as any).default]));
     this.sharedState = {
       ...this.sharedState,
       activeVisualizationId: id,
-      chart: {
-        ...this.sharedState.chart,
-        selectedType,
-        optionDefinition: getOptionsDefinition(selectedType),
-      },
+      chart: { ...this.sharedState.chart, selectedType, optionDefinition, options },
     };
     this.requestUpdate();
   }
 
   changeVizType(id: string, newType: ChartType) {
+    const optionDefinition = getOptionsDefinition(newType);
+    const defaultOptions: Record<string, any> =
+      Object.fromEntries(Object.entries(optionDefinition).map(([k, d]) => [k, (d as any).default]));
     const updated: Visualization[] = (this.sharedState.visualizations ?? []).map(
-      (v) => (v.id === id ? { ...v, selectedType: newType } : v)
+      (v) => (v.id === id ? { ...v, selectedType: newType, options: defaultOptions } : v)
     );
     this.sharedState = {
       ...this.sharedState,
       visualizations: updated,
-      chart: {
-        ...this.sharedState.chart,
-        selectedType: newType,
-        optionDefinition: getOptionsDefinition(newType),
-      },
+      chart: { ...this.sharedState.chart, selectedType: newType, optionDefinition, options: defaultOptions },
     };
     this.requestUpdate();
   }
@@ -260,6 +293,38 @@ export class WwChart extends LitElementWw {
     const normalizedColumns = this.normalizeColumns(columns);
     const updated: Visualization[] = (this.sharedState.visualizations ?? []).map(
       (v) => (v.id === id ? { ...v, visibleColumns: normalizedColumns } : v)
+    );
+    this.sharedState = { ...this.sharedState, visualizations: updated };
+    this.requestUpdate();
+  }
+
+  changeVizXAxis(id: string, xIdx: number) {
+    const updated: Visualization[] = (this.sharedState.visualizations ?? []).map(
+      (v) => (v.id === id ? { ...v, xAxisIndex: xIdx, yColumns: [], xCategories: [] } : v)
+    );
+    this.sharedState = { ...this.sharedState, visualizations: updated };
+    this.requestUpdate();
+  }
+
+  changeVizYColumns(id: string, columns: string[]) {
+    const updated: Visualization[] = (this.sharedState.visualizations ?? []).map(
+      (v) => (v.id === id ? { ...v, yColumns: columns } : v)
+    );
+    this.sharedState = { ...this.sharedState, visualizations: updated };
+    this.requestUpdate();
+  }
+
+  changeVizXCategories(id: string, categories: string[]) {
+    const updated: Visualization[] = (this.sharedState.visualizations ?? []).map(
+      (v) => (v.id === id ? { ...v, xCategories: categories } : v)
+    );
+    this.sharedState = { ...this.sharedState, visualizations: updated };
+    this.requestUpdate();
+  }
+
+  changeVizScaleLabel(id: string, label: string) {
+    const updated: Visualization[] = (this.sharedState.visualizations ?? []).map(
+      (v) => (v.id === id ? { ...v, scaleLabel: label } : v)
     );
     this.sharedState = { ...this.sharedState, visualizations: updated };
     this.requestUpdate();
@@ -363,13 +428,13 @@ export class WwChart extends LitElementWw {
 
     if (isFixedScatterplotTab) {
       this.syncFixedScatterplotFromChartData();
-      this.sharedState.chart.selectedType = "Scatterplot";
+      this.sharedState.chart.selectedType = "Scatter plot";
     } else if (activeViz) {
       this.sharedState.chart.selectedType = activeViz.selectedType;
     }
 
     const useScatterDatasetInput =
-      this.sharedState.chart.selectedType === "Scatterplot" && !isFixedScatterplotTab;
+      this.sharedState.chart.selectedType === "Scatter plot" && !isFixedScatterplotTab;
 
     this.sharedState.chart.optionDefinition = getOptionsDefinition(this.sharedState.chart.selectedType);
 
@@ -484,186 +549,276 @@ export class WwChart extends LitElementWw {
           </div>
         </sl-tab-group>
 
-        ${this.showData && (this.sharedState.editable || this.sharedState.teacherOptions.showData)
-          ? html`
-              <div id="data-panel" class="panel-shell">
-                ${canAddRemoveData && hasChartData
-                  ? html`<div class="data-actions-row">
-                      <sl-button size="small" variant="danger" outline @click=${() => this.clearChartData()}>
-                        Clear Data
-                      </sl-button>
-                    </div>`
-                  : ""}
-                <div class="data-content">
-                  ${useScatterDatasetInput
-                    ? html`<wwci-scatterdataset-input
-                        .sharedState=${this.sharedState}
-                        @wwci-state-change=${this.onStateChange}
-                      ></wwci-scatterdataset-input>`
-                    : html`<wwci-dataset-input
-                        .sharedState=${this.sharedState}
-                        @wwci-state-change=${this.onStateChange}
-                      ></wwci-dataset-input>`}
-                </div>
+        ${(() => {
+          const showDataPanel = this.showData && (this.sharedState.editable || this.sharedState.teacherOptions.showData);
+          return html`
+            <!-- Data panel — always in DOM so dataset-input preserves focus/state -->
+            <div id="data-panel" class="panel-shell ${showDataPanel ? '' : 'hidden'}">
+              ${canAddRemoveData && hasChartData
+                ? html`<div class="data-actions-row">
+                    <sl-button size="small" variant="danger" outline @click=${() => this.clearChartData()}>
+                      Clear Data
+                    </sl-button>
+                  </div>`
+                : ""}
+              <div class="data-content">
+                ${useScatterDatasetInput
+                  ? html`<wwci-scatterdataset-input
+                      .sharedState=${this.sharedState}
+                      @wwci-state-change=${this.onStateChange}
+                    ></wwci-scatterdataset-input>`
+                  : html`<wwci-dataset-input
+                      .sharedState=${this.sharedState}
+                      @wwci-state-change=${this.onStateChange}
+                    ></wwci-dataset-input>`}
               </div>
-            `
-          : html`
-              <div id="chart-panel" class="panel-shell">
+            </div>
+
+            <!-- Chart panel — always in DOM so scatter-chart-js preserves local edit state -->
+            <div id="chart-panel" class="panel-shell ${!showDataPanel ? '' : 'hidden'}">
                 ${hasChartData
                   ? html`
                       <div class="viz-type-row">
-                        <span class="viz-type-label">Chart type</span>
-                        <wwci-select
-                          size="small"
-                          .value=${isFixedScatterplotTab ? "Scatterplot" : (activeViz?.selectedType ?? "Bar")}
-                          .selectOptions=${availableCharts}
-                          ?disabled=${!canChangeOptions || isFixedScatterplotTab}
-                          @wwci-change=${(e: CustomEvent) => {
-                            e.stopPropagation();
-                            e.cancelBubble = true;
-                            if (activeViz) this.changeVizType(activeViz.id, (e.target as any).value);
-                          }}
-                        ></wwci-select>
-
-                        <div class="viz-type-divider"></div>
+                        ${isFixedScatterplotTab ? "" : html`
+                          <span class="viz-type-label">Chart type</span>
+                          <wwci-select
+                            class="select-chart-type"
+                            size="small"
+                            .value=${activeViz?.selectedType ?? "Bar"}
+                            .selectOptions=${availableCharts}
+                            ?disabled=${!canChangeOptions}
+                            @wwci-change=${(e: CustomEvent) => {
+                              e.stopPropagation();
+                              e.cancelBubble = true;
+                              if (activeViz) this.changeVizType(activeViz.id, (e.target as any).value);
+                            }}
+                          ></wwci-select>
+                        `}
 
                         ${isFixedScatterplotTab
                           ? html`
-                              <span class="viz-type-label">X-Axis</span>
-                              <sl-select
-                                size="small"
-                                class="axis-select"
-                                placeholder="Select X-Axis"
-                                .value=${String(this.scatterXAxis)}
-                                @sl-change=${(e: Event) => {
-                                  this.scatterXAxis = Number((e.target as any).value);
-                                }}
-                              >
-                                ${this.sharedState.chart.datasets.labels.map(
-                                  (label, i) =>
-                                    html`<sl-option value=${String(i)}>${label}</sl-option>`
-                                )}
-                              </sl-select>
+                              ${(() => {
+                                const labels = this.sharedState.chart.datasets.labels;
+                                return html`
+                                  <span class="viz-type-label">X-Axis</span>
+                                  <wwci-select
+                                    size="small"
+                                    .selectOptions=${labels}
+                                    .value=${labels[this.scatterXAxis] ?? labels[0] ?? ""}
+                                    @wwci-change=${(e: CustomEvent) => {
+                                      const idx = labels.indexOf(e.detail.value);
+                                      if (idx >= 0) this.scatterXAxis = idx;
+                                    }}
+                                  ></wwci-select>
 
-                              <span class="viz-type-label">Y-Axis</span>
-                              <sl-select
+                                  <span class="viz-type-label">Y-Axis</span>
+                                  <wwci-select
+                                    size="small"
+                                    .selectOptions=${labels}
+                                    .value=${labels[this.scatterYAxis] ?? labels[1] ?? ""}
+                                    @wwci-change=${(e: CustomEvent) => {
+                                      const idx = labels.indexOf(e.detail.value);
+                                      if (idx >= 0) this.scatterYAxis = idx;
+                                    }}
+                                  ></wwci-select>
+                                `;
+                              })()}
+
+                              <sl-button
                                 size="small"
-                                class="axis-select"
-                                placeholder="Select Y-Axis"
-                                .value=${String(this.scatterYAxis)}
-                                @sl-change=${(e: Event) => {
-                                  this.scatterYAxis = Number((e.target as any).value);
+                                variant="primary"
+                                outline
+                                style="margin-left: auto;"
+                                ?disabled=${!this.sharedState.hasPendingScatterChanges}
+                                @click=${() => {
+                                  const scatter = this.renderRoot.querySelector("scatter-chart-js") as ScatterChartJs | null;
+                                  scatter?.applyToData();
                                 }}
                               >
-                                ${this.sharedState.chart.datasets.labels.map(
-                                  (label, i) =>
-                                    html`<sl-option value=${String(i)}>${label}</sl-option>`
-                                )}
-                              </sl-select>
+                                <sl-icon slot="prefix" src=${IconArrowsRightLeft}></sl-icon>
+                                Apply Changes to Data
+                              </sl-button>
                             `
                           : html`
-                              <span class="viz-type-label">Columns</span>
                               ${(() => {
-                                const rawLabels = this.sharedState.chart.datasets.labels;
-                                const selectedColumnIndexes = this.normalizeColumnIndexes(
-                                  activeViz?.visibleColumns,
-                                  rawLabels
-                                );
-                                return html`<sl-select
-                                  size="small"
-                                  multiple
-                                  clearable
-                                  max-options-visible="3"
-                                  placeholder="All columns"
-                                  .value=${selectedColumnIndexes.map((i) => String(i))}
-                                  ?disabled=${!canChangeOptions}
-                                  @sl-input=${(e: Event) => {
-                                    if (!activeViz) return;
-                                    const nextIndexes = this.normalizeColumnIndexes(
-                                      (e.target as any).value,
-                                      rawLabels
-                                    );
-                                    this.changeVizColumns(
-                                      activeViz.id,
-                                      nextIndexes.map((i) => String(i))
-                                    );
-                                  }}
-                                  class="columns-select"
-                                >
-                                  ${rawLabels.map(
-                                    (label, index) =>
-                                      html`<sl-option value=${String(index)}>${label}</sl-option>`
-                                  )}
-                                </sl-select>`;
+                                const rawLabels = this.sharedState.chart.datasets.labels ?? [];
+                                const rawSets = this.sharedState.chart.datasets.sets ?? [];
+                                const selectedType = activeViz?.selectedType ?? "Bar";
+                                const showXYAxis = (selectedType === "Bar" || selectedType === "Line") && rawLabels.length >= 1;
+                                const showCategoryAxis = selectedType === "Polar Area" && rawLabels.length >= 1;
+                                const showYAxisOnly = (selectedType === "Pie" || selectedType === "Doughnut") && rawLabels.length >= 1;
+                                const showRadarSpokes = selectedType === "Radar" && rawLabels.length >= 1;
+                                if (!showXYAxis && !showCategoryAxis && !showYAxisOnly && !showRadarSpokes) return "";
+
+                                const currentXAxis = activeViz?.xAxisIndex ?? -1;
+                                const ROW_LABELS = "Row Labels";
+                                const COL_LABELS = "Column Labels";
+                                const xAxisOptions = [ROW_LABELS, COL_LABELS, ...rawLabels];
+                                let currentXValue: string;
+                                if (currentXAxis === -2) currentXValue = COL_LABELS;
+                                else if (currentXAxis < 0) currentXValue = ROW_LABELS;
+                                else currentXValue = rawLabels[Math.min(currentXAxis, rawLabels.length - 1)] ?? ROW_LABELS;
+
+                                // Compute available Y series for bar/line/pie/doughnut
+                                let availableYSeries: string[] = [];
+                                if (showXYAxis || showYAxisOnly) {
+                                  if (currentXAxis === -2) {
+                                    availableYSeries = rawSets.map((s) => s.name);
+                                  } else if (currentXAxis < 0) {
+                                    availableYSeries = [...rawLabels];
+                                  } else {
+                                    const xIdx = Math.min(currentXAxis, rawLabels.length - 1);
+                                    availableYSeries = rawLabels.filter((_, i) => i !== xIdx);
+                                  }
+                                }
+
+                                const currentYColumns = activeViz?.yColumns ?? [];
+                                const selectedYSeries = currentYColumns.length > 0 ? currentYColumns : availableYSeries;
+
+                                const currentXCategories = activeViz?.xCategories ?? [];
+
+                                // Radar spokes = all column names (xAxisIndex is not user-selectable for radar)
+                                const availableSpokes = [...rawLabels];
+                                const selectedSpokes = currentXCategories.length > 0 ? currentXCategories : availableSpokes;
+
+                                const xAxisLabel = showCategoryAxis ? "Category" : showYAxisOnly ? "Segments" : "X-Axis";
+                                const yAxisLabel = showYAxisOnly ? "Levels" : "Y-Axis";
+
+                                return html`
+                                  <div class="viz-type-divider"></div>
+
+                                  ${showRadarSpokes ? html`
+                                    <span class="viz-type-label">Spokes</span>
+                                    <sl-select
+                                      class="select-axis"
+                                      size="small"
+                                      ?multiple=${true}
+                                      max-options-visible="2"
+                                      placeholder="All spokes"
+                                      .value=${selectedSpokes}
+                                      ?disabled=${!canChangeOptions}
+                                      hoist
+                                      @sl-change=${(e: Event) => {
+                                        if (!activeViz) return;
+                                        const sl = e.target as any;
+                                        const selected: string[] = Array.isArray(sl.value) ? sl.value : sl.value ? [sl.value] : [];
+                                        this.changeVizXCategories(activeViz.id, selected.length === availableSpokes.length ? [] : selected);
+                                      }}
+                                    >
+                                      ${availableSpokes.map((s) => html`<sl-option value=${s}>${s}</sl-option>`)}
+                                    </sl-select>
+                                  ` : html`
+                                    <span class="viz-type-label">${xAxisLabel}</span>
+                                    <wwci-select
+                                      class="select-axis"
+                                      size="small"
+                                      .selectOptions=${xAxisOptions}
+                                      .value=${currentXValue}
+                                      ?disabled=${!canChangeOptions}
+                                      @wwci-change=${(e: CustomEvent) => {
+                                        if (!activeViz) return;
+                                        const val = e.detail.value;
+                                        if (val === ROW_LABELS) this.changeVizXAxis(activeViz.id, -1);
+                                        else if (val === COL_LABELS) this.changeVizXAxis(activeViz.id, -2);
+                                        else {
+                                          const idx = rawLabels.indexOf(val);
+                                          if (idx >= 0) this.changeVizXAxis(activeViz.id, idx);
+                                        }
+                                      }}
+                                    ></wwci-select>
+
+
+                                    ${(showXYAxis || showYAxisOnly) && availableYSeries.length > 1 ? html`
+                                      <span class="viz-type-label">${yAxisLabel}</span>
+                                      <sl-select
+                                        class="select-axis"
+                                        size="small"
+                                        ?multiple=${true}
+                                        max-options-visible="2"
+                                        placeholder="All series"
+                                        .value=${selectedYSeries}
+                                        ?disabled=${!canChangeOptions}
+                                        hoist
+                                        @sl-change=${(e: Event) => {
+                                          if (!activeViz) return;
+                                          const sl = e.target as any;
+                                          const selected: string[] = Array.isArray(sl.value) ? sl.value : sl.value ? [sl.value] : [];
+                                          this.changeVizYColumns(activeViz.id, selected.length === availableYSeries.length ? [] : selected);
+                                        }}
+                                      >
+                                        ${availableYSeries.map((s) => html`<sl-option value=${s}>${s}</sl-option>`)}
+                                      </sl-select>
+                                    ` : ""}
+                                  `}
+                                `;
                               })()}
                             `}
                       </div>
 
                       <div id="display-chart" class="chart-display-wrap">
-                        ${isFixedScatterplotTab
-                          ? (() => {
-                              const ls = this.sharedState.chart.datasets.labels ?? [];
-                              if (ls.length < 2 || this.scatterXAxis === this.scatterYAxis) {
-                                return html`<div class="chart-empty-state">
-                                  Please select two different values for X and Y axis.
-                                </div>`;
-                              }
-                              return html`
-                                <div style="position:absolute; inset:0; padding:10px; box-sizing:border-box;">
-                                  <scatter-chart-js
-                                    style="display:block; width:100%; height:100%;"
-                                    .datasets=${this.sharedState.chart.datasets}
-                                    .xAxisIndex=${this.scatterXAxis}
-                                    .yAxisIndex=${this.scatterYAxis}
-                                    label=${this.sharedState.chart.title}
-                                    .sharedState=${this.sharedState}
-                                    @wwci-state-change=${this.onStateChange}
-                                  ></scatter-chart-js>
-                                </div>
-                              `;
-                            })()
-                          : (() => {
-                              const rawLabels = this.sharedState.chart.datasets.labels;
-                              const selectedIndexes = this.normalizeColumnIndexes(
-                                activeViz?.visibleColumns,
-                                rawLabels
-                              );
-                              let filteredDatasets = this.sharedState.chart.datasets;
-                              if (selectedIndexes.length > 0) {
-                                filteredDatasets = {
-                                  labels: selectedIndexes.map((i) => rawLabels[i]),
-                                  sets: this.sharedState.chart.datasets.sets.map((set) => ({
-                                    ...set,
-                                    data: selectedIndexes.map((i) => set.data[i]),
-                                    colors: selectedIndexes.map((i) => set.colors[i]),
-                                  })),
-                                };
-                              }
-                              const chartKey = `${activeViz?.id ?? "default"}-${selectedIndexes.join(",") || "all"}`;
+                        ${(() => {
+                          const ls = this.sharedState.chart.datasets.labels ?? [];
+                          const validScatterAxes = ls.length >= 2 && this.scatterXAxis !== this.scatterYAxis;
+
+                          return html`
+                            <!-- scatter-chart-js is ALWAYS in the DOM to preserve local edits across tab switches -->
+                            <div style="position:absolute; inset:0; padding:10px; box-sizing:border-box;
+                                        display:${isFixedScatterplotTab && validScatterAxes ? 'block' : 'none'};">
+                              <scatter-chart-js
+                                style="display:block; width:100%; height:100%;"
+                                .datasets=${this.sharedState.chart.datasets}
+                                .xAxisIndex=${this.scatterXAxis}
+                                .yAxisIndex=${this.scatterYAxis}
+                                label=${this.sharedState.chart.title}
+                                .sharedState=${this.sharedState}
+                                @wwci-state-change=${this.onStateChange}
+                              ></scatter-chart-js>
+                            </div>
+
+                            ${isFixedScatterplotTab && !validScatterAxes ? html`
+                              <div class="chart-empty-state">
+                                Please select two different values for X and Y axis.
+                              </div>
+                            ` : ""}
+
+                            ${!isFixedScatterplotTab ? (() => {
+                              const _xai = activeViz?.xAxisIndex ?? -1;
+                              const chartXAxis = _xai < 0
+                                ? _xai
+                                : Math.min(_xai, (this.sharedState.chart.datasets.labels?.length ?? 1) - 1);
+                              const chartYColumns = activeViz?.yColumns ?? [];
+                              const chartXCategories = activeViz?.xCategories ?? [];
+                              const chartScaleLabel = activeViz?.scaleLabel ?? "";
+                              const chartKey = `${activeViz?.id ?? "default"}-${activeViz?.selectedType ?? "Bar"}`;
                               return keyed(
                                 chartKey,
                                 getChart(
                                   activeViz?.selectedType ?? "Bar",
-                                  filteredDatasets,
-                                  this.sharedState.chart.selectedType === "Scatterplot"
-                                    ? this.sharedState.scatterDatasets.title
-                                    : this.sharedState.chart.title,
+                                  this.sharedState.chart.datasets,
+                                  this.sharedState.chart.title,
                                   this.sharedState.chart.options,
                                   this.sharedState.teacherOptions,
                                   this.onStateChange,
-                                  this.sharedState
+                                  this.sharedState,
+                                  chartXAxis,
+                                  chartYColumns,
+                                  chartXCategories,
+                                  chartScaleLabel,
                                 )
                               );
-                            })()}
+                            })() : ""}
+                          `;
+                        })()}
                       </div>
                     `
                   : html`
                       <div class="chart-empty-state">
-                        Please add data first to display graph.
+                        Please add data first to display the graph.
                       </div>
                     `}
               </div>
-            `}
+            `;
+        })()}
       </div>
     `;
   }

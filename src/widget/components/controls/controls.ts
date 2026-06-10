@@ -1,5 +1,5 @@
 // Consolidated UI controls: OptionSelect, ToggleSwitch, NumberField
-import { html } from "lit";
+import { html, PropertyValues } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { converter } from "../../utils";
 import { LitElementWw } from "@webwriter/lit";
@@ -43,6 +43,18 @@ export class OptionSelect extends LitElementWw {
     return { "sl-select": SlSelect, "sl-option": SlOption };
   }
 
+  override updated(_changed: PropertyValues) {
+    super.updated(_changed);
+    const slSelect = this.renderRoot.querySelector("sl-select") as any;
+    if (!slSelect) return;
+    const idx = this.value ? this.selectOptions.indexOf(this.value) : 0;
+    const id = toId(this.selectOptions[idx] ?? "");
+    // Wait for sl-select's own update cycle so its sl-option children are registered
+    (slSelect.updateComplete ?? Promise.resolve()).then(() => {
+      slSelect.value = id;
+    });
+  }
+
   private handleSelectChange(e: any) {
     this.selectedIndex = this.selectOptions.findIndex(
       (v) => e.target.value === toId(v)
@@ -55,14 +67,15 @@ export class OptionSelect extends LitElementWw {
 
   render() {
     this.selectedIndex = this.value ? this.selectOptions.indexOf(this.value) : 0;
+    const selectedId = toId(this.selectOptions[this.selectedIndex] ?? "");
     return html`
       <sl-select
         size=${this.size}
         ?disabled="${this.disabled}"
-        placeholder="${this.placeholder}"
+        placeholder="${this.selectOptions[this.selectedIndex] ?? this.placeholder}"
         label="${this.label}"
         @sl-change="${this.handleSelectChange}"
-        value=${toId(this.selectOptions[this.selectedIndex])}
+        .value=${selectedId}
         hoist
       >
         ${this.selectOptions.map(

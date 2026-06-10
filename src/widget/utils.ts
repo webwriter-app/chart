@@ -256,10 +256,15 @@ export function csvToDataset(fileContent: string): {
       colors = values.map(() => randomColor());
     }
 
+    const parseCell = (x: string) => {
+      const trimmed = x.trim();
+      const n = Number(trimmed);
+      return isNaN(n) ? trimmed : n;
+    };
     const data =
       numberOfDataColumns === -1
-        ? values.map((x) => Number(x))
-        : values.slice(0, numberOfDataColumns).map((x) => Number(x));
+        ? values.map(parseCell)
+        : values.slice(0, numberOfDataColumns).map(parseCell);
 
     let set = {
       name: randomString(),
