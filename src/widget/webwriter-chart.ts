@@ -32,7 +32,7 @@ import IconArrowsRightLeft from "@tabler/icons/outline/arrows-right-left.svg";
 import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
 // Charts & types
-import { availableCharts, getChart, getOptionsDefinition } from "./components/charts/chart-registry";
+import { availableCharts, getChart, getOptionsDefinition, normalizeChartType } from "./components/charts/chart-registry";
 import type { ChartType } from "./components/charts/chart-registry";
 import { BarChart } from "./components/charts/bar-chart";
 import { DoughnutChart, PieChart } from "./components/charts/circular-chart";
@@ -150,6 +150,10 @@ export class WwChart extends LitElementWw {
     super.disconnectedCallback();
     this.removeEventListener("wwci-state-change", this.onStateChange as EventListener);
   }
+ protected override async scheduleUpdate(): Promise<unknown> {
+    await new Promise<void>(res => requestAnimationFrame(() => res()));
+    return super.scheduleUpdate();
+  }
 
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
@@ -175,6 +179,9 @@ export class WwChart extends LitElementWw {
   protected override updated(changedProperties: PropertyValueMap<any>): void {
     super.updated(changedProperties);
     if (!changedProperties.has("sharedState")) return;
+    if (this.sharedState.activeVisualizationId === WwChart.FIXED_SCATTERPLOT_TAB_ID) {
+      this.syncFixedScatterplotFromChartData();
+    }
     const labels = this.sharedState.chart.datasets.labels ?? [];
     if (labels.length === 0) return;
     let xi = Number.isFinite(this.scatterXAxis) ? this.scatterXAxis : 0;
@@ -264,7 +271,7 @@ export class WwChart extends LitElementWw {
 
   switchVisualization(id: string) {
     const viz = this.sharedState.visualizations.find((v) => v.id === id);
-    const selectedType = viz?.selectedType ?? this.sharedState.chart.selectedType;
+    const selectedType = normalizeChartType(viz?.selectedType ?? this.sharedState.chart.selectedType ?? "Bar");
     const optionDefinition = getOptionsDefinition(selectedType);
     // Restore this tab's saved options, falling back to chart-type defaults
     const options: Record<string, any> = viz?.options ??
@@ -430,10 +437,11 @@ export class WwChart extends LitElementWw {
         ) ?? this.sharedState.visualizations?.[0];
 
     if (isFixedScatterplotTab) {
-      this.syncFixedScatterplotFromChartData();
       this.sharedState.chart.selectedType = "Scatter plot";
     } else if (activeViz) {
-      this.sharedState.chart.selectedType = activeViz.selectedType;
+      this.sharedState.chart.selectedType = normalizeChartType(activeViz.selectedType);
+    } else {
+       this.sharedState.chart.selectedType = normalizeChartType(this.sharedState.chart.selectedType ?? "Bar");
     }
 
     const useScatterDatasetInput =
@@ -666,7 +674,7 @@ export class WwChart extends LitElementWw {
                                 let availableYSeries: string[] = [];
                                 if (showXYAxis || showYAxisOnly) {
                                   if (currentXAxis === -2) {
-                                    availableYSeries = rawSets.map((s) => s.name);
+                                    availableYSeries = rawSets.map((s) => s.name.replace(/_/g, " ").trim());
                                   } else if (currentXAxis < 0) {
                                     availableYSeries = [...rawLabels];
                                   } else {
@@ -675,11 +683,11 @@ export class WwChart extends LitElementWw {
                                   }
                                 }
 
-                                const currentYColumns = activeViz?.yColumns ?? [];
+                                const currentYColumns = (activeViz?.yColumns ?? []).map(c => c.replace(/_/g, " ").trim());
                                 const validYColumns = currentYColumns.filter((c) => availableYSeries.includes(c));
                                 const selectedYSeries = validYColumns.length > 0 ? validYColumns : [];
 
-                                const currentXCategories = activeViz?.xCategories ?? [];
+                                const currentXCategories = (activeViz?.xCategories ?? []).map(c => c.replace(/_/g, " ").trim());
 
                                 const availableSpokes = [...rawLabels];
                                 const validSpokes = currentXCategories.filter((s) => availableSpokes.includes(s));
@@ -700,18 +708,18 @@ export class WwChart extends LitElementWw {
                                       max-options-visible="2"
                                       placeholder="All spokes"
                                       clearable
-                                      .value=${selectedSpokes}
+                                      .value=${selectedSpokes.map(s => String(availableSpokes.indexOf(s))).filter(i => i !== "-1")}
                                       ?disabled=${!canChangeOptions}
                                       hoist
                                       @sl-change=${(e: Event) => {
                                         if (!activeViz) return;
                                         const sl = e.target as any;
                                         const opts: any[] = [...sl.querySelectorAll("sl-option")];
-                                        const selected = opts.filter(o => o.selected).map(o => o.value);
+                                        const selected = opts.filter(o => o.selected).map(o => availableSpokes[Number(o.value)] ?? o.value);
                                         this.changeVizXCategories(activeViz.id, selected);
                                       }}
                                     >
-                                      ${availableSpokes.map((s) => html`<sl-option value=${s} ?selected=${selectedSpokes.includes(s)}>${s}</sl-option>`)}
+                                      ${availableSpokes.map((s, i) => html`<sl-option value=${String(i)} .selected=${selectedSpokes.includes(s)}>${s}</sl-option>`)}
                                     </sl-select>`)}
                                   ` : html`
                                     <span class="viz-type-label">${xAxisLabel}</span>
@@ -743,18 +751,18 @@ export class WwChart extends LitElementWw {
                                         max-options-visible="2"
                                         placeholder="All series"
                                         clearable
-                                        .value=${selectedYSeries}
+                                        .value=${selectedYSeries.map(s => String(availableYSeries.indexOf(s))).filter(i => i !== "-1")}
                                         ?disabled=${!canChangeOptions}
                                         hoist
                                         @sl-change=${(e: Event) => {
                                           if (!activeViz) return;
                                           const sl = e.target as any;
                                           const opts: any[] = [...sl.querySelectorAll("sl-option")];
-                                          const selected = opts.filter(o => o.selected).map(o => o.value);
+                                          const selected = opts.filter(o => o.selected).map(o => availableYSeries[Number(o.value)] ?? o.value);
                                           this.changeVizYColumns(activeViz.id, selected);
                                         }}
                                       >
-                                        ${availableYSeries.map((s) => html`<sl-option value=${s} ?selected=${selectedYSeries.includes(s)}>${s}</sl-option>`)}
+                                        ${availableYSeries.map((s, i) => html`<sl-option value=${String(i)} .selected=${selectedYSeries.includes(s)}>${s}</sl-option>`)}
                                       </sl-select>`)}
                                     ` : ""}
                                   `}
@@ -797,10 +805,10 @@ export class WwChart extends LitElementWw {
                               const _cRawLabels = (this.sharedState.chart.datasets.labels ?? []).map(l => l.replace(/_/g, " ").trim());
                               const _cRawSets = (this.sharedState.chart.datasets.sets ?? []) as any[];
                               const _cAvailSeries = _xai === -2
-                                ? _cRawSets.map((s) => s.name)
+                                ? _cRawSets.map((s) => s.name.replace(/_/g, " ").trim())
                                 : [..._cRawLabels];
-                              const chartYColumns = (activeViz?.yColumns ?? []).filter((c) => _cAvailSeries.includes(c));
-                              const chartXCategories = (activeViz?.xCategories ?? []).filter((s) => _cRawLabels.includes(s));
+                              const chartYColumns = (activeViz?.yColumns ?? []).map(c => c.replace(/_/g, " ").trim()).filter((c) => _cAvailSeries.includes(c));
+                              const chartXCategories = (activeViz?.xCategories ?? []).map(c => c.replace(/_/g, " ").trim()).filter((s) => _cRawLabels.includes(s));
                               const chartScaleLabel = activeViz?.scaleLabel ?? "";
                               const chartKey = `${activeViz?.id ?? "default"}-${activeViz?.selectedType ?? "Bar"}`;
                               return keyed(

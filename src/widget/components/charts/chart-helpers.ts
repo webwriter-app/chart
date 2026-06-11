@@ -1,4 +1,3 @@
-import { CompleteChartData } from "../../state/models";
 import { Chart, ChartType } from "chart.js";
 import { GenericChart } from "./chart-base";
 
@@ -45,12 +44,6 @@ export function getContext<T extends GenericChart<{}>>(
   if (!ctx) throw new Error("No context found");
   return ctx;
 }
-
-export const getLabels = (data: CompleteChartData): string[] =>
-  Object.values(data).map((val) => val.label);
-
-export const getData = (data: CompleteChartData): number[] =>
-  Object.values(data).map((val) => val.value);
 
 export function updateData(
   sources: Record<string, any>[],

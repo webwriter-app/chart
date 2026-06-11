@@ -61,8 +61,6 @@ const RADAR_OPTIONS = {
   smoothTheLine: chartOption("boolean", false, "Smooth The Line"),
 };
 
-// Scatter plot tab options — not user-selectable as a visualization type,
-// but needed by getOptionsDefinition("Scatter plot").
 const SCATTERPLOT_OPTIONS = {
   listRegressionLine: chartOption("array", false, "Regression Model"),
   snapToGrid: chartOption("boolean", true, "Snap to Grid"),
@@ -90,8 +88,6 @@ const USER_CHARTS: ChartConfig[] = [
   { name: "Radar",      tagName: "radar-chart",  optionDefinition: RADAR_OPTIONS },
 ];
 
-// Only the option definition is needed for Scatter plot here;
-// the element itself is rendered directly in webwriter-chart.ts.
 const SCATTERPLOT_CONFIG: ChartConfig = {
   name: "Scatter plot",
   tagName: "scatter-chart-js",
@@ -114,8 +110,18 @@ export const availableRegressions = [
 export type RegressionType = (typeof availableRegressions)[number];
 export type ChartType = (typeof availableCharts)[number];
 
+const CHART_TYPE_ALIASES: Record<string, InternalChartType> = {
+  Scatterplot: "Scatter plot",
+};
+
+export function normalizeChartType(name: string): InternalChartType {
+  const spaced = name.replace(/_/g, " ");
+  return (CHART_TYPE_ALIASES[name] ?? CHART_TYPE_ALIASES[spaced] ?? spaced) as InternalChartType;
+}
+
 export function getOptionsDefinition(chartType: InternalChartType | string) {
-  const config = ALL_CHARTS.find((c) => c.name === chartType);
+  const normalized = normalizeChartType(String(chartType));
+  const config = ALL_CHARTS.find((c) => c.name === normalized);
   if (!config) throw new Error(`Chart "${chartType}" not found`);
   return config.optionDefinition;
 }
@@ -133,7 +139,7 @@ export function getChart(
   xCategories: string[] = [],
   scaleLabel: string = ""
 ) {
-  const config = USER_CHARTS.find((c) => c.name === chartType);
+  const config = USER_CHARTS.find((c) => c.name === normalizeChartType(String(chartType)));
   if (!config) return html`<div>Chart not found!</div>`;
   // @ts-ignore
   const chartName = unsafeStatic(config.tagName);

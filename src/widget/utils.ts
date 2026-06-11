@@ -1,4 +1,4 @@
-import { ChartData, ChartDataSet, ChartDataSets } from "./state/models";
+import { ChartData } from "./state/models";
 import randomWords from "random-words";
 
 export const converter = {
@@ -54,7 +54,7 @@ export const converter = {
     if (type === Number) return value.toString();
     if (type === Boolean) return value.toString();
     if (type === Object || type === Array) return JSON.stringify(value);
-    if (type === "color") convertRGBToHex(value.toString());
+    if (type === "color") return convertRGBToHex(value.toString());
     if (String(type).startsWith("Object<"))
       return JSON.stringify(value.toString());
     if (String(type) === "ChartData") return JSON.stringify(value.toString());
@@ -115,11 +115,6 @@ export function addAlphaToRGB(color: string, alpha: number): string {
   return color.replace("rgb", "rgba").replace(")", `, ${alpha})`);
 }
 
-export function removeAlphaFromRGB(color: string): string {
-  if (!color) return "rgb(0,0,0)";
-  return color.replace(/,.*\)/, ")");
-}
-
 export function randomNumber(min?: number, max?: number): number {
   if (min && max) return Math.floor(Math.random() * (max - min) + min);
   return Math.floor(Math.random() * 100);
@@ -134,22 +129,19 @@ export function randomColor(): string {
 
 export function generateColorWheel(numColors: number): string[] {
   const colors = [];
-  const saturation = 100; // Full saturation for vibrant colors
-  const lightnessBase = 50; // Midpoint lightness for a balanced color
+  const saturation = 100; 
+  const lightnessBase = 50; 
 
-  // Exclude red by spacing hues and avoiding the red spectrum
-  const step = Math.floor((360 - 60) / numColors); // Total degrees excluding red range
+  const step = Math.floor((360 - 60) / numColors); 
 
   for (let i = 0; i < numColors; i++) {
     let hue = step * i;
 
-    // Adjust hue to skip the red range (0-30° and 330-360°)
     if (hue >= 0 && hue < 30) {
-      hue += 20; // Skip the first red range
+      hue += 20;
     } else if (hue >= 330) {
-      hue -= 20; // Skip the second red range
+      hue -= 20; 
     }
-    // Introduce a slight variation in lightness for more contrast
     const lightness = lightnessBase + (i % 2 === 0 ? 10 : -10);
     colors.push(hslToHex(hue, saturation, lightness));
   }
@@ -169,7 +161,7 @@ function hslToHex(h: number, s: number, l: number) {
     const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
     return Math.round(255 * color)
       .toString(16)
-      .padStart(2, "0"); // convert to Hex and prefix "0" if needed
+      .padStart(2, "0"); 
   };
   return `#${f(0)}${f(8)}${f(4)}`;
 }
@@ -210,95 +202,3 @@ export function chartOption<T extends keyof TypeMapping>(
     } as any;
 }
 
-export function fillArray<T>(length: number, value: T): T[] {
-  return Array(length).fill(value);
-}
-
-export async function readFileInput(e: any): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let fileContent = "";
-
-    const file = e.target.files[0];
-
-    const reader = new FileReader();
-    reader.onload = function (event) {
-      if (!event.target) return;
-      fileContent += event.target.result + "\n";
-    };
-    reader.readAsText(file);
-    reader.onloadend = () => resolve(fileContent);
-    reader.onerror = () => reject();
-  });
-}
-
-export function csvToDataset(fileContent: string): {
-  datasets: ChartDataSets;
-  title: string | undefined;
-} {
-  const sets: ChartDataSet[] = [];
-  const lines = fileContent.replace(/\r\n/g, "\n").split("\n");
-
-  const wwcFormat = lines[0].startsWith("#wwc#");
-
-  let numberOfDataColumns = lines[0].split(",").indexOf("#");
-  let title = undefined;
-  let firstElementIsNumber = true;
-
-  lines.slice(1).forEach((line) => {
-    if (!line) return;
-    const values = line.trim().split(",");
-    let color = values[numberOfDataColumns + 1];
-    let colors = values.slice(numberOfDataColumns + 2);
-    if (values.length < numberOfDataColumns) return;
-
-    if (!wwcFormat) {
-      color = randomColor();
-      colors = values.map(() => randomColor());
-    }
-
-    const parseCell = (x: string) => {
-      const trimmed = x.trim();
-      const n = Number(trimmed);
-      return isNaN(n) ? trimmed : n;
-    };
-    const data =
-      numberOfDataColumns === -1
-        ? values.map(parseCell)
-        : values.slice(0, numberOfDataColumns).map(parseCell);
-
-    let set = {
-      name: randomString(),
-      data,
-      color,
-      colors,
-    };
-    if (Number.isNaN(Number(values[0]))) {
-      firstElementIsNumber = false;
-      set.name = values[0];
-      set.data = set.data.slice(1);
-    }
-
-    sets.push(set);
-  });
-
-  let labels =
-    numberOfDataColumns === -1
-      ? lines[0].split(",")
-      : lines[0].split(",").slice(0, numberOfDataColumns);
-
-  if (wwcFormat) labels[0] = labels[0].slice(5);
-
-  if (!firstElementIsNumber) {
-    title = labels[0];
-    labels = labels.slice(1);
-    debugger;
-  }
-
-  return {
-    datasets: {
-      labels: labels,
-      sets: sets,
-    },
-    title,
-  };
-}

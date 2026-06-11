@@ -1,12 +1,6 @@
 import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import {
-  randomColor,
-  //csvToDataset,
-  randomNumber,
-  randomString,
-  //readFileInput,
-} from "../../utils";
+import { randomColor, randomNumber, randomString } from "../../utils";
 
 import style from "./scatter-dataset-input.style";
 import SlButton from "@shoelace-style/shoelace/dist/components/button/button.component.js";
@@ -783,10 +777,7 @@ render() {
                                 index_reverse;
                               e.target.focus();
                             }}
-                            @blur="${() =>
-                              (this.openColumnTypePopupIndexInSet =
-                                -1 &&
-                                (this.openColumnTypePopupIndexInLabels = -1))}"
+                            @blur="${() => { this.openColumnTypePopupIndexInSet = -1; this.openColumnTypePopupIndexInLabels = -1; }}"
                           ></sl-icon-button>
 
                           <div class="dropdown-content">

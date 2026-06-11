@@ -49,19 +49,6 @@ export interface ChartDataSets {
   sets: ChartDataSet[];
 }
 
-export interface ScatterplotDataSets {
-  axisLabels: { x: string; y: string };
-  sets: ScatterplotDataSet[];
-}
-
-export interface ScatterplotDataSet {
-  scatter_color: string;
-  scatter_titel: string;
-  ids: number[];
-  dimensional_data?: { x: number; y: number; selected: boolean }[];
-  index_in_scatterdatasets: number;
-}
-
 export interface LineDataSet {
   data: { x: number; y: number }[];
   color: string;
