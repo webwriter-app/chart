@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.1" srcLang="en" trgLang="pt-PT">
+<file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Exemplo de exercício:</target></segment></unit>
+<unit id="The airline company Touri GmbH has prepared an analysis of revenue growth [%]     in relation to customer growth [%]. Look at the scatter plot     and determine whether a positive, negative, or no correlation exists.     Draw the best-fit line in the diagram and calculate the company's revenue     at a customer growth of 120%.#1"><segment><source>The airline company Touri GmbH has prepared an analysis of revenue growth [%]
+    in relation to customer growth [%]. Look at the scatter plot
+    and determine whether a positive, negative, or no correlation exists.
+    Draw the best-fit line in the diagram and calculate the company's revenue
+    at a customer growth of 120%.</source><target>A companhia aérea Touri GmbH elaborou uma análise do crescimento das receitas [%]
+    em relação ao crescimento da base de clientes [%]. Observe o gráfico de dispersão
+    e determine se existe uma correlação positiva, negativa ou se não existe qualquer correlação.
+    Trace a reta de melhor ajuste no diagrama e calcule as receitas da empresa
+    com um crescimento da base de clientes de 120%.</target></segment></unit>
+</file>
+<file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Exemplo de exercício:</target></segment></unit>
+<unit id="In the annual Wurzelweglauf in Konz,#1"><segment><source>In the annual Wurzelweglauf in Konz,</source><target>Na corrida anual Wurzelweglauf, em Konz,</target></segment></unit>
+<unit id="30 people#1"><segment><source>30 people</source><target>30 pessoas</target></segment></unit>
+<unit id="participated.     The evaluation of the kilometers run is listed below. How many     kilometers were covered on average (arithmetic mean)? What     is the median of the kilometers covered? Select the data point as     the median directly in the graph. State the difference between the two     factors.#1"><segment><source>participated.
+    The evaluation of the kilometers run is listed below. How many
+    kilometers were covered on average (arithmetic mean)? What
+    is the median of the kilometers covered? Select the data point as
+    the median directly in the graph. State the difference between the two
+    factors.</source><target>participaram.
+    A avaliação dos quilómetros percorridos é apresentada abaixo. Quantos
+    quilómetros foram percorridos, em média (média aritmética)? Qual
+    é a mediana dos quilómetros percorridos? Selecione o ponto de dados que corresponde
+    à mediana diretamente no gráfico. Indique a diferença entre os dois
+    fatores.</target></segment></unit>
+</file>
+</xliff>

@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.1" srcLang="en" trgLang="hu">
+<file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Példa feladatra:</target></segment></unit>
+<unit id="The airline company Touri GmbH has prepared an analysis of revenue growth [%]     in relation to customer growth [%]. Look at the scatter plot     and determine whether a positive, negative, or no correlation exists.     Draw the best-fit line in the diagram and calculate the company's revenue     at a customer growth of 120%.#1"><segment><source>The airline company Touri GmbH has prepared an analysis of revenue growth [%]
+    in relation to customer growth [%]. Look at the scatter plot
+    and determine whether a positive, negative, or no correlation exists.
+    Draw the best-fit line in the diagram and calculate the company's revenue
+    at a customer growth of 120%.</source><target>A Touri GmbH légitársaság elemzést készített a bevétel növekedéséről [%]
+    az ügyfélszám növekedéséhez [%] viszonyítva. Nézze meg a szórásdiagramot,
+    és állapítsa meg, hogy pozitív, negatív vagy semmilyen összefüggés nincs-e.
+    Rajzolja be a diagramra a legjobban illeszkedő egyenest, és számítsa ki a vállalat bevételét
+    120%-os ügyfélszám-növekedés esetén.</target></segment></unit>
+</file>
+<file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Példa feladatra:</target></segment></unit>
+<unit id="In the annual Wurzelweglauf in Konz,#1"><segment><source>In the annual Wurzelweglauf in Konz,</source><target>A Konzban megrendezett éves Wurzelweglauf versenyen,</target></segment></unit>
+<unit id="30 people#1"><segment><source>30 people</source><target>30 fő</target></segment></unit>
+<unit id="participated.     The evaluation of the kilometers run is listed below. How many     kilometers were covered on average (arithmetic mean)? What     is the median of the kilometers covered? Select the data point as     the median directly in the graph. State the difference between the two     factors.#1"><segment><source>participated.
+    The evaluation of the kilometers run is listed below. How many
+    kilometers were covered on average (arithmetic mean)? What
+    is the median of the kilometers covered? Select the data point as
+    the median directly in the graph. State the difference between the two
+    factors.</source><target>részt vettek.
+    Az elfutott kilométerek értékelését az alábbiakban mutatjuk be. Hány
+    kilométert tettek meg átlagosan (aritmetikai átlag)? Mi
+    a megtett kilométerek mediánja? Válassza ki az adatpontot
+    mediánként közvetlenül a grafikonon. Adja meg a két
+    tényező közötti különbséget.</target></segment></unit>
+</file>
+</xliff>

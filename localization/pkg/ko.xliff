@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.1" srcLang="en" trgLang="ko">
+<file id="." original=".">
+<unit id="description"><segment><source>ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.</source><target>ww-chart는 WebWriter 도구를 위한 대화형 데이터 시각화 위젯으로, 정적 및 탐색적 데이터 시각화를 위한 다양한 차트와 다이어그램을 구현합니다.</target></segment></unit>
+</file>
+<file id="./widgets/webwriter-chart" original="./widgets/webwriter-chart">
+<unit id="label"><segment><source>Charts</source><target>차트</target></segment></unit>
+</file>
+<file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
+<unit id="label"><segment><source>Scatterplot-Exercise</source><target>산점도-연습문제</target></segment></unit>
+</file>
+<file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
+<unit id="label"><segment><source>Mean-Median-Exercise</source><target>평균-중앙값-운동</target></segment></unit>
+</file>
+</xliff>

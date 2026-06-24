@@ -1,4 +1,5 @@
 import { html, css, PropertyValues } from "lit";
+import { msg } from "@lit/localize";
 import { customElement, property, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
 import * as d3regression from "d3-regression";
@@ -9,8 +10,8 @@ import SlButton from "@shoelace-style/shoelace/dist/components/button/button.com
 import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.component.js";
 import SlPopup from "@shoelace-style/shoelace/dist/components/popup/popup.component.js";
 import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.js";
-import IconPluslg from "bootstrap-icons/icons/plus-lg.svg";
-import IconTrash from "bootstrap-icons/icons/trash.svg";
+import IconPluslg from "@tabler/icons/outline/plus.svg";
+import IconTrash from "@tabler/icons/outline/trash.svg";
 import IconArrowsMove from "@tabler/icons/outline/arrows-move.svg";
 import IconLine from "@tabler/icons/outline/line.svg";
 
@@ -1934,7 +1935,7 @@ override render() {
             <div class="connect-tooltip"
               style="left:${cc.left}px;top:${cc.top}px;"
               @click=${(e: Event) => e.stopPropagation()}>
-              <sl-button size="small" @click=${() => this._connectSelected()}>Connect data points</sl-button>
+              <sl-button size="small" @click=${() => this._connectSelected()}>${msg("Connect data points")}</sl-button>
             </div>`;
           })() : ""}
 
@@ -1956,7 +1957,7 @@ override render() {
               <input
                 type="text"
                 .value=${sl.name ?? `Line ${this._selLineIdx! + 1}`}
-                placeholder="Line name"
+                placeholder=${msg("Line name")}
                 @input=${(e: Event) => {
                   const val = (e.target as HTMLInputElement).value;
                   this._lines = this._lines.map((l, i) =>
@@ -1973,7 +1974,7 @@ override render() {
             return html`
             <div class="coord-popup" style="left:${cp.left}px;top:${cp.top}px;"
               @click=${(e: Event) => e.stopPropagation()}>
-              <div class="coord-popup-title">Edit coordinates</div>
+              <div class="coord-popup-title">${msg("Edit coordinates")}</div>
               <div class="coord-popup-row">
                 <label>X</label>
                 <input type="number" step=${"any"}
@@ -2018,8 +2019,8 @@ override render() {
                     this._applyFixedPointBounds();
                     this._chart.update("none");
                   }
-                }}>Apply</button>
-                <button @click=${() => { this._editPopup = null; }}>Cancel</button>
+                }}>${msg("Apply")}</button>
+                <button @click=${() => { this._editPopup = null; }}>${msg("Cancel")}</button>
               </div>
             </div>
           `; })() : ""}
@@ -2038,10 +2039,10 @@ override render() {
           <!-- ── Add point ───────────────────────────────────── -->
           <sl-tooltip hoist placement="top-end"
             content=${!hasData
-              ? "Add data first"
+              ? msg("Add data first")
               : this._mode === "add-point"
-              ? "Click on chart to place a new point"
-              : "Add a data point"}
+              ? msg("Click on chart to place a new point")
+              : msg("Add a data point")}
           >
             <sl-button size="small" circle
               variant=${this._mode === "add-point" ? "primary" : "default"}
@@ -2054,7 +2055,7 @@ override render() {
 
           <!-- ── Edit position of selected point ──────────────── -->
           <sl-tooltip hoist placement="top-end"
-            content=${this._selCount !== 1 ? "Select exactly one point to edit its position" : "Edit point position"}
+            content=${this._selCount !== 1 ? msg("Select exactly one point to edit its position") : msg("Edit point position")}
           >
             <sl-button size="small" circle
               .disabled=${this._selCount !== 1}
@@ -2081,10 +2082,10 @@ override render() {
           <!-- ── Draw line ───────────────────────────────────── -->
           <sl-tooltip hoist placement="top-end"
             content=${!hasData
-              ? "Add data first"
+              ? msg("Add data first")
               : this._mode === "draw-line"
-              ? "Click two points to draw a line. Drag endpoints to adjust. Press Delete to remove selected."
-              : "Draw a line"}
+              ? msg("Click two points to draw a line. Drag endpoints to adjust. Press Delete to remove selected.")
+              : msg("Draw a line")}
           >
             <sl-button size="small" circle
               variant=${this._mode === "draw-line" ? "primary" : "default"}
@@ -2098,10 +2099,10 @@ override render() {
           <!-- ── Delete selected (points or line) ─────────────── -->
           <sl-tooltip hoist placement="top-end"
             content=${this._selLineIdx !== null
-              ? `Delete "${this._lines[this._selLineIdx]?.name ?? `Line ${this._selLineIdx + 1}`}"`
+              ? `${msg("Delete")} "${this._lines[this._selLineIdx]?.name ?? `Line ${this._selLineIdx + 1}`}"`
               : this._selCount === 0
-              ? "Select points or a line first"
-              : `Delete ${this._selCount} selected point${this._selCount > 1 ? "s" : ""}`}
+              ? msg("Select points or a line first")
+              : `${msg("Delete")} ${this._selCount} ${this._selCount > 1 ? msg("selected points") : msg("selected point")}`}
           >
             <sl-button size="small" circle variant="danger"
               .disabled=${this._selCount === 0 && this._selLineIdx === null}

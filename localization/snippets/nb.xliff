@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.1" srcLang="en" trgLang="nb">
+<file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Eksempel på oppgave:</target></segment></unit>
+<unit id="The airline company Touri GmbH has prepared an analysis of revenue growth [%]     in relation to customer growth [%]. Look at the scatter plot     and determine whether a positive, negative, or no correlation exists.     Draw the best-fit line in the diagram and calculate the company's revenue     at a customer growth of 120%.#1"><segment><source>The airline company Touri GmbH has prepared an analysis of revenue growth [%]
+    in relation to customer growth [%]. Look at the scatter plot
+    and determine whether a positive, negative, or no correlation exists.
+    Draw the best-fit line in the diagram and calculate the company's revenue
+    at a customer growth of 120%.</source><target>Flyselskapet Touri GmbH har utarbeidet en analyse av omsetningsveksten [%]
+    i forhold til kundeveksten [%]. Se på spredningsdiagrammet
+    og avgjør om det foreligger en positiv, negativ eller ingen sammenheng.
+    Tegn en tilpasningslinje i diagrammet og beregne selskapets omsetning
+    ved en kundevekst på 120 %.</target></segment></unit>
+</file>
+<file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Eksempel på oppgave:</target></segment></unit>
+<unit id="In the annual Wurzelweglauf in Konz,#1"><segment><source>In the annual Wurzelweglauf in Konz,</source><target>Under det årlige Wurzelweglauf-løpet i Konz,</target></segment></unit>
+<unit id="30 people#1"><segment><source>30 people</source><target>30 personer</target></segment></unit>
+<unit id="participated.     The evaluation of the kilometers run is listed below. How many     kilometers were covered on average (arithmetic mean)? What     is the median of the kilometers covered? Select the data point as     the median directly in the graph. State the difference between the two     factors.#1"><segment><source>participated.
+    The evaluation of the kilometers run is listed below. How many
+    kilometers were covered on average (arithmetic mean)? What
+    is the median of the kilometers covered? Select the data point as
+    the median directly in the graph. State the difference between the two
+    factors.</source><target>deltok.
+    Oversikten over antall løpte kilometer er vist nedenfor. Hvor mange
+    kilometer ble det i gjennomsnitt løpt (aritmetisk gjennomsnitt)? Hva
+    er medianen for antall løpte kilometer? Velg datapunktet som
+    medianen direkte i grafen. Angi forskjellen mellom de to
+    faktorene.</target></segment></unit>
+</file>
+</xliff>

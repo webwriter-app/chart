@@ -1,4 +1,5 @@
 import { html } from "lit";
+import { msg } from "@lit/localize";
 import { customElement, property } from "lit/decorators.js";
 import { randomColor, randomNumber, randomString } from "../../utils";
 
@@ -9,9 +10,9 @@ import SlInput from "@shoelace-style/shoelace/dist/components/input/input.compon
 import SlColorPicker from "@shoelace-style/shoelace/dist/components/color-picker/color-picker.component.js";
 import SlPopup from "@shoelace-style/shoelace/dist/components/popup/popup.component.js";
 import SlMenuItem from "@shoelace-style/shoelace/dist/components/menu-item/menu-item.component.js";
-import IconTrash from "bootstrap-icons/icons/trash.svg";
-import IconPlusCircle from "bootstrap-icons/icons/plus-circle.svg";
-import IconCaretdown from "bootstrap-icons/icons/caret-down.svg";
+import IconTrash from "@tabler/icons/outline/trash.svg";
+import IconPlusCircle from "@tabler/icons/outline/circle-plus.svg";
+import IconCaretdown from "@tabler/icons/outline/chevron-down.svg";
 import { SelectDataset } from "./select-dataset";
 import { updateColorForFilter } from "../charts/scatter/scatter-utils";
 import StateComponent from "../../stateful-component";
@@ -430,17 +431,15 @@ render() {
       ? html`<div class="btn-wrapper">
           <sl-button
             slot="anchor"
-            label="Add ${this.sharedState.scatterDatasets.sets.length === 0
-              ? "first"
-              : "new"} Dataset"
+            label=${this.sharedState.scatterDatasets.sets.length === 0
+              ? msg("Add First Dataset")
+              : msg("Add New Dataset")}
             @click=${() => {
               this.addNewDataset();
             }}
-            >Add
-            ${this.sharedState.scatterDatasets.sets.length === 0
-              ? "First"
-              : "New"}
-            Dataset</sl-button
+            >${this.sharedState.scatterDatasets.sets.length === 0
+              ? msg("Add First Dataset")
+              : msg("Add New Dataset")}</sl-button
           >
           <wwci-select-dataset
             .sharedState=${this.sharedState}
@@ -805,7 +804,7 @@ render() {
                                 src=${IconTrash}
                                 label="Settings"
                               ></sl-icon-button>
-                              Delete Column
+                              ${msg("Delete Column")}
                             </sl-menu-item>
                             <sl-menu-item
                               type="checkbox"
@@ -818,8 +817,8 @@ render() {
                                 : true}
                               @mousedown=${(e: MouseEvent) => {
                                 if (e.button !== 0) return;
-                                e.preventDefault(); // Prevent default selection behavior
-                                e.stopPropagation(); // Stop propagation to avoid other side effects
+                                e.preventDefault(); 
+                                e.stopPropagation(); 
                                 const targetIndex =
                                   this.sharedState.scatterDatasets.sets.length -
                                   1 -
@@ -884,8 +883,7 @@ render() {
                                 this.dispatchStateChange();
                               }}
                               class="button-datatype-category"
-                              >Convert column values to
-                              categorical</sl-menu-item
+                              >${msg("Convert column values to categorical")}</sl-menu-item
                             >
                             <sl-menu-item
                               type="checkbox"
@@ -968,7 +966,7 @@ render() {
                                 this.dispatchStateChange();
                               }}
                               class="button-datatype-number"
-                              >Convert column values to numeric</sl-menu-item
+                              >${msg("Convert column values to numeric")}</sl-menu-item
                             >
                           </div>
                         </sl-popup>
@@ -1194,7 +1192,7 @@ render() {
                     <sl-icon-button
                       slot="anchor"
                       src=${IconPlusCircle}
-                      label="Add Column"
+                      label=${msg("Add Column")}
                       @click=${(e) => {
                         this.addColumnPopupOpenIndex =
                           this.sharedState.scatterDatasets.sets.length -
@@ -1218,7 +1216,7 @@ render() {
                           this.addColumnPopupOpenIndex = -1;
                         }}
                       >
-                        Categorical values
+                        ${msg("Categorical values")}
                       </sl-menu-item>
                       <sl-menu-item
                         class="button-datatype-number"
@@ -1232,7 +1230,7 @@ render() {
                           this.addColumnPopupOpenIndex = -1;
                         }}
                       >
-                        Numeric values
+                        ${msg("Numeric values")}
                       </sl-menu-item>
                     </div>
                   </sl-popup>
@@ -1250,7 +1248,7 @@ render() {
                         index_reverse
                     )}
                   src=${IconPlusCircle}
-                  label="Add Dataset"
+                  label=${msg("Add Dataset")}
                 ></sl-icon-button>`
               : html``
           }

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.1" srcLang="en" trgLang="sv">
+<file id="." original=".">
+<unit id="description"><segment><source>ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.</source><target>ww-chart är en interaktiv widget för datavisualisering avsedd för verktyget WebWriter, som erbjuder olika diagram och grafer för både statisk och utforskande datavisualisering.</target></segment></unit>
+</file>
+<file id="./widgets/webwriter-chart" original="./widgets/webwriter-chart">
+<unit id="label"><segment><source>Charts</source><target>Diagram</target></segment></unit>
+</file>
+<file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
+<unit id="label"><segment><source>Scatterplot-Exercise</source><target>Övning i punktdiagram</target></segment></unit>
+</file>
+<file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
+<unit id="label"><segment><source>Mean-Median-Exercise</source><target>Medelvärde–Median–Träning</target></segment></unit>
+</file>
+</xliff>

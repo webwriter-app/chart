@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.1" srcLang="en" trgLang="zh-Hans">
+<file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>练习示例：</target></segment></unit>
+<unit id="The airline company Touri GmbH has prepared an analysis of revenue growth [%]     in relation to customer growth [%]. Look at the scatter plot     and determine whether a positive, negative, or no correlation exists.     Draw the best-fit line in the diagram and calculate the company's revenue     at a customer growth of 120%.#1"><segment><source>The airline company Touri GmbH has prepared an analysis of revenue growth [%]
+    in relation to customer growth [%]. Look at the scatter plot
+    and determine whether a positive, negative, or no correlation exists.
+    Draw the best-fit line in the diagram and calculate the company's revenue
+    at a customer growth of 120%.</source><target>航空公司Touri GmbH对收入增长率[%]
+    与客户增长率[%]之间的关系进行了分析。请观察散点图，
+    判断二者之间是呈正相关、负相关还是无相关。
+    在图中绘制最佳拟合直线，并计算当客户增长率为120%时
+    该公司的收入。</target></segment></unit>
+</file>
+<file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>练习示例：</target></segment></unit>
+<unit id="In the annual Wurzelweglauf in Konz,#1"><segment><source>In the annual Wurzelweglauf in Konz,</source><target>在康茨举行的年度“Wurzelweglauf”比赛中，</target></segment></unit>
+<unit id="30 people#1"><segment><source>30 people</source><target>30人</target></segment></unit>
+<unit id="participated.     The evaluation of the kilometers run is listed below. How many     kilometers were covered on average (arithmetic mean)? What     is the median of the kilometers covered? Select the data point as     the median directly in the graph. State the difference between the two     factors.#1"><segment><source>participated.
+    The evaluation of the kilometers run is listed below. How many
+    kilometers were covered on average (arithmetic mean)? What
+    is the median of the kilometers covered? Select the data point as
+    the median directly in the graph. State the difference between the two
+    factors.</source><target>参加了。
+    跑步公里数的统计结果如下。平均
+    跑了多少公里（算术平均数）？
+    跑完的公里数中位数是多少？请直接在图表中
+    选定中位数对应的数据点。说明这两个
+    因素之间的区别。</target></segment></unit>
+</file>
+</xliff>

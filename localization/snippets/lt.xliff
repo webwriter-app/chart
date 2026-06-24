@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.1" srcLang="en" trgLang="lt">
+<file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Pavyzdinė užduotis:</target></segment></unit>
+<unit id="The airline company Touri GmbH has prepared an analysis of revenue growth [%]     in relation to customer growth [%]. Look at the scatter plot     and determine whether a positive, negative, or no correlation exists.     Draw the best-fit line in the diagram and calculate the company's revenue     at a customer growth of 120%.#1"><segment><source>The airline company Touri GmbH has prepared an analysis of revenue growth [%]
+    in relation to customer growth [%]. Look at the scatter plot
+    and determine whether a positive, negative, or no correlation exists.
+    Draw the best-fit line in the diagram and calculate the company's revenue
+    at a customer growth of 120%.</source><target>Oro linijų bendrovė „Touri GmbH“ parengė pajamų augimo [%]
+    ir klientų skaičiaus augimo [%] santykio analizę. Pažvelkite į sklaidos diagramą
+    ir nustatykite, ar egzistuoja teigiama, neigiama koreliacija, ar jos nėra.
+    Diagramoje nubrėžkite geriausiai atitinkančią tiesę ir apskaičiuokite bendrovės pajamas,
+    kai klientų skaičius auga 120 %.</target></segment></unit>
+</file>
+<file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Pavyzdinė užduotis:</target></segment></unit>
+<unit id="In the annual Wurzelweglauf in Konz,#1"><segment><source>In the annual Wurzelweglauf in Konz,</source><target>Kasmetiniame „Wurzelweglauf“ bėgime Konze,</target></segment></unit>
+<unit id="30 people#1"><segment><source>30 people</source><target>30 žmonių</target></segment></unit>
+<unit id="participated.     The evaluation of the kilometers run is listed below. How many     kilometers were covered on average (arithmetic mean)? What     is the median of the kilometers covered? Select the data point as     the median directly in the graph. State the difference between the two     factors.#1"><segment><source>participated.
+    The evaluation of the kilometers run is listed below. How many
+    kilometers were covered on average (arithmetic mean)? What
+    is the median of the kilometers covered? Select the data point as
+    the median directly in the graph. State the difference between the two
+    factors.</source><target>dalyvavo.
+    Toliau pateikiami nubėgtų kilometrų vertinimo duomenys. Kiek
+    kilometrų vidutiniškai (aritmetinis vidurkis) buvo nubėgta? Kokia
+    yra nubėgtų kilometrų mediana? Pasirinkite duomenų tašką kaip
+    medianą tiesiogiai diagramoje. Nurodykite skirtumą tarp šių dviejų
+    veiksnių.</target></segment></unit>
+</file>
+</xliff>

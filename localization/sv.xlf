@@ -1,0 +1,286 @@
+<xliff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="lit-localize-inputs" datatype="plaintext" source-language="en" target-language="sv">
+    <body>
+      <trans-unit id="s7853336e2d49e552">
+        <source>Connect data points</source>
+        <target>Koppla samman datapunkter</target>
+      </trans-unit>
+      <trans-unit id="sce2e89993cd7a286">
+        <source>Line name</source>
+        <target>Radnamn</target>
+      </trans-unit>
+      <trans-unit id="s5b73a90cdea7a562">
+        <source>Edit coordinates</source>
+        <target>Redigera koordinater</target>
+      </trans-unit>
+      <trans-unit id="sb8f855b49234b81b">
+        <source>Apply</source>
+        <target>Ansök</target>
+      </trans-unit>
+      <trans-unit id="s2ceb11be2290bb1b">
+        <source>Cancel</source>
+        <target>Avbryt</target>
+      </trans-unit>
+      <trans-unit id="sc23e4eb04a4e5d22">
+        <source>Add data first</source>
+        <target>Lägg till data först</target>
+      </trans-unit>
+      <trans-unit id="se1002705746ad149">
+        <source>Click on chart to place a new point</source>
+        <target>Klicka på diagrammet för att lägga till en ny punkt</target>
+      </trans-unit>
+      <trans-unit id="s896712776969fe57">
+        <source>Add a data point</source>
+        <target>Lägg till en datapunkt</target>
+      </trans-unit>
+      <trans-unit id="sb65c362178e4bea9">
+        <source>Select exactly one point to edit its position</source>
+        <target>Välj exakt en punkt för att redigera dess position</target>
+      </trans-unit>
+      <trans-unit id="s7a4c288d491e6856">
+        <source>Edit point position</source>
+        <target>Redigera punktens position</target>
+      </trans-unit>
+      <trans-unit id="s2b8b8f3bb6ee5a04">
+        <source>Click two points to draw a line. Drag endpoints to adjust. Press Delete to remove selected.</source>
+        <target>Klicka på två punkter för att rita en linje. Dra i ändpunkterna för att justera. Tryck på Delete för att ta bort det markerade.</target>
+      </trans-unit>
+      <trans-unit id="s622204928541cb72">
+        <source>Draw a line</source>
+        <target>Rita en linje</target>
+      </trans-unit>
+      <trans-unit id="sdc673e73b5c13aea">
+        <source>Delete</source>
+        <target>Ta bort</target>
+      </trans-unit>
+      <trans-unit id="s3e1bac84c3c4c41e">
+        <source>Select points or a line first</source>
+        <target>Välj först punkter eller en linje</target>
+      </trans-unit>
+      <trans-unit id="s32b873a2dfa6c573">
+        <source>selected points</source>
+        <target>utvalda punkter</target>
+      </trans-unit>
+      <trans-unit id="s8a1650bddf8ecd32">
+        <source>selected point</source>
+        <target>vald punkt</target>
+      </trans-unit>
+      <trans-unit id="se8aa1cc7653c6ba2">
+        <source>Brought your own dataset?</source>
+        <target>Har du tagit med dig din egen datamängd?</target>
+      </trans-unit>
+      <trans-unit id="s157ba0d6fcb49b36">
+        <source>Upload or drag and drop an Excel (.xlsx) or CSV file here.</source>
+        <target>Ladda upp eller dra och släpp en Excel-fil (.xlsx) eller CSV-fil här.</target>
+      </trans-unit>
+      <trans-unit id="sb59e3f80c11ac8d6">
+        <source>Choose File</source>
+        <target>Välj Arkiv</target>
+      </trans-unit>
+      <trans-unit id="s091d3407b5b2f824">
+        <source>OR</source>
+        <target>ELLER</target>
+      </trans-unit>
+      <trans-unit id="s252bcd59b75fd110">
+        <source>Create Empty Table</source>
+        <target>Skapa en tom tabell</target>
+      </trans-unit>
+      <trans-unit id="s74d2679756765e55">
+        <source>No data available.</source>
+        <target>Inga uppgifter finns tillgängliga.</target>
+      </trans-unit>
+      <trans-unit id="sd6243fa23e8f2f3d">
+        <source>Chart Title</source>
+        <target>Diagramtitel</target>
+      </trans-unit>
+      <trans-unit id="s079a052719914d71">
+        <source>Category</source>
+        <target>Kategori</target>
+      </trans-unit>
+      <trans-unit id="sd6ea5bfe15abc64e">
+        <source>Add First Dataset</source>
+        <target>Lägg till första datauppsättningen</target>
+      </trans-unit>
+      <trans-unit id="sfd83c43e5e471976">
+        <source>Add New Dataset</source>
+        <target>Lägg till ny datamängd</target>
+      </trans-unit>
+      <trans-unit id="s1760229adf0051d4">
+        <source>Delete Column</source>
+        <target>Ta bort kolumn</target>
+      </trans-unit>
+      <trans-unit id="s0a764ae8299c5b85">
+        <source>Convert column values to categorical</source>
+        <target>Konvertera kolumnvärden till kategoriska värden</target>
+      </trans-unit>
+      <trans-unit id="s4866dfc6adc9576a">
+        <source>Convert column values to numeric</source>
+        <target>Konvertera kolumnvärden till numeriska värden</target>
+      </trans-unit>
+      <trans-unit id="s136c24957f6ff7ae">
+        <source>Add Column</source>
+        <target>Lägg till kolumn</target>
+      </trans-unit>
+      <trans-unit id="s4d36f5dbd7bce477">
+        <source>Categorical values</source>
+        <target>Kategoriska värden</target>
+      </trans-unit>
+      <trans-unit id="sb3df6ba2722236ae">
+        <source>Numeric values</source>
+        <target>Numeriska värden</target>
+      </trans-unit>
+      <trans-unit id="s8f4aedf9ea5ac98c">
+        <source>Add Dataset</source>
+        <target>Lägg till dataset</target>
+      </trans-unit>
+      <trans-unit id="s0b786a0e85eb6783">
+        <source>Border Radius</source>
+        <target>Kantradie</target>
+      </trans-unit>
+      <trans-unit id="s139c91ebf9b8a6cf">
+        <source>Border Width</source>
+        <target>Kantbredd</target>
+      </trans-unit>
+      <trans-unit id="s4ac65d66ac4579e9">
+        <source>Filled</source>
+        <target>Fylld</target>
+      </trans-unit>
+      <trans-unit id="s97a11808416218cd">
+        <source>Dynamic Scalling</source>
+        <target>Dynamisk skalning</target>
+      </trans-unit>
+      <trans-unit id="sd4f55ee88b9e1f9b">
+        <source>Dynamic Scaling</source>
+        <target>Dynamisk skalning</target>
+      </trans-unit>
+      <trans-unit id="s4ccf09d603496eb5">
+        <source>Scale Min</source>
+        <target>Skala Min</target>
+      </trans-unit>
+      <trans-unit id="s4ce9f3d60360110b">
+        <source>Scale Max</source>
+        <target>Maxskala</target>
+      </trans-unit>
+      <trans-unit id="s27873db35f5921f4">
+        <source>Step Size</source>
+        <target>Stegstorlek</target>
+      </trans-unit>
+      <trans-unit id="s731f505729e9f61f">
+        <source>Line Width</source>
+        <target>Linjebredd</target>
+      </trans-unit>
+      <trans-unit id="s8708316af61ff162">
+        <source>Point Size</source>
+        <target>Teckenstorlek</target>
+      </trans-unit>
+      <trans-unit id="s7bc47283a5d67e5e">
+        <source>Smooth The Line</source>
+        <target>Jämna ut linjen</target>
+      </trans-unit>
+      <trans-unit id="sd03b05776bec9ad1">
+        <source>Point Radius</source>
+        <target>Punktens radie</target>
+      </trans-unit>
+      <trans-unit id="sd1f81984eeb7c0e8">
+        <source>Fill</source>
+        <target>Fyll</target>
+      </trans-unit>
+      <trans-unit id="sd2a36db7cf71f4dd">
+        <source>Regression Model</source>
+        <target>Regressionsmodell</target>
+      </trans-unit>
+      <trans-unit id="s9e4ee58d49e9464e">
+        <source>Snap to Grid</source>
+        <target>Justera till rutnätet</target>
+      </trans-unit>
+      <trans-unit id="s217fd408e63c93f4">
+        <source>Show Grid</source>
+        <target>Visa rutnät</target>
+      </trans-unit>
+      <trans-unit id="sa602e3fd3f2d98fd">
+        <source>Animation</source>
+        <target>Animation</target>
+      </trans-unit>
+      <trans-unit id="s454003c366dd48f0">
+        <source>Show Correlation</source>
+        <target>Visa korrelation</target>
+      </trans-unit>
+      <trans-unit id="sa3fb0dd3b48ec8d5">
+        <source>Show Outliers</source>
+        <target>Visa extremvärden</target>
+      </trans-unit>
+      <trans-unit id="s34250d39671d5c5d">
+        <source>Show Mean</source>
+        <target>Visa medelvärde</target>
+      </trans-unit>
+      <trans-unit id="sac8256732f2ee1e5">
+        <source>Data</source>
+        <target>Data</target>
+      </trans-unit>
+      <trans-unit id="se1b3519fe89f4ffc">
+        <source>Scatter plot</source>
+        <target>Spridningsdiagram</target>
+      </trans-unit>
+      <trans-unit id="s66f26fdcbe2101eb">
+        <source>Chart</source>
+        <target>Diagram</target>
+      </trans-unit>
+      <trans-unit id="s194bf0f1cc99bf38">
+        <source>Add visualization</source>
+        <target>Lägg till visualisering</target>
+      </trans-unit>
+      <trans-unit id="s36d76c85f8d9a3e6">
+        <source>Clear Data</source>
+        <target>Rensa data</target>
+      </trans-unit>
+      <trans-unit id="s1c5d85ee2e023759">
+        <source>Chart type</source>
+        <target>Diagramtyp</target>
+      </trans-unit>
+      <trans-unit id="s0bb151c9319a6813">
+        <source>X-Axis</source>
+        <target>X-axeln</target>
+      </trans-unit>
+      <trans-unit id="s602805b1eb3106c6">
+        <source>Y-Axis</source>
+        <target>Y-axeln</target>
+      </trans-unit>
+      <trans-unit id="s01670713d13f14d5">
+        <source>Apply Changes to Data</source>
+        <target>Tillämpa ändringar på data</target>
+      </trans-unit>
+      <trans-unit id="se68f81f234173daf">
+        <source>Segments</source>
+        <target>Segment</target>
+      </trans-unit>
+      <trans-unit id="sb9f1339b3a61604a">
+        <source>Levels</source>
+        <target>Nivåer</target>
+      </trans-unit>
+      <trans-unit id="s2e036aec33b837e9">
+        <source>Selected Series</source>
+        <target>Utvalda serier</target>
+      </trans-unit>
+      <trans-unit id="sc3f59ad27535ed54">
+        <source>Spokes</source>
+        <target>Eker</target>
+      </trans-unit>
+      <trans-unit id="s36698f2375b94e75">
+        <source>All spokes</source>
+        <target>Alla ekrar</target>
+      </trans-unit>
+      <trans-unit id="s383e1658e0bde119">
+        <source>All series</source>
+        <target>Alla serier</target>
+      </trans-unit>
+      <trans-unit id="s8e20bfbd5c1d00b8">
+        <source>Please select two different values for X and Y axis.</source>
+        <target>Välj två olika värden för X- och Y-axeln.</target>
+      </trans-unit>
+      <trans-unit id="sa172625dedfc3e78">
+        <source>Please add data first to display the graph.</source>
+        <target>Lägg först in data för att visa diagrammet.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

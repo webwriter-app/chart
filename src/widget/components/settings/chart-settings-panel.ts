@@ -1,4 +1,31 @@
 import { css, html, TemplateResult } from "lit";
+import { msg } from "@lit/localize";
+
+function translateOptionName(name: string): string {
+  const map: Record<string, string> = {
+    "Border Radius": msg("Border Radius"),
+    "Border Width": msg("Border Width"),
+    "Filled": msg("Filled"),
+    "Dynamic Scalling": msg("Dynamic Scalling"),
+    "Dynamic Scaling": msg("Dynamic Scaling"),
+    "Scale Min": msg("Scale Min"),
+    "Scale Max": msg("Scale Max"),
+    "Step Size": msg("Step Size"),
+    "Line Width": msg("Line Width"),
+    "Point Size": msg("Point Size"),
+    "Smooth The Line": msg("Smooth The Line"),
+    "Point Radius": msg("Point Radius"),
+    "Fill": msg("Fill"),
+    "Regression Model": msg("Regression Model"),
+    "Snap to Grid": msg("Snap to Grid"),
+    "Show Grid": msg("Show Grid"),
+    "Animation": msg("Animation"),
+    "Show Correlation": msg("Show Correlation"),
+    "Show Outliers": msg("Show Outliers"),
+    "Show Mean": msg("Show Mean"),
+  };
+  return map[name] ?? name;
+}
 import { customElement, state } from "lit/decorators.js";
 
 
@@ -10,8 +37,8 @@ import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/i
 import SlDetails from "@shoelace-style/shoelace/dist/components/details/details.component.js";
 import SlButtonGroup from "@shoelace-style/shoelace/dist/components/button-group/button-group.component.js";
 import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert.component.js";
-import IconLock from "bootstrap-icons/icons/lock.svg";
-import IconUnLock from "bootstrap-icons/icons/unlock.svg";
+import IconLock from "@tabler/icons/outline/lock.svg";
+import IconUnLock from "@tabler/icons/outline/lock-open.svg";
 import StateComponent from "../../stateful-component";
 
 declare global {
@@ -489,7 +516,7 @@ render() {
           return html`
             <div class="container">
               <div class="row">
-                <p class="text">${input.name}</p>
+                <p class="text">${translateOptionName(input.name)}</p>
                 ${this.sharedState.editable
                   ? html`<!-- Lock controls temporarily disabled -->
                       <div></div>`

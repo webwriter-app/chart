@@ -1,4 +1,5 @@
 import { html } from "lit";
+import { msg } from "@lit/localize";
 import { customElement, state } from "lit/decorators.js";
 import {
   EditableSet,
@@ -262,23 +263,23 @@ render() {
               @dragleave=${this._handleDragLeave}
               @drop=${this._handleDrop}
             >
-              <h3>Brought your own dataset?</h3>
-              <p>Upload or drag and drop an Excel (.xlsx) or CSV file here.</p>
+              <h3>${msg("Brought your own dataset?")}</h3>
+              <p>${msg("Upload or drag and drop an Excel (.xlsx) or CSV file here.")}</p>
               <input type="file" id="data-uploader"
                 accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
                 class="hidden-file-input"
                 @change=${this.handleFileUpload} />
               <sl-button variant="primary" @click=${() => this.shadowRoot?.getElementById('data-uploader')?.click()}>
                 <sl-icon src=${IconTableImport} class="table-btn" ></sl-icon>
-                Choose File
+                ${msg("Choose File")}
               </sl-button>
             </div>
-            <div class="empty-divider">OR</div>
+            <div class="empty-divider">${msg("OR")}</div>
             <sl-button variant="default" @click=${() => this.initializeManualEntry()}>
               <sl-icon src=${IconTablePlus} class="table-btn" ></sl-icon>
-              Create Empty Table
+              ${msg("Create Empty Table")}
             </sl-button>
-          ` : html`<p class="empty-title">No data available.</p>`}
+          ` : html`<p class="empty-title">${msg("No data available.")}</p>`}
         </div>
       `;
     }
@@ -297,7 +298,7 @@ render() {
                     class="cell-input title-input"
                     type="text"
                     .value=${this.sharedState.chart.title}
-                    placeholder="Chart Title"
+                    placeholder=${msg("Chart Title")}
                     ?disabled=${!canEdit}
                     @focus=${(e: FocusEvent) => {
                       const input = e.target as HTMLInputElement;
@@ -317,7 +318,7 @@ render() {
                         class="cell-input"
                         type="text"
                         .value=${label}
-                        placeholder="Category${i + 1}"
+                        placeholder="${msg("Category")}${i + 1}"
                         ?disabled=${!canEdit}                      @focus=${(e: FocusEvent) => {
                         const input = e.target as HTMLInputElement;
                         setTimeout(() => input.select(), 0);

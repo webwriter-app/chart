@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.1" srcLang="en" trgLang="id">
+<file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Contoh latihan:</target></segment></unit>
+<unit id="The airline company Touri GmbH has prepared an analysis of revenue growth [%]     in relation to customer growth [%]. Look at the scatter plot     and determine whether a positive, negative, or no correlation exists.     Draw the best-fit line in the diagram and calculate the company's revenue     at a customer growth of 120%.#1"><segment><source>The airline company Touri GmbH has prepared an analysis of revenue growth [%]
+    in relation to customer growth [%]. Look at the scatter plot
+    and determine whether a positive, negative, or no correlation exists.
+    Draw the best-fit line in the diagram and calculate the company's revenue
+    at a customer growth of 120%.</source><target>Perusahaan penerbangan Touri GmbH telah menyusun analisis pertumbuhan pendapatan [%]
+    dalam kaitannya dengan pertumbuhan jumlah pelanggan [%]. Perhatikan diagram sebar
+    dan tentukan apakah terdapat korelasi positif, negatif, atau tidak ada korelasi sama sekali.
+    Gambarlah garis regresi pada diagram tersebut dan hitunglah pendapatan perusahaan
+    jika pertumbuhan jumlah pelanggan mencapai 120%.</target></segment></unit>
+</file>
+<file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Contoh latihan:</target></segment></unit>
+<unit id="In the annual Wurzelweglauf in Konz,#1"><segment><source>In the annual Wurzelweglauf in Konz,</source><target>Dalam ajang tahunan Wurzelweglauf di Konz,</target></segment></unit>
+<unit id="30 people#1"><segment><source>30 people</source><target>30 orang</target></segment></unit>
+<unit id="participated.     The evaluation of the kilometers run is listed below. How many     kilometers were covered on average (arithmetic mean)? What     is the median of the kilometers covered? Select the data point as     the median directly in the graph. State the difference between the two     factors.#1"><segment><source>participated.
+    The evaluation of the kilometers run is listed below. How many
+    kilometers were covered on average (arithmetic mean)? What
+    is the median of the kilometers covered? Select the data point as
+    the median directly in the graph. State the difference between the two
+    factors.</source><target>berpartisipasi.
+    Hasil evaluasi jarak tempuh dalam kilometer tercantum di bawah ini. Berapa
+    jarak tempuh rata-rata (rata-rata aritmetika)? Berapa
+    median jarak tempuh tersebut? Pilih titik data sebagai
+    median secara langsung pada grafik. Jelaskan perbedaan antara kedua
+    faktor tersebut.</target></segment></unit>
+</file>
+</xliff>

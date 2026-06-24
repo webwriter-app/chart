@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.1" srcLang="en" trgLang="de">
+<file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Beispielaufgabe:</target></segment></unit>
+<unit id="The airline company Touri GmbH has prepared an analysis of revenue growth [%]     in relation to customer growth [%]. Look at the scatter plot     and determine whether a positive, negative, or no correlation exists.     Draw the best-fit line in the diagram and calculate the company's revenue     at a customer growth of 120%.#1"><segment><source>The airline company Touri GmbH has prepared an analysis of revenue growth [%]
+    in relation to customer growth [%]. Look at the scatter plot
+    and determine whether a positive, negative, or no correlation exists.
+    Draw the best-fit line in the diagram and calculate the company's revenue
+    at a customer growth of 120%.</source><target>Die Fluggesellschaft Touri GmbH hat eine Analyse des Umsatzwachstums [%]
+    im Verhältnis zum Kundenwachstum [%] erstellt. Sehen Sie sich das Streudiagramm an
+    und stellen Sie fest, ob eine positive, negative oder keine Korrelation vorliegt.
+    Zeichnen Sie die Regressionsgerade in das Diagramm ein und berechnen Sie den Umsatz des Unternehmens
+    bei einem Kundenwachstum von 120 %.</target></segment></unit>
+</file>
+<file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>Beispielaufgabe:</target></segment></unit>
+<unit id="In the annual Wurzelweglauf in Konz,#1"><segment><source>In the annual Wurzelweglauf in Konz,</source><target>Beim jährlichen Wurzelweglauf in Konz,</target></segment></unit>
+<unit id="30 people#1"><segment><source>30 people</source><target>30 Personen</target></segment></unit>
+<unit id="participated.     The evaluation of the kilometers run is listed below. How many     kilometers were covered on average (arithmetic mean)? What     is the median of the kilometers covered? Select the data point as     the median directly in the graph. State the difference between the two     factors.#1"><segment><source>participated.
+    The evaluation of the kilometers run is listed below. How many
+    kilometers were covered on average (arithmetic mean)? What
+    is the median of the kilometers covered? Select the data point as
+    the median directly in the graph. State the difference between the two
+    factors.</source><target>teilgenommen.
+    Die Auswertung der gelaufenen Kilometer ist unten aufgeführt. Wie viele
+    Kilometer wurden im Durchschnitt zurückgelegt (arithmetischer Mittelwert)? Wie
+    hoch ist der Median der zurückgelegten Kilometer? Wählen Sie den Datenpunkt als
+    Median direkt im Diagramm aus. Geben Sie den Unterschied zwischen den beiden
+    Faktoren an.</target></segment></unit>
+</file>
+</xliff>

@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.1" srcLang="en" trgLang="ko">
+<file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>예제 문제:</target></segment></unit>
+<unit id="The airline company Touri GmbH has prepared an analysis of revenue growth [%]     in relation to customer growth [%]. Look at the scatter plot     and determine whether a positive, negative, or no correlation exists.     Draw the best-fit line in the diagram and calculate the company's revenue     at a customer growth of 120%.#1"><segment><source>The airline company Touri GmbH has prepared an analysis of revenue growth [%]
+    in relation to customer growth [%]. Look at the scatter plot
+    and determine whether a positive, negative, or no correlation exists.
+    Draw the best-fit line in the diagram and calculate the company's revenue
+    at a customer growth of 120%.</source><target>항공사 Touri GmbH는 매출 성장률 [%]과
+    고객 증가율 [%] 간의 관계를 분석했습니다. 산점도를 살펴보고
+    양의 상관관계, 음의 상관관계, 또는 상관관계가 없는지 판단하십시오.
+    그래프에 최적 회귀선을 그은 다음, 고객 증가율이 120%일 때의
+    회사 매출을 계산하십시오.</target></segment></unit>
+</file>
+<file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
+<unit id="Sample exercise:#1"><segment><source>Sample exercise:</source><target>예제 문제:</target></segment></unit>
+<unit id="In the annual Wurzelweglauf in Konz,#1"><segment><source>In the annual Wurzelweglauf in Konz,</source><target>콘츠에서 열리는 연례 우르젤베그라프 대회에서,</target></segment></unit>
+<unit id="30 people#1"><segment><source>30 people</source><target>30명</target></segment></unit>
+<unit id="participated.     The evaluation of the kilometers run is listed below. How many     kilometers were covered on average (arithmetic mean)? What     is the median of the kilometers covered? Select the data point as     the median directly in the graph. State the difference between the two     factors.#1"><segment><source>participated.
+    The evaluation of the kilometers run is listed below. How many
+    kilometers were covered on average (arithmetic mean)? What
+    is the median of the kilometers covered? Select the data point as
+    the median directly in the graph. State the difference between the two
+    factors.</source><target>참여했습니다.
+    달린 킬로미터에 대한 평가 결과는 아래와 같습니다. 평균적으로
+    몇 킬로미터를 달렸습니까(산술 평균)? 달린 킬로미터의
+    중앙값은 얼마입니까? 그래프에서 직접 중앙값에 해당하는
+    데이터 포인트를 선택하십시오. 두 요인 간의
+    차이를 설명하십시오.</target></segment></unit>
+</file>
+</xliff>

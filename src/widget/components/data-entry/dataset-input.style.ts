@@ -277,9 +277,8 @@ export default css`
 
   .color-popover {
     position: absolute;
-    top: 24px;
-    left: 0;
-    z-index: 200;
+    left: 55;
+    z-index: 2;
     background: var(--sl-color-neutral-0);
     border: 1px solid var(--sl-color-neutral-200);
     border-radius: var(--sl-border-radius-medium);

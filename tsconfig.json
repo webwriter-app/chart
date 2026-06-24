@@ -6,7 +6,7 @@
     },
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "target": "ES2022",
-    "rootDir": "./src",
+    "rootDir": ".",
     "declaration": false,
     "emitDeclarationOnly": false,
     "outDir": "./types",
@@ -25,5 +25,5 @@
     "esModuleInterop": true,
     "stripInternal": false
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "localization/generated/**/*.ts"]
 }
