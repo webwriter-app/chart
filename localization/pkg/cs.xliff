@@ -7,7 +7,7 @@
 <unit id="label"><segment><source>Charts</source><target>Grafy</target></segment></unit>
 </file>
 <file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
-<unit id="label"><segment><source>Scatterplot-Exercise</source><target>Cvičení se scatterplotem</target></segment></unit>
+<unit id="label"><segment><source>Scatterplot-Exercise</source><target>Cvičení se bodovým grafem</target></segment></unit>
 </file>
 <file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
 <unit id="label"><segment><source>Mean-Median-Exercise</source><target>Průměr – medián – cvičení</target></segment></unit>

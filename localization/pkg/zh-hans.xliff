@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.1" srcLang="en" trgLang="zh-Hans">
 <file id="." original=".">
-<unit id="description"><segment><source>ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.</source><target>ww-chart 是 WebWriter 工具的一个交互式数据可视化控件，它实现了多种图表和示意图，用于静态和探索性数据可视化。</target></segment></unit>
+<unit id="description"><segment><source>ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.</source><target>ww-chart 是 WebWriter 工具的一个交互式数据可视化控件，它实现了各种图表和示意图，用于静态和探索性数据可视化。</target></segment></unit>
 </file>
 <file id="./widgets/webwriter-chart" original="./widgets/webwriter-chart">
 <unit id="label"><segment><source>Charts</source><target>图表</target></segment></unit>

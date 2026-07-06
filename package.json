@@ -78,14 +78,22 @@
       "source": "./src/widget/webwriter-chart.ts",
       "default": "./dist/widgets.*"
     },
-    "./snippets/scatterplot-exercise.html": "./src/snippets/scatterplot-exercise.html",
-    "./snippets/mean-median-exercise.html": "./src/snippets/mean-median-exercise.html",
+    "./snippets/bar+line-chart.html": "./src/snippets/bar+line-chart.html",
+    "./snippets/pie+doughnut-chart.html": "./src/snippets/pie+doughnut-chart.html",
+    "./snippets/polar-area-chart.html": "./src/snippets/polar-area-chart.html",
+    "./snippets/radar-chart.html": "./src/snippets/radar-chart.html",
+    "./snippets/sunscreen-exercise.html": "./src/snippets/sunscreen-exercise.html",
     "./icon": "./chart-dots-2.svg",
     "./editing-config.json": "./editing-config.json"
   },
   "editingConfig": {
     "./widgets/webwriter-chart": {},
     "./snippets/scatterplot-exercise.html": {},
-    "./snippets/mean-median-exercise.html": {}
+    "./snippets/mean-median-exercise.html": {},
+    "./snippets/bar+line-chart.html": {},
+    "./snippets/pie+doughnut-chart.html": {},
+    "./snippets/polar-area-chart.html": {},
+    "./snippets/radar-chart.html": {},
+    "./snippets/sunscreen-exercise.html": {}
   }
 }

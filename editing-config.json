@@ -13,7 +13,7 @@
       "da": "ww-chart er en interaktiv widget til datavisualisering til WebWriter-værktøjet, der indeholder forskellige grafer og diagrammer til statisk og udforskende datavisualisering.",
       "hu": "A ww-chart egy interaktív adatmegjelenítő modul a WebWriter eszközhöz, amely különféle grafikonokat és diagramokat valósít meg statikus és felfedező jellegű adatmegjelenítés céljából.",
       "it": "ww-chart è un widget interattivo di visualizzazione dei dati per lo strumento WebWriter che implementa vari grafici e diagrammi per la visualizzazione statica ed esplorativa dei dati.",
-      "lv": "„ww-chart“ ir interaktīvs datu vizualizācijas modulis rīkam „WebWriter“, kas nodrošina dažādu diagrammu un grafiku izveidi statiskai un izpētes veida datu vizualizācijai.",
+      "lv": "„ww-chart“ ir interaktīvs datu vizualizācijas modulis rīkam „WebWriter“, kas nodrošina dažādas diagrammas un shēmas statiskai un izpētes veida datu vizualizācijai.",
       "lt": "„ww-chart“ – tai interaktyvus duomenų vizualizavimo valdiklis, skirtas „WebWriter“ įrankiui, kuris leidžia kurti įvairias diagramas ir schemas, skirtas statiniam ir tiriamajam duomenų vizualizavimui.",
       "pl": "ww-chart to interaktywny widget do wizualizacji danych przeznaczony dla narzędzia WebWriter, który udostępnia różne wykresy i diagramy służące do statycznej i eksploracyjnej wizualizacji danych.",
       "nb": "ww-chart er en interaktiv widget for datavisualisering til WebWriter-verktøyet, som tilbyr ulike diagrammer og grafer for statisk og utforskende datavisualisering.",
@@ -30,7 +30,7 @@
       "pt-BR": "O ww-chart é um widget interativo de visualização de dados para a ferramenta WebWriter que oferece diversos gráficos e diagramas para a visualização estática e exploratória de dados.",
       "ja": "ww-chart は、WebWriter ツール向けのインタラクティブなデータ可視化ウィジェットであり、静的なデータ可視化や探索的なデータ可視化のためのさまざまなグラフや図表を実装しています。",
       "id": "ww-chart adalah widget visualisasi data interaktif untuk alat WebWriter yang menyediakan berbagai jenis grafik dan diagram untuk visualisasi data statis dan eksploratif.",
-      "zh-hans": "ww-chart 是 WebWriter 工具的一个交互式数据可视化控件，它实现了多种图表和示意图，用于静态和探索性数据可视化。",
+      "zh-hans": "ww-chart 是 WebWriter 工具的一个交互式数据可视化控件，它实现了各种图表和示意图，用于静态和探索性数据可视化。",
       "zh-hant": "ww-chart 是一款專為 WebWriter 工具設計的互動式資料視覺化小工具，可實現各種圖表與示意圖，用於靜態及探索性資料視覺化。"
     }
   },
@@ -76,7 +76,7 @@
       "de": "Streudiagramm-Übung",
       "bg": "Диаграма на разпръскване – упражнение",
       "ar": "تمرين على مخطط الانتشار",
-      "cs": "Cvičení se scatterplotem",
+      "cs": "Cvičení se bodovým grafem",
       "nl": "Oefening met een spreidingsdiagram",
       "et": "Punktdiagramm – harjutus",
       "fr": "Nuage de points - Exercice",
