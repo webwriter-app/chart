@@ -1,7 +1,8 @@
 import { customElement, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
-import { chartOption } from "../../utils";
+import { addAlphaToRGB, chartOption } from "../../utils";
 import { ChartHelper, CHART_PALETTE, getContext, updateData, makeCircularLegendCallbacks } from "./chart-helpers";
+import { createHtmlLegendPlugin } from "./html-legend";
 import { GenericChart } from "./chart-base";
 
 const POLAR_OPTIONS = {
@@ -71,9 +72,11 @@ export class PolarChart extends GenericChart<typeof POLAR_OPTIONS> {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: { padding: 8 },
         plugins: { legend: makeCircularLegendCallbacks() },
         interaction: { mode: "nearest", intersect: false, axis: "r" } as any,
       },
+      plugins: [createHtmlLegendPlugin(() => this.shadowRoot?.getElementById("html-legend"))],
     });
     const opts0 = this.sharedState.chart.options;
     this.chartHelper = ChartHelper.create("polarArea", chart);
@@ -107,11 +110,16 @@ export class PolarChart extends GenericChart<typeof POLAR_OPTIONS> {
 
   private prepareDataset(sectorData: number[]) {
     const opts = this.sharedState.chart.options;
+    const borderWidth = Number(opts.borderWidth ?? 1);
     return [{
       data: sectorData,
       backgroundColor: sectorData.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length] + "33"),
       borderColor: sectorData.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length]),
-      borderWidth: Number(opts.borderWidth ?? 1),
+      hoverBackgroundColor: sectorData.map((_, si) =>
+        addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], 0.7)
+      ),
+      hoverBorderWidth: borderWidth + 1,
+      borderWidth,
       borderRadius: Number(opts.borderRadius ?? 0),
     }];
   }

@@ -1,6 +1,14 @@
 import { css } from "lit";
 
 export default css`
+  /* The widget host is programmatically focused (keyboard handling) —
+     suppress the browser focus outline (showed up as an orange frame). */
+  :host,
+  :host(:focus),
+  :host(:focus-visible) {
+    outline: none;
+  }
+
   div {
     margin: 0;
     padding: 0;
@@ -9,10 +17,11 @@ export default css`
 
   #main {
     outline: 1px solid lightgray;
-    min-height: 32rem;
+    height: 32rem;
     width: 100%;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
 
   :host(.ww-printable) #main {
@@ -37,7 +46,7 @@ export default css`
     line-height: var(--sl-line-height-medium);
     font-weight: 400;
 
-    overflow: overlay;
+    overflow: auto;
     padding-top: 0px !important;
     width: 100%;
 
@@ -49,35 +58,6 @@ export default css`
     flex-direction: column;
     gap: 0.25em;
   }
-  #settings-panel {
-    background-color: white;
-    overflow: hidden;
-    display: flex;
-    padding: 3px;
-    padding-top: 0;
-    flex-direction: column;
-    align-items: left;
-    gap: 16px;
-    margin-bottom: 16px;
-    box-sizing: border-box;
-  }
-
-  #settings h2 {
-    font-size: var(--sl-button-font-size-medium);
-    line-height: calc(
-      var(--sl-input-height-medium) - var(--sl-input-border-width) * 2
-    );
-    font-weight: 400;
-
-    position: sticky;
-    top: 0;
-    background: #f4f4f4;
-    z-index: 1;
-
-    border-bottom: 2px solid var(--sl-color-gray-600);
-    color: darkblue;
-  }
-
   .hidden {
     display: none !important;
   }
@@ -124,7 +104,7 @@ export default css`
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-height: 24rem;
+    min-height: 0;
     overflow: hidden;
     background: #fff;
   }
@@ -157,8 +137,21 @@ export default css`
     font-weight: 400;
   }
 
-  .data-viz-type-row {
-    justify-content: space-between;
+  .analysis-row .select-regression {
+    flex: 0 1 auto;
+    min-width: 150px;
+    max-width: 210px;
+  }
+
+  .analysis-row sl-checkbox {
+    font-size: 0.85em;
+  }
+
+  .analysis-warning {
+    color: var(--sl-color-warning-600, #e08700);
+    font-size: 1.05em;
+    cursor: help;
+    line-height: 1;
   }
 
   .data-actions-row {
@@ -176,33 +169,6 @@ export default css`
     height: 24px;
     background: #ddd;
     margin: 0 8px;
-  }
-
-  .axis-select {
-    width: 150px;
-  }
-
-  .axis-select-native {
-    width: 150px;
-    height: 28px;
-    font-size: 0.875rem;
-    border: 1px solid var(--sl-color-neutral-300, #d4d4d8);
-    border-radius: var(--sl-border-radius-medium, 4px);
-    background: #fff;
-    color: var(--sl-color-neutral-700, #3f3f46);
-    padding: 0 28px 0 8px;
-    cursor: pointer;
-    appearance: auto;
-    outline: none;
-  }
-  .axis-select-native:focus {
-    border-color: var(--sl-color-primary-500, #3b82f6);
-    box-shadow: 0 0 0 2px var(--sl-color-primary-200, #bfdbfe);
-  }
-
-  .columns-select {
-    min-width: 110px;
-    max-width: 160px;
   }
 
   .data-content {
@@ -225,6 +191,89 @@ export default css`
     display: flex;
     overflow: hidden;
     padding: 0;
+  }
+
+  .chart-host-wrap {
+    position: absolute;
+    inset: 0;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  /* Behebt das Problem mit unleserlich schmalen Dropdowns bei Shoelace */
+  sl-select::part(listbox) {
+    min-width: 200px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Kompaktes vertikales Spacing für die HTML Legende */
+  .html-legend-container {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 4px !important;
+    column-gap: 8px !important;
+    padding: 4px 8px !important;
+    max-height: 50px !important;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 600px) {
+    #main > * {
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+    
+    .viz-type-row {
+      padding: 6px 4px;
+      gap: 6px;
+      flex-wrap: wrap; /* Ermöglicht das Umbrechen in die nächste Reihe */
+    }
+    
+    .viz-type-label,
+    .viz-type-divider {
+      display: none; /* Labels ausblenden, um Platz zu sparen */
+    }
+
+    .btn-label {
+      display: none;
+    }
+    
+    .chart-host-wrap {
+      padding: 4px;
+    }
+
+    /* * Statt die Buttons auf 44px zu schrumpfen und unleserlich zu machen,
+     * geben wir ihnen auf Mobilgeräten eine flexible, lesbare Breite.
+     */
+    wwci-select[icon],
+    sl-select.select-axis,
+    sl-select.select-regression {
+      flex: 1 1 120px; /* Flexibel wachsen und schrumpfen, Basisbreite 120px */
+      min-width: 100px;
+    }
+
+    /* Sicherstellen, dass die Texte und Werte im geschlossenen Zustand sichtbar bleiben */
+    sl-select.select-axis::part(display-input),
+    sl-select.select-regression::part(display-input) {
+      display: inline-block !important;
+    }
+
+    /* Kompakte Legendenhöhe für Mobilgeräte */
+    .html-legend-container {
+      max-height: 40px !important;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .analysis-row sl-checkbox::part(base) {
+      min-height: 34px;
+      align-items: center;
+    }
+    .data-actions-row sl-button::part(base),
+    .viz-type-row sl-button::part(base) {
+      min-height: 40px;
+      align-items: center;
+    }
   }
 
   .chart-empty-state {

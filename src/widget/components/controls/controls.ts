@@ -1,5 +1,5 @@
 // Consolidated UI controls: OptionSelect, ToggleSwitch, NumberField
-import { html, PropertyValues } from "lit";
+import { css, html, PropertyValues } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { converter } from "../../utils";
 import { LitElementWw } from "@webwriter/lit";
@@ -7,6 +7,7 @@ import SlSelect from "@shoelace-style/shoelace/dist/components/select/select.com
 import SlOption from "@shoelace-style/shoelace/dist/components/option/option.component.js";
 import SlSwitch from "@shoelace-style/shoelace/dist/components/switch/switch.js";
 import SlInput from "@shoelace-style/shoelace/dist/components/input/input.component.js";
+import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
 // ─── OptionSelect ────────────────────────────────────────────────────────────
 
@@ -39,8 +40,37 @@ export class OptionSelect extends LitElementWw {
   @property()
   accessor size: "small" | "medium" | "large" = "medium";
 
+  /** SVG url shown as prefix icon inside the select. On small screens the
+   *  select collapses to just this icon (reflected for the :host([icon])
+   *  selector); tapping it opens the regular dropdown. */
+  @property({ reflect: true })
+  accessor icon: string = "";
+
+  static styles = css`
+    sl-icon[slot="prefix"] {
+      font-size: 1.1em;
+      flex-shrink: 0;
+    }
+    @media (max-width: 600px) {
+      /* Icon-only mode: hide the value text and caret, keep a square
+         trigger that still opens the dropdown on tap */
+      :host([icon]) sl-select::part(display-input),
+      :host([icon]) sl-select::part(expand-icon) {
+        display: none;
+      }
+      :host([icon]) sl-select::part(combobox) {
+        min-width: 0;
+        padding-inline: 0;
+        justify-content: center;
+      }
+      :host([icon]) sl-select::part(prefix) {
+        margin: 0 auto;
+      }
+    }
+  `;
+
   public static get scopedElements() {
-    return { "sl-select": SlSelect, "sl-option": SlOption };
+    return { "sl-select": SlSelect, "sl-option": SlOption, "sl-icon": SlIcon };
   }
 
   override updated(_changed: PropertyValues) {
@@ -48,26 +78,27 @@ export class OptionSelect extends LitElementWw {
     const slSelect = this.renderRoot.querySelector("sl-select") as any;
     if (!slSelect) return;
     const idx = this.value ? this.selectOptions.indexOf(this.value) : 0;
-    const id = toId(this.selectOptions[idx] ?? "");
-    // Wait for sl-select's own update cycle so its sl-option children are registered
     (slSelect.updateComplete ?? Promise.resolve()).then(() => {
-      slSelect.value = id;
+      slSelect.value = idx >= 0 ? String(idx) : "";
     });
   }
 
   private handleSelectChange(e: any) {
-    this.selectedIndex = this.selectOptions.findIndex(
-      (v) => e.target.value === toId(v)
-    );
-    this.value = this.selectOptions[this.selectedIndex];
+  
+    const idx = Number(e.target.value);
+    if (!Number.isInteger(idx) || idx < 0 || idx >= this.selectOptions.length) return;
+    this.selectedIndex = idx;
+    this.value = this.selectOptions[idx];
     this.dispatchEvent(
-      new CustomEvent("wwci-change", { detail: { value: this.value }, composed: true })
+      new CustomEvent("wwci-change", {
+        detail: { value: this.value, index: idx },
+        composed: true,
+      })
     );
   }
 
   render() {
     this.selectedIndex = this.value ? this.selectOptions.indexOf(this.value) : 0;
-    const selectedId = toId(this.selectOptions[this.selectedIndex] ?? "");
     return html`
       <sl-select
         size=${this.size}
@@ -75,11 +106,12 @@ export class OptionSelect extends LitElementWw {
         placeholder="${this.selectOptions[this.selectedIndex] ?? this.placeholder}"
         label="${this.label}"
         @sl-change="${this.handleSelectChange}"
-        .value=${selectedId}
+        .value=${this.selectedIndex >= 0 ? String(this.selectedIndex) : ""}
         hoist
       >
+        ${this.icon ? html`<sl-icon slot="prefix" src=${this.icon}></sl-icon>` : ""}
         ${this.selectOptions.map(
-          (option) => html`<sl-option value="${toId(option)}">${option}</sl-option>`
+          (option, i) => html`<sl-option value=${String(i)}>${option}</sl-option>`
         )}
       </sl-select>
     `;
@@ -182,10 +214,4 @@ export class NumberField extends LitElementWw {
       ></sl-input>
     `;
   }
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function toId(name: string): string {
-  return name?.toLowerCase().replace(/ /g, "-") ?? "";
 }

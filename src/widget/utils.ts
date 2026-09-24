@@ -1,5 +1,4 @@
 import { ChartData } from "./state/models";
-import randomWords from "random-words";
 
 export const converter = {
   fromAttribute: (value: string | null, type: unknown): any => {
@@ -32,14 +31,12 @@ export const converter = {
     }
 
     if (String(type) === "ChartData") {
-      //TODO: add option for simple data-only object
       let result: ChartData = {};
 
       const obj: ChartData = JSON.parse(value.toString());
       for (const key in obj) {
         result[key] = {
           value: obj[key].value,
-          //TODO: add option for auto color
           color: converter.fromAttribute(obj[key].color || "#000000", "color"),
           label: obj[key].label || key,
         };
@@ -62,21 +59,6 @@ export const converter = {
     return value.toString();
   },
 };
-
-export function attribute(value: string): string;
-export function attribute(value: number): string;
-export function attribute(value: boolean): string;
-export function attribute(value: object): string;
-export function attribute(value: Array<unknown>): string;
-export function attribute(
-  value: string | number | boolean | object | Array<unknown>
-): string {
-  if (Array.isArray(value)) return JSON.stringify(value);
-  if (typeof value === "number") return value.toString();
-  if (typeof value === "boolean") return value.toString();
-  if (typeof value === "object") return JSON.stringify(value);
-  return value;
-}
 
 export function isColorHex(color: string): boolean {
   return /^#[0-9A-F]{6}$/i.test(color);
@@ -113,57 +95,6 @@ export function addAlphaToRGB(color: string, alpha: number): string {
   if (!color) return "rgba(0,0,0,0)";
   if (!color.startsWith("rgb")) color = convertHexToRGB(color);
   return color.replace("rgb", "rgba").replace(")", `, ${alpha})`);
-}
-
-export function randomNumber(min?: number, max?: number): number {
-  if (min && max) return Math.floor(Math.random() * (max - min) + min);
-  return Math.floor(Math.random() * 100);
-}
-
-export function randomColor(): string {
-  const h = randomNumber(0, 360);
-  const l = randomNumber(30, 60);
-
-  return hslToHex(h, 100, l);
-}
-
-export function generateColorWheel(numColors: number): string[] {
-  const colors = [];
-  const saturation = 100; 
-  const lightnessBase = 50; 
-
-  const step = Math.floor((360 - 60) / numColors); 
-
-  for (let i = 0; i < numColors; i++) {
-    let hue = step * i;
-
-    if (hue >= 0 && hue < 30) {
-      hue += 20;
-    } else if (hue >= 330) {
-      hue -= 20; 
-    }
-    const lightness = lightnessBase + (i % 2 === 0 ? 10 : -10);
-    colors.push(hslToHex(hue, saturation, lightness));
-  }
-
-  return colors;
-}
-
-export function randomString(): string {
-  return randomWords(1)[0];
-}
-
-function hslToHex(h: number, s: number, l: number) {
-  l /= 100;
-  const a = (s * Math.min(l, 1 - l)) / 100;
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color)
-      .toString(16)
-      .padStart(2, "0"); 
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
 }
 
 export function chartOption<T extends keyof TypeMapping>(

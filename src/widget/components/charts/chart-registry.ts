@@ -1,7 +1,6 @@
 // Central registry for all chart types: definitions, tag names, option schemas,
 // and the getChart() factory. Replaces the old imports.ts.
 import { html, unsafeStatic } from "lit/static-html.js";
-import { attribute } from "../../utils";
 import { chartOption } from "../../utils";
 import type { ChartDataSets, ChartState, InternalChartType } from "../../state/models";
 
@@ -63,7 +62,9 @@ const RADAR_OPTIONS = {
 
 const SCATTERPLOT_OPTIONS = {
   listRegressionLine: chartOption("array", false, "Regression Model"),
-  snapToGrid: chartOption("boolean", true, "Snap to Grid"),
+  polynomialDegree: chartOption("number", 2, "Polynomial Degree", 1, 6),
+  loessSpan: chartOption("number", 50, "LOESS Bandwidth (%)", 15, 100),
+  snapToGrid: chartOption("boolean", false, "Snap to Grid"),
   showGrid: chartOption("boolean", true, "Show Grid"),
   animation: chartOption("boolean", false, "Animation"),
   showCorrelation: chartOption("boolean", false, "Show Correlation"),
@@ -141,18 +142,16 @@ export function getChart(
 ) {
   const config = USER_CHARTS.find((c) => c.name === normalizeChartType(String(chartType)));
   if (!config) return html`<div>Chart not found!</div>`;
-  // @ts-ignore
   const chartName = unsafeStatic(config.tagName);
 
   return html`
-    <div style="position: absolute; inset: 0; padding: 10px; box-sizing: border-box; overflow: hidden;">
+    <div class="chart-host-wrap" style="overflow: hidden;">
       <${chartName}
         id="chart"
-        hide_excat_values="${attribute(!teacherOptions.showData)}"
-        datasets="${attribute(datasets)}"
+        .hide_excat_values=${!teacherOptions.showData}
+        .datasets=${datasets}
         label=${title}
         style="display: block; width: 100%; height: 100%;"
-        options="${attribute(options)}"
         .xAxisIndex=${xAxisIndex}
         .yColumns=${yColumns}
         .xCategories=${xCategories}

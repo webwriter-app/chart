@@ -33,10 +33,6 @@
         <source>Add a data point</source>
         <target>新增一個資料點</target>
       </trans-unit>
-      <trans-unit id="sb65c362178e4bea9">
-        <source>Select exactly one point to edit its position</source>
-        <target>請精確選取一個點，以編輯其位置</target>
-      </trans-unit>
       <trans-unit id="s7a4c288d491e6856">
         <source>Edit point position</source>
         <target>編輯點位置</target>
@@ -52,10 +48,6 @@
       <trans-unit id="sdc673e73b5c13aea">
         <source>Delete</source>
         <target>刪除</target>
-      </trans-unit>
-      <trans-unit id="s3e1bac84c3c4c41e">
-        <source>Select points or a line first</source>
-        <target>請先選取點或線段</target>
       </trans-unit>
       <trans-unit id="s32b873a2dfa6c573">
         <source>selected points</source>
@@ -96,42 +88,6 @@
       <trans-unit id="s079a052719914d71">
         <source>Category</source>
         <target>類別</target>
-      </trans-unit>
-      <trans-unit id="sd6ea5bfe15abc64e">
-        <source>Add First Dataset</source>
-        <target>新增第一個資料集</target>
-      </trans-unit>
-      <trans-unit id="sfd83c43e5e471976">
-        <source>Add New Dataset</source>
-        <target>新增資料集</target>
-      </trans-unit>
-      <trans-unit id="s1760229adf0051d4">
-        <source>Delete Column</source>
-        <target>刪除欄位</target>
-      </trans-unit>
-      <trans-unit id="s0a764ae8299c5b85">
-        <source>Convert column values to categorical</source>
-        <target>將欄位值轉換為分類變數</target>
-      </trans-unit>
-      <trans-unit id="s4866dfc6adc9576a">
-        <source>Convert column values to numeric</source>
-        <target>將欄位值轉換為數值</target>
-      </trans-unit>
-      <trans-unit id="s136c24957f6ff7ae">
-        <source>Add Column</source>
-        <target>新增欄位</target>
-      </trans-unit>
-      <trans-unit id="s4d36f5dbd7bce477">
-        <source>Categorical values</source>
-        <target>分類值</target>
-      </trans-unit>
-      <trans-unit id="sb3df6ba2722236ae">
-        <source>Numeric values</source>
-        <target>數值</target>
-      </trans-unit>
-      <trans-unit id="s8f4aedf9ea5ac98c">
-        <source>Add Dataset</source>
-        <target>新增資料集</target>
       </trans-unit>
       <trans-unit id="s0b786a0e85eb6783">
         <source>Border Radius</source>
@@ -280,6 +236,34 @@
       <trans-unit id="sa172625dedfc3e78">
         <source>Please add data first to display the graph.</source>
         <target>請先輸入資料，才能顯示圖表。</target>
+      </trans-unit>
+      <trans-unit id="s0c19987191b8db0b">
+        <source>Double-click exactly one point to select it, then edit its position</source>
+        <target>雙擊一個點以精確選取該點，然後編輯其位置</target>
+      </trans-unit>
+      <trans-unit id="s573581bd694a2dc1">
+        <source>Double-click points or click a line to select them first</source>
+        <target>請先雙擊點或點擊一條線來選取它們</target>
+      </trans-unit>
+      <trans-unit id="s1d2850ee299300a5">
+        <source>Polynomial Degree</source>
+        <target>多項式次數</target>
+      </trans-unit>
+      <trans-unit id="s6ade9bde0b8065fa">
+        <source>LOESS Bandwidth (%)</source>
+        <target>LOESS 頻寬 (%)</target>
+      </trans-unit>
+      <trans-unit id="scf2226e954d643b0">
+        <source>Not enough data points for this regression model:</source>
+        <target>此迴歸模型的資料點不足：</target>
+      </trans-unit>
+      <trans-unit id="s83a0b17c8929365a">
+        <source>Transfer your plot changes into the data table</source>
+        <target>將圖表變更轉移至資料表</target>
+      </trans-unit>
+      <trans-unit id="sc41b02fb09a50bd4">
+        <source>No unsaved plot changes — move or add points first</source>
+        <target>沒有未儲存的圖表變更 — 請先移動或新增資料點</target>
       </trans-unit>
     </body>
   </file>

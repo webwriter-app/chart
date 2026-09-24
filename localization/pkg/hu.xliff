@@ -4,12 +4,12 @@
 <unit id="description"><segment><source>ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.</source><target>A ww-chart egy interaktív adatmegjelenítő modul a WebWriter eszközhöz, amely különféle grafikonokat és diagramokat valósít meg statikus és felfedező jellegű adatmegjelenítés céljából.</target></segment></unit>
 </file>
 <file id="./widgets/webwriter-chart" original="./widgets/webwriter-chart">
-<unit id="label"><segment><source>Charts</source><target>Ábrák</target></segment></unit>
+<unit id="label"><segment><source>Charts</source><target>Diagramok</target></segment></unit>
 </file>
 <file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
 <unit id="label"><segment><source>Scatterplot-Exercise</source><target>Szórásdiagram – Gyakorlat</target></segment></unit>
 </file>
 <file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
-<unit id="label"><segment><source>Mean-Median-Exercise</source><target>Átlag–medián–gyakorlat</target></segment></unit>
+<unit id="label"><segment><source>Mean-Median-Exercise</source><target>Átlag – medián – gyakorlat</target></segment></unit>
 </file>
 </xliff>

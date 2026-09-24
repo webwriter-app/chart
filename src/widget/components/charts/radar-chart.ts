@@ -2,6 +2,7 @@ import { customElement, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
 import { addAlphaToRGB, chartOption } from "../../utils";
 import { ChartHelper, CHART_PALETTE, getContext, updateData } from "./chart-helpers";
+import { createHtmlLegendPlugin } from "./html-legend";
 import { GenericChart } from "./chart-base";
 
 const RADAR_OPTIONS = {
@@ -31,16 +32,21 @@ export class RadarChart extends GenericChart<typeof RADAR_OPTIONS> {
 
     const makeDataset = (rowLabel: string, data: number[], rowIdx: number) => {
       const color = CHART_PALETTE[rowIdx % CHART_PALETTE.length];
+      const pointRadius = Number(opts.pointRadius ?? 3);
       return {
         label: rowLabel,
         data,
-        backgroundColor: addAlphaToRGB(color, 0.2), 
+        backgroundColor: addAlphaToRGB(color, 0.2),
         pointBackgroundColor: color,
         borderColor: color,
         borderWidth: Number(opts.borderWidth ?? 1),
         pointBorderColor: "transparent",
-        pointRadius: Number(opts.pointRadius ?? 3),
+        pointRadius,
         pointHitRadius: 20,
+        pointHoverRadius: pointRadius + 3,
+        pointHoverBackgroundColor: color,
+        pointHoverBorderColor: "#fff",
+        pointHoverBorderWidth: 2,
       };
     };
 
@@ -102,8 +108,10 @@ export class RadarChart extends GenericChart<typeof RADAR_OPTIONS> {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: { padding: 8 },
         interaction: { mode: "nearest", intersect: false },
       },
+      plugins: [createHtmlLegendPlugin(() => this.shadowRoot?.getElementById("html-legend"))],
     });
     this.chartHelper = ChartHelper.create("radar", chart);
     this.chartHelper.setTitle(this.label);

@@ -1,6 +1,7 @@
 import { customElement, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
 import { ChartHelper, CHART_PALETTE, getContext, updateData } from "./chart-helpers";
+import { createHtmlLegendPlugin } from "./html-legend";
 import { GenericChart } from "./chart-base";
 import { addAlphaToRGB, chartOption } from "../../utils";
 
@@ -32,8 +33,14 @@ export class BarChart extends GenericChart<typeof BAR_OPTIONS> {
     const chart = new Chart(ctx, {
       type: "bar",
       data: { labels: xLabels, datasets: this.prepareDataset() },
-      options: { responsive: true, maintainAspectRatio: false },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "nearest", intersect: false, axis: "x" },
+      },
+      plugins: [createHtmlLegendPlugin(() => this.shadowRoot?.getElementById("html-legend"))],
     });
+    
     this.chartHelper = ChartHelper.create("bar", chart);
     this.chartHelper.setTitle(this.label);
     this.chartHelper.setYScales(
@@ -68,12 +75,16 @@ export class BarChart extends GenericChart<typeof BAR_OPTIONS> {
     const { columns } = this.transformByXAxis();
     return columns.map((col, i) => {
       const color = col.color ?? CHART_PALETTE[i % CHART_PALETTE.length];
+      const borderWidth = Number(opts.borderWidth ?? 1);
       return {
         label: col.label,
         data: col.data,
         backgroundColor: col.data.map(() => addAlphaToRGB(color, opts.filled ? 1 : 0.2)),
         borderColor: col.data.map(() => color),
-        borderWidth: Number(opts.borderWidth ?? 1),
+        hoverBackgroundColor: col.data.map(() => addAlphaToRGB(color, opts.filled ? 1 : 0.55)),
+        hoverBorderColor: col.data.map(() => color),
+        hoverBorderWidth: borderWidth + 1,
+        borderWidth,
         borderRadius: Number(opts.borderRadius ?? 0),
       };
     });

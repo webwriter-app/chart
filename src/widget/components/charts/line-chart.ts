@@ -2,6 +2,7 @@ import { customElement, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
 import { chartOption } from "../../utils";
 import { ChartHelper, LINE_PALETTE, getContext, updateData } from "./chart-helpers";
+import { createHtmlLegendPlugin } from "./html-legend";
 import { GenericChart } from "./chart-base";
 
 const LINE_OPTIONS = {
@@ -32,7 +33,14 @@ export class LineChart extends GenericChart<typeof LINE_OPTIONS> {
     const chart = new Chart(ctx, {
       type: "line",
       data: { labels: xLabels, datasets: this.prepareDataset() },
-      options: { responsive: true, maintainAspectRatio: false },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        // Snap to the nearest point without requiring an exact hit,
+        // so points highlight immediately while moving along the line
+        interaction: { mode: "nearest", intersect: false, axis: "x" },
+      },
+      plugins: [createHtmlLegendPlugin(() => this.shadowRoot?.getElementById("html-legend"))],
     });
     // @ts-ignore
     this.chartHelper = ChartHelper.create("line", chart);
@@ -69,14 +77,21 @@ export class LineChart extends GenericChart<typeof LINE_OPTIONS> {
     const { columns } = this.transformByXAxis();
     return columns.map((col, i) => {
       const color = col.color ?? LINE_PALETTE[i % LINE_PALETTE.length];
+      const pointRadius = Number(opts.pointRadius ?? 0);
       return {
         label: col.label,
         data: col.data,
         backgroundColor: color,
         borderColor: color,
         borderWidth: Number(opts.borderWidth ?? 1),
+        pointBackgroundColor: color,
         pointBorderColor: "transparent",
-        pointRadius: Number(opts.pointRadius ?? 0),
+        pointRadius,
+        pointHitRadius: 12,
+        pointHoverRadius: pointRadius + 3,
+        pointHoverBackgroundColor: color,
+        pointHoverBorderColor: "#fff",
+        pointHoverBorderWidth: 2,
       };
     });
   }

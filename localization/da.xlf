@@ -33,10 +33,6 @@
         <source>Add a data point</source>
         <target>Tilføj et datapunkt</target>
       </trans-unit>
-      <trans-unit id="sb65c362178e4bea9">
-        <source>Select exactly one point to edit its position</source>
-        <target>Vælg præcis ét punkt for at redigere dets position</target>
-      </trans-unit>
       <trans-unit id="s7a4c288d491e6856">
         <source>Edit point position</source>
         <target>Rediger punktets position</target>
@@ -52,10 +48,6 @@
       <trans-unit id="sdc673e73b5c13aea">
         <source>Delete</source>
         <target>Slet</target>
-      </trans-unit>
-      <trans-unit id="s3e1bac84c3c4c41e">
-        <source>Select points or a line first</source>
-        <target>Vælg først punkter eller en linje</target>
       </trans-unit>
       <trans-unit id="s32b873a2dfa6c573">
         <source>selected points</source>
@@ -96,42 +88,6 @@
       <trans-unit id="s079a052719914d71">
         <source>Category</source>
         <target>Kategori</target>
-      </trans-unit>
-      <trans-unit id="sd6ea5bfe15abc64e">
-        <source>Add First Dataset</source>
-        <target>Tilføj første datasæt</target>
-      </trans-unit>
-      <trans-unit id="sfd83c43e5e471976">
-        <source>Add New Dataset</source>
-        <target>Tilføj nyt datasæt</target>
-      </trans-unit>
-      <trans-unit id="s1760229adf0051d4">
-        <source>Delete Column</source>
-        <target>Slet kolonne</target>
-      </trans-unit>
-      <trans-unit id="s0a764ae8299c5b85">
-        <source>Convert column values to categorical</source>
-        <target>Konverter kolonneværdier til kategoriske værdier</target>
-      </trans-unit>
-      <trans-unit id="s4866dfc6adc9576a">
-        <source>Convert column values to numeric</source>
-        <target>Konverter kolonneværdier til tal</target>
-      </trans-unit>
-      <trans-unit id="s136c24957f6ff7ae">
-        <source>Add Column</source>
-        <target>Tilføj kolonne</target>
-      </trans-unit>
-      <trans-unit id="s4d36f5dbd7bce477">
-        <source>Categorical values</source>
-        <target>Kategoriske værdier</target>
-      </trans-unit>
-      <trans-unit id="sb3df6ba2722236ae">
-        <source>Numeric values</source>
-        <target>Talværdier</target>
-      </trans-unit>
-      <trans-unit id="s8f4aedf9ea5ac98c">
-        <source>Add Dataset</source>
-        <target>Tilføj datasæt</target>
       </trans-unit>
       <trans-unit id="s0b786a0e85eb6783">
         <source>Border Radius</source>
@@ -280,6 +236,34 @@
       <trans-unit id="sa172625dedfc3e78">
         <source>Please add data first to display the graph.</source>
         <target>Indtast venligst data først for at få vist grafen.</target>
+      </trans-unit>
+      <trans-unit id="s0c19987191b8db0b">
+        <source>Double-click exactly one point to select it, then edit its position</source>
+        <target>Dobbeltklik på præcis ét punkt for at markere det, og rediger derefter dets position</target>
+      </trans-unit>
+      <trans-unit id="s573581bd694a2dc1">
+        <source>Double-click points or click a line to select them first</source>
+        <target>Dobbeltklik på punkter eller klik på en linje for først at markere dem</target>
+      </trans-unit>
+      <trans-unit id="s1d2850ee299300a5">
+        <source>Polynomial Degree</source>
+        <target>Polynomgrad</target>
+      </trans-unit>
+      <trans-unit id="s6ade9bde0b8065fa">
+        <source>LOESS Bandwidth (%)</source>
+        <target>LOESS-båndbredde (%)</target>
+      </trans-unit>
+      <trans-unit id="scf2226e954d643b0">
+        <source>Not enough data points for this regression model:</source>
+        <target>Der er ikke nok datapunkter til denne regressionsmodel:</target>
+      </trans-unit>
+      <trans-unit id="s83a0b17c8929365a">
+        <source>Transfer your plot changes into the data table</source>
+        <target>Overfør dine ændringer i plottet til datatabellen</target>
+      </trans-unit>
+      <trans-unit id="sc41b02fb09a50bd4">
+        <source>No unsaved plot changes — move or add points first</source>
+        <target>Ingen ugemte ændringer i plottet — flyt eller tilføj punkter først</target>
       </trans-unit>
     </body>
   </file>

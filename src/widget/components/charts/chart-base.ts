@@ -2,20 +2,38 @@ import { html, css } from "lit";
 import { property } from "lit/decorators.js";
 import { converter } from "../../utils";
 import { ChartDataSets } from "../../state/models";
+import { htmlLegendStyles } from "./html-legend";
 import StateComponent from "../../stateful-component";
 
 export class GenericChart<
   T extends Record<string, OptionDef<keyof TypeMapping>>
 > extends StateComponent {
-  static styles = css`
-    :host {
-      display: block;
-      width: 100%;
-      height: 100%;
-      min-width: 0;
-      min-height: 0;
-    }
-  `;
+  static styles = [
+    css`
+      :host {
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        min-height: 0;
+      }
+      .chart-shell {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+      }
+      .canvas-wrap {
+        position: relative;
+        flex: 1 1 0;
+        min-height: 0;
+        min-width: 0;
+      }
+    `,
+    htmlLegendStyles,
+  ];
+  
   @property({ type: Array, converter })
   accessor datasets: ChartDataSets = {} as any;
 
@@ -39,10 +57,7 @@ export class GenericChart<
 
   @property({ type: String })
   accessor scaleLabel: string = "";
-
-  // xAxisIndex = -2  → column names as X-axis, each row is a Y-dataset (original grouped behavior)
-  // xAxisIndex = -1  → row names as X-axis, each column is a Y-dataset
-  // xAxisIndex >= 0  → values from that column as X-axis, remaining columns as Y-datasets
+  
   protected transformByXAxis(): {
     xLabels: string[];
     columns: Array<{ label: string; data: number[]; colIdx: number; color?: string; colors?: string[] }>;
@@ -149,17 +164,22 @@ export class GenericChart<
     this.requestUpdate();
   }
 
-  exportCanvasContent() {
-    const canvas = this.shadowRoot?.getElementById("chart-canvas") as
-      | HTMLCanvasElement
-      | undefined;
-    if (!canvas) return "";
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return "";
-    return canvas.toDataURL();
+  /** Re-measure and redraw the Chart.js instance. Called by the root widget
+   *  when this chart's tab becomes visible: updates that happened while the
+   *  panel was display:none ran against a 0×0 canvas and need a layout pass. */
+  refreshChart() {
+    const chart = (this as any).chartHelper?.chart;
+    if (!chart) return;
+    chart.resize();
+    chart.update("none");
   }
 
   render() {
-    return html`<canvas id="chart-canvas"></canvas>`;
+    return html`
+      <div class="chart-shell">
+        <div class="canvas-wrap"><canvas id="chart-canvas"></canvas></div>
+        <div id="html-legend" class="html-legend-container"></div>
+      </div>
+    `;
   }
 }

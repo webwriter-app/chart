@@ -49,15 +49,6 @@ export interface ChartDataSets {
   sets: ChartDataSet[];
 }
 
-export interface LineDataSet {
-  data: { x: number; y: number }[];
-  color: string;
-}
-
-export interface LineDataSets {
-  sets: LineDataSet[];
-}
-
 export interface Visualization {
   id: string;
   name: string;
@@ -113,7 +104,6 @@ export interface ChartState {
     addRemoveData: boolean;
   };
   editable: boolean;
-  lineDatasets: LineDataSets;
   scatterDatasets: ScatterDatasets;
   regressionType: RegressionType;
   scatterLines: DrawnLine[];

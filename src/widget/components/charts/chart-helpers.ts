@@ -118,6 +118,8 @@ export class ChartHelper<T extends Chart<any, number[], string>> {
     const helper = new ChartHelper<T>();
     helper.initialize(type, chart);
     helper.setLegendHoverHighlight();
+    helper.setupTouchDismiss();
+    helper.setupMobileLegendTap();
     return helper;
   }
 
@@ -222,9 +224,10 @@ export class ChartHelper<T extends Chart<any, number[], string>> {
     if (!chart.options.plugins) chart.options.plugins = {};
     if (!chart.options.plugins.legend) chart.options.plugins.legend = {};
 
-    const rightLegendTypes: ChartType[] = ["pie", "doughnut", "polarArea", "radar"];
-    (chart.options.plugins.legend as any).position =
-      rightLegendTypes.includes(this.chartType) ? "right" : "bottom";
+    // The legend is rendered as scrollable HTML below the canvas
+    // (html-legend.ts); the native canvas legend stays off so it can
+    // never squeeze the chart area.
+    (chart.options.plugins.legend as any).display = false;
 
     if (isCircular) {
       return;
@@ -270,6 +273,63 @@ export class ChartHelper<T extends Chart<any, number[], string>> {
       saved = [];
 
       c.update("none");
+    };
+  }
+
+  /** Touch: a tap on empty chart area dismisses the active tooltip/highlight.
+   *  A tap on an element is handled natively by Chart.js (touchstart is in
+   *  the default event list) and shows the tooltip — "tap to select". */
+  private setupTouchDismiss() {
+    const chart = this.chart;
+    const canvas = chart.canvas;
+    if (!canvas) return;
+    canvas.addEventListener(
+      "touchstart",
+      (e: TouchEvent) => {
+        const els = chart.getElementsAtEventForMode(
+          e as unknown as Event,
+          "nearest",
+          { intersect: true },
+          false
+        );
+        if (els.length === 0) {
+          chart.setActiveElements([]);
+          (chart as any).tooltip?.setActiveElements([], { x: 0, y: 0 });
+          chart.update("none");
+        }
+      },
+      { passive: true }
+    );
+  }
+
+  /** Touch devices have no hover, so legend taps do double duty:
+   *  first tap on an item = highlight (what hover does on desktop),
+   *  second tap on the same item = default toggle (hide/show the data). */
+  private setupMobileLegendTap() {
+    const isCoarse =
+      typeof window !== "undefined" &&
+      (window.matchMedia?.("(hover: none), (pointer: coarse)")?.matches ?? false);
+    if (!isCoarse) return;
+    const legend = this.chart.options.plugins!.legend as any;
+    const hoverFn = legend.onHover;
+    const leaveFn = legend.onLeave;
+    if (!hoverFn) return;
+    // Circular types override legend onClick (per-index toggleDataVisibility)
+    // instead of the generic per-dataset toggle
+    const defaultToggle =
+      (Chart.overrides as any)[this.chartType]?.plugins?.legend?.onClick ??
+      (Chart.defaults.plugins.legend as any).onClick;
+    let lastKey: string | null = null;
+    legend.onClick = (e: any, item: any, lg: any) => {
+      const key = `${item.datasetIndex ?? ""}:${item.index ?? ""}`;
+      if (lastKey !== key) {
+        lastKey = key;
+        hoverFn(e, item, lg);
+      } else {
+        lastKey = null;
+        leaveFn?.(e, item, lg);
+        defaultToggle?.call(lg, e, item, lg);
+      }
     };
   }
 

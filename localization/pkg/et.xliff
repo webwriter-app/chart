@@ -7,7 +7,7 @@
 <unit id="label"><segment><source>Charts</source><target>Graafikud</target></segment></unit>
 </file>
 <file id="./snippets/scatterplot-exercise.html" original="./snippets/scatterplot-exercise.html">
-<unit id="label"><segment><source>Scatterplot-Exercise</source><target>Punktdiagramm – harjutus</target></segment></unit>
+<unit id="label"><segment><source>Scatterplot-Exercise</source><target>Punktidiagramm – harjutus</target></segment></unit>
 </file>
 <file id="./snippets/mean-median-exercise.html" original="./snippets/mean-median-exercise.html">
 <unit id="label"><segment><source>Mean-Median-Exercise</source><target>Keskmine – mediaan – harjutus</target></segment></unit>

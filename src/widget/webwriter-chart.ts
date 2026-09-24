@@ -7,7 +7,6 @@ import LOCALIZE from "../../localization/generated";
 
 // Components
 import { DatasetInput } from "./components/data-entry/dataset-input";
-import { ScatterDatasetInput } from "./components/data-entry/scatter-dataset-input";
 import { ChartSettingsPanel } from "./components/settings/chart-settings-panel";
 import { OptionSelect } from "./components/controls/controls";
 
@@ -31,10 +30,18 @@ if (!customElements.get("sl-select")) customElements.define("sl-select", SlSelec
 // Icons
 import IconPlus from "@tabler/icons/outline/plus.svg";
 import IconArrowsRightLeft from "@tabler/icons/outline/arrows-right-left.svg";
+import IconTrash from "@tabler/icons/outline/trash.svg";
+import IconAxisX from "@tabler/icons/outline/axis-x.svg";
+import IconAxisY from "@tabler/icons/outline/axis-y.svg";
+import IconChartDots2 from "@tabler/icons/outline/chart-dots-2.svg";
+import IconPercentage80 from "@tabler/icons/outline/percentage-80.svg";
+import IconTarget from "@tabler/icons/outline/target.svg";
+import IconTableShortcut from "@tabler/icons/outline/table-shortcut.svg";
+import IconRegexOff from "@tabler/icons/outline/regex-off.svg";
 import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
 // Charts & types
-import { availableCharts, getChart, getOptionsDefinition, normalizeChartType } from "./components/charts/chart-registry";
+import { availableCharts, availableRegressions, getChart, getOptionsDefinition, normalizeChartType } from "./components/charts/chart-registry";
 import type { ChartType } from "./components/charts/chart-registry";
 import { BarChart } from "./components/charts/bar-chart";
 import { DoughnutChart, PieChart } from "./components/charts/circular-chart";
@@ -42,7 +49,7 @@ import { LineChart } from "./components/charts/line-chart";
 import { PolarChart } from "./components/charts/polar-area-chart";
 import { RadarChart } from "./components/charts/radar-chart";
 import { ScatterChartJs } from "./components/charts/scatter/scatter-chart";
-import { ChartState, Visualization, InternalChartType } from "./state/models";
+import { ChartState, Visualization } from "./state/models";
 import {
   deriveFixedScatterDatasets,
   normalizeColumnIndexesInput,
@@ -62,7 +69,6 @@ export class WwChart extends LitElementWw {
   @property({ type: Object, attribute: true, reflect: true })
   accessor sharedState: ChartState = {
     teacherOptions: { showOptions: true, showData: true, showLockedOptions: true, changeData: true, changeOptions: true, addRemoveData: true },
-    lineDatasets: { sets: [] },
     scatterDatasets: { title: "My Scatter plot", sets: [], selected: { axis: { x: "None", y: "None" }, dataset_indexes: [] } },
     regressionType: "none",
     scatterLines: [],
@@ -72,10 +78,8 @@ export class WwChart extends LitElementWw {
     editable: true,
   };
 
-  @property({ type: Boolean, attribute: true, reflect: true }) accessor analyzable: boolean;
   @property({ type: Boolean, attribute: true, reflect: true }) accessor showChart: boolean = false;
   @property({ type: Boolean, attribute: true, reflect: true }) accessor showData: boolean = true;
-  @property({ type: Boolean, attribute: true, reflect: true }) accessor showErrorMessage = false;
 
   @property({ type: Number, attribute: "scatter-x", reflect: true })
   accessor scatterXAxis: number = 0;
@@ -85,7 +89,6 @@ export class WwChart extends LitElementWw {
 
   @state() accessor dataTabName = "Data";
   @state() accessor scatterplotTabName = "Scatter plot";
-  @state() accessor lastChartType: InternalChartType = this.sharedState.chart.selectedType;
   @state() accessor editingVisualizationId: string | null = null;
   @state() accessor editingVisualizationName = "";
 
@@ -114,7 +117,6 @@ export class WwChart extends LitElementWw {
       "polar-chart": PolarChart,
       "radar-chart": RadarChart,
       "scatter-chart-js": ScatterChartJs,
-      "wwci-scatterdataset-input": ScatterDatasetInput,
       "sl-tab-group": SlTabGroup,
       "sl-tab": SlTab,
       "sl-alert": SlAlert,
@@ -130,8 +132,6 @@ export class WwChart extends LitElementWw {
     const incoming = e.detail.state;
     let nextState = { ...this.sharedState, ...incoming };
 
-    // When chart.options change, persist them to the active visualization so
-    // each chart tab keeps its own independent option values.
     if (incoming.chart?.options) {
       const activeVizId = this.sharedState.activeVisualizationId;
       const isScatter = activeVizId === WwChart.FIXED_SCATTERPLOT_TAB_ID;
@@ -147,7 +147,6 @@ export class WwChart extends LitElementWw {
 
     this.sharedState = nextState;
     e.stopPropagation();
-    e.cancelBubble = true;
   };
 
   connectedCallback(): void {
@@ -170,6 +169,22 @@ export class WwChart extends LitElementWw {
     this.tabIndex = -1;
   }
 
+  protected override willUpdate(_changed: PropertyValueMap<any>): void {
+    super.willUpdate(_changed);
+
+    if (this.showChart && this.showData) this.showData = false;
+
+    const activeId = this.sharedState.activeVisualizationId;
+    const vizs = this.sharedState.visualizations ?? [];
+    if (
+      activeId !== WwChart.FIXED_SCATTERPLOT_TAB_ID &&
+      vizs.length > 0 &&
+      !vizs.some((v) => v.id === activeId)
+    ) {
+      this.sharedState = { ...this.sharedState, activeVisualizationId: vizs[0].id };
+    }
+  }
+
   normalizeColumns(value: unknown): string[] {
     return normalizeColumnsInput(value);
   }
@@ -189,7 +204,6 @@ export class WwChart extends LitElementWw {
     super.updated(changedProperties);
     if (changedProperties.has("lang")) {
       const locale = this.lang || "en";
-      console.log("[webwriter-chart] lang changed to:", locale);
       this.localize.setLocale(locale).catch((err: unknown) => {
         console.error("[webwriter-chart] setLocale failed:", err);
       });
@@ -207,6 +221,15 @@ export class WwChart extends LitElementWw {
     if (yi >= labels.length) yi = xi;
     if (xi !== this.scatterXAxis) this.scatterXAxis = xi;
     if (yi !== this.scatterYAxis) this.scatterYAxis = yi;
+  }
+
+  private refreshVisibleChart() {
+    requestAnimationFrame(() => {
+      const el = this.renderRoot.querySelector(
+        "bar-chart, line-chart, pie-chart, doughnut-chart, polar-chart, radar-chart"
+      ) as { refreshChart?: () => void } | null;
+      el?.refreshChart?.();
+    });
   }
 
   handleTabShow(e: CustomEvent) {
@@ -242,6 +265,7 @@ export class WwChart extends LitElementWw {
       this.showData = false;
       this.showChart = true;
       this.switchVisualization(panelId);
+      this.refreshVisibleChart();
       requestAnimationFrame(() => window.getSelection()?.empty());
     }
   }
@@ -254,7 +278,7 @@ export class WwChart extends LitElementWw {
   addVisualization() {
     const vizs = this.sharedState.visualizations ?? [];
     const id = `viz-${Date.now()}`;
-    const defaultType: ChartType = "Bar";
+    const defaultType: ChartType = "Pie";
     const optDef = getOptionsDefinition(defaultType);
     const defaultOptions: Record<string, any> =
       Object.fromEntries(Object.entries(optDef).map(([k, d]) => [k, (d as any).default]));
@@ -364,6 +388,35 @@ export class WwChart extends LitElementWw {
     this.requestUpdate();
   }
 
+  /** Update a single scatter chart option (reactive: the new sharedState
+   * reference re-renders the scatter chart immediately). */
+  private setScatterOption(key: string, value: string | number | boolean) {
+    this.sharedState = {
+      ...this.sharedState,
+      chart: {
+        ...this.sharedState.chart,
+        options: { ...this.sharedState.chart.options, [key]: value },
+      },
+    };
+  }
+
+  /** Warning text when the dataset is too small for the selected regression
+   * model (a degree-d polynomial needs d + 1 points, LOESS needs 3). */
+  private regressionPointsWarning(): string | null {
+    const type = this.sharedState.regressionType;
+    if (type === "none") return null;
+    let required = 2;
+    if (type === "Polynomial Regression") {
+      const degree = Number(this.sharedState.chart.options?.polynomialDegree ?? 2);
+      required = Math.max(2, Math.round(degree) + 1);
+    } else if (type === "Local Regression") {
+      required = 3;
+    }
+    const n = this.sharedState.chart.datasets.sets?.length ?? 0;
+    if (n >= required) return null;
+    return `${msg("Not enough data points for this regression model:")} ${n}/${required}`;
+  }
+
   startInlineTabRename(e: MouseEvent, id: string) {
     e.stopPropagation();
     const currentName =
@@ -460,9 +513,6 @@ export class WwChart extends LitElementWw {
        this.sharedState.chart.selectedType = normalizeChartType(this.sharedState.chart.selectedType ?? "Bar");
     }
 
-    const useScatterDatasetInput =
-      this.sharedState.chart.selectedType === "Scatter plot" && !isFixedScatterplotTab;
-
     this.sharedState.chart.optionDefinition = getOptionsDefinition(this.sharedState.chart.selectedType);
 
     const canChangeOptions = this.sharedState.editable || this.sharedState.teacherOptions.changeOptions;
@@ -513,7 +563,7 @@ export class WwChart extends LitElementWw {
                   @blur=${(e: FocusEvent) =>
                     this.commitInlineTabRename((e.currentTarget as HTMLElement).textContent ?? "")}
                 >${this.editingVisualizationName}</span>`
-              : html`<span class="tab-label-text">${msg("Data")}</span>`}
+              : html`<span class="tab-label-text">${this.dataTabName === "Data" ? msg("Data") : this.dataTabName}</span>`}
           </sl-tab>
 
           <sl-tab
@@ -535,7 +585,7 @@ export class WwChart extends LitElementWw {
                   @blur=${(e: FocusEvent) =>
                     this.commitInlineTabRename((e.currentTarget as HTMLElement).textContent ?? "")}
                 >${this.editingVisualizationName}</span>`
-              : html`<span class="tab-label-text">${msg("Scatter plot")}</span>`}
+              : html`<span class="tab-label-text">${this.scatterplotTabName === "Scatter plot" ? msg("Scatter plot") : this.scatterplotTabName}</span>`}
           </sl-tab>
 
           ${vizs.map(
@@ -580,31 +630,30 @@ export class WwChart extends LitElementWw {
         ${(() => {
           const showDataPanel = this.showData && (this.sharedState.editable || this.sharedState.teacherOptions.showData);
           return html`
-            <!-- Data panel — always in DOM so dataset-input preserves focus/state -->
             <div id="data-panel" class="panel-shell ${showDataPanel ? '' : 'hidden'}">
               ${canAddRemoveData && hasChartData
                 ? html`<div class="data-actions-row">
-                    <sl-button size="small" variant="danger" outline @click=${() => this.clearChartData()}>
-                      ${msg("Clear Data")}
+                    <sl-button
+                      size="small"
+                      variant="danger"
+                      outline
+                      aria-label=${msg("Clear Data")}
+                      @click=${() => this.clearChartData()}
+                    >
+                      <sl-icon slot="prefix" src=${IconTrash}></sl-icon>
+                      <span class="btn-label">${msg("Clear Data")}</span>
                     </sl-button>
                   </div>`
                 : ""}
               <div class="data-content">
-                ${useScatterDatasetInput
-                  ? html`<wwci-scatterdataset-input
-                      .sharedState=${this.sharedState}
-                      .lang=${this.lang}
-                      @wwci-state-change=${this.onStateChange}
-                    ></wwci-scatterdataset-input>`
-                  : html`<wwci-dataset-input
-                      .sharedState=${this.sharedState}
-                      .lang=${this.lang}
-                      @wwci-state-change=${this.onStateChange}
-                    ></wwci-dataset-input>`}
+                <wwci-dataset-input
+                  .sharedState=${this.sharedState}
+                  .lang=${this.lang}
+                  @wwci-state-change=${this.onStateChange}
+                ></wwci-dataset-input>
               </div>
             </div>
 
-            <!-- Chart panel — always in DOM so scatter-chart-js preserves local edit state -->
             <div id="chart-panel" class="panel-shell ${!showDataPanel ? '' : 'hidden'}">
                 ${hasChartData
                   ? html`
@@ -614,12 +663,13 @@ export class WwChart extends LitElementWw {
                           <wwci-select
                             class="select-chart-type"
                             size="small"
+                            title=${msg("Chart type")}
+                            .icon=${IconChartDots2}
                             .value=${activeViz?.selectedType ?? "Bar"}
                             .selectOptions=${availableCharts}
                             ?disabled=${!canChangeOptions}
                             @wwci-change=${(e: CustomEvent) => {
                               e.stopPropagation();
-                              e.cancelBubble = true;
                               if (activeViz) this.changeVizType(activeViz.id, (e.target as any).value);
                             }}
                           ></wwci-select>
@@ -633,41 +683,55 @@ export class WwChart extends LitElementWw {
                                   <span class="viz-type-label">${msg("X-Axis")}</span>
                                   <wwci-select
                                     size="small"
+                                    class="select-axis"
+                                    title=${msg("X-Axis")}
+                                    .icon=${IconAxisX}
                                     .selectOptions=${labels}
                                     .value=${labels[this.scatterXAxis] ?? labels[0] ?? ""}
                                     @wwci-change=${(e: CustomEvent) => {
-                                      const idx = labels.indexOf(e.detail.value);
-                                      if (idx >= 0) this.scatterXAxis = idx;
+                                      const idx = e.detail.index;
+                                      if (idx >= 0 && idx < labels.length) this.scatterXAxis = idx;
                                     }}
                                   ></wwci-select>
 
                                   <span class="viz-type-label">${msg("Y-Axis")}</span>
                                   <wwci-select
                                     size="small"
+                                    class="select-axis"
+                                    title=${msg("Y-Axis")}
+                                    .icon=${IconAxisY}
                                     .selectOptions=${labels}
                                     .value=${labels[this.scatterYAxis] ?? labels[1] ?? ""}
                                     @wwci-change=${(e: CustomEvent) => {
-                                      const idx = labels.indexOf(e.detail.value);
-                                      if (idx >= 0) this.scatterYAxis = idx;
+                                      const idx = e.detail.index;
+                                      if (idx >= 0 && idx < labels.length) this.scatterYAxis = idx;
                                     }}
                                   ></wwci-select>
                                 `;
                               })()}
 
-                              <sl-button
-                                size="small"
-                                variant="primary"
-                                outline
-                                style="margin-left: auto;"
-                                ?disabled=${!this.sharedState.hasPendingScatterChanges}
-                                @click=${() => {
-                                  const scatter = this.renderRoot.querySelector("scatter-chart-js") as ScatterChartJs | null;
-                                  scatter?.applyToData();
-                                }}
+                              <sl-tooltip
+                                hoist
+                                content=${this.sharedState.hasPendingScatterChanges
+                                  ? msg("Transfer your plot changes into the data table")
+                                  : msg("No unsaved plot changes — move or add points first")}
                               >
-                                <sl-icon slot="prefix" src=${IconArrowsRightLeft}></sl-icon>
-                                ${msg("Apply Changes to Data")}
-                              </sl-button>
+                                <sl-button
+                                  size="small"
+                                  variant="primary"
+                                  style="margin-left: auto;"
+                                  aria-label=${msg("Apply Changes to Data")}
+                                  ?outline=${!this.sharedState.hasPendingScatterChanges}
+                                  ?disabled=${!this.sharedState.hasPendingScatterChanges}
+                                  @click=${() => {
+                                    const scatter = this.renderRoot.querySelector("scatter-chart-js") as ScatterChartJs | null;
+                                    scatter?.applyToData();
+                                  }}
+                                >
+                                  <sl-icon slot="prefix" src=${IconArrowsRightLeft}></sl-icon>
+                                  <span class="btn-label">${msg("Apply Changes to Data")}</span>
+                                </sl-button>
+                              </sl-tooltip>
                             `
                           : html`
                               ${(() => {
@@ -712,8 +776,10 @@ export class WwChart extends LitElementWw {
                                 const validSpokes = currentXCategories.filter((s) => availableSpokes.includes(s));
                                 const selectedSpokes = validSpokes.length > 0 ? validSpokes : [];
 
-                                const xAxisLabel = showCategoryAxis ? msg("Category") : showYAxisOnly ? msg("Segments") : msg("X-Axis");
+                                const xAxisLabel = showCategoryAxis ? msg("Selected Series") : showYAxisOnly ? msg("Segments") : msg("X-Axis");
+                                const xAxisIcon = showCategoryAxis ? IconTableShortcut : showYAxisOnly ? IconPercentage80 : IconAxisX;
                                 const yAxisLabel = showYAxisOnly ? msg("Levels") : msg("Selected Series");
+                                const yAxisIcon = showYAxisOnly ? IconTarget : IconTableShortcut;
 
                                 return html`
                                   <div class="viz-type-divider"></div>
@@ -723,6 +789,7 @@ export class WwChart extends LitElementWw {
                                     ${keyed(availableSpokes.join('|'), html`<sl-select
                                       class="select-axis"
                                       size="small"
+                                      title=${msg("Spokes")}
                                       ?multiple=${true}
                                       max-options-visible="2"
                                       placeholder=${msg("All spokes")}
@@ -733,18 +800,21 @@ export class WwChart extends LitElementWw {
                                       @sl-change=${(e: Event) => {
                                         if (!activeViz) return;
                                         const sl = e.target as any;
-                                        const opts: any[] = [...sl.querySelectorAll("sl-option")];
-                                        const selected = opts.filter(o => o.selected).map(o => availableSpokes[Number(o.value)] ?? o.value);
+                                        const values: string[] = Array.isArray(sl.value) ? sl.value : [sl.value];
+                                        const selected = values.map(v => availableSpokes[Number(v)]).filter(Boolean);
                                         this.changeVizXCategories(activeViz.id, selected);
                                       }}
                                     >
-                                      ${availableSpokes.map((s, i) => html`<sl-option value=${String(i)} .selected=${selectedSpokes.includes(s)}>${s}</sl-option>`)}
+                                      <sl-icon slot="prefix" src=${IconTableShortcut}></sl-icon>
+                                      ${availableSpokes.map((s, i) => html`<sl-option value=${String(i)}>${s}</sl-option>`)}
                                     </sl-select>`)}
                                   ` : html`
                                     <span class="viz-type-label">${xAxisLabel}</span>
                                     <wwci-select
                                       class="select-axis"
                                       size="small"
+                                      title=${xAxisLabel}
+                                      .icon=${xAxisIcon}
                                       .selectOptions=${xAxisOptions}
                                       .value=${currentXValue}
                                       ?disabled=${!canChangeOptions}
@@ -766,6 +836,7 @@ export class WwChart extends LitElementWw {
                                       ${keyed(availableYSeries.join('|'), html`<sl-select
                                         class="select-axis"
                                         size="small"
+                                        title=${yAxisLabel}
                                         ?multiple=${true}
                                         max-options-visible="2"
                                         placeholder=${msg("All series")}
@@ -776,12 +847,13 @@ export class WwChart extends LitElementWw {
                                         @sl-change=${(e: Event) => {
                                           if (!activeViz) return;
                                           const sl = e.target as any;
-                                          const opts: any[] = [...sl.querySelectorAll("sl-option")];
-                                          const selected = opts.filter(o => o.selected).map(o => availableYSeries[Number(o.value)] ?? o.value);
+                                          const values: string[] = Array.isArray(sl.value) ? sl.value : [sl.value];
+                                          const selected = values.map(v => availableYSeries[Number(v)]).filter(Boolean);
                                           this.changeVizYColumns(activeViz.id, selected);
                                         }}
                                       >
-                                        ${availableYSeries.map((s, i) => html`<sl-option value=${String(i)} .selected=${selectedYSeries.includes(s)}>${s}</sl-option>`)}
+                                        <sl-icon slot="prefix" src=${yAxisIcon}></sl-icon>
+                                        ${availableYSeries.map((s, i) => html`<sl-option value=${String(i)}>${s}</sl-option>`)}
                                       </sl-select>`)}
                                     ` : ""}
                                   `}
@@ -790,15 +862,68 @@ export class WwChart extends LitElementWw {
                             `}
                       </div>
 
+                      ${isFixedScatterplotTab ? (() => {
+                        const opts = this.sharedState.chart.options ?? {};
+                        const locked = this.sharedState.chart.optionsLocked ?? {};
+                        const mayChange = (key: string) =>
+                          this.sharedState.editable ||
+                          (this.sharedState.teacherOptions.changeOptions && !locked[key]);
+                        const regressionType = this.sharedState.regressionType;
+                        const warning = this.regressionPointsWarning();
+                        return html`
+                          <div class="viz-type-row analysis-row">
+                            <span class="viz-type-label">${msg("Regression Model")}</span>
+                            
+                            <sl-select
+                              class="select-regression"
+                              size="small"
+                              title=${msg("Regression Model")}
+                              .value=${regressionType}
+                              ?disabled=${!mayChange("listRegressionLine")}
+                              hoist
+                              @sl-change=${(e: Event) => {
+                                e.stopPropagation();
+                                this.sharedState = {
+                                  ...this.sharedState,
+                                  regressionType: (e.target as any).value,
+                                };
+                              }}
+                            >
+                              <sl-icon slot="prefix" src=${IconRegexOff}></sl-icon>
+                              ${availableRegressions.map(
+                                (r) => html`<sl-option value=${r}>${r}</sl-option>`
+                              )}
+                            </sl-select>
+
+                            ${warning ? html`
+                              <sl-tooltip hoist content=${warning}>
+                                <span class="analysis-warning">⚠</span>
+                              </sl-tooltip>` : ""}
+                            <sl-checkbox
+                              size="small"
+                              ?checked=${Boolean(opts.showCorrelation)}
+                              ?disabled=${regressionType === "none" || !mayChange("showCorrelation")}
+                              @sl-change=${(e: Event) =>
+                                this.setScatterOption("showCorrelation", (e.target as any).checked)}
+                            >${msg("Show Correlation")}</sl-checkbox>
+                            <sl-checkbox
+                              size="small"
+                              ?checked=${Boolean(opts.showOutliers)}
+                              ?disabled=${regressionType === "none" || !mayChange("showOutliers")}
+                              @sl-change=${(e: Event) =>
+                                this.setScatterOption("showOutliers", (e.target as any).checked)}
+                            >${msg("Show Outliers")}</sl-checkbox>
+                          </div>`;
+                      })() : ""}
+
                       <div id="display-chart" class="chart-display-wrap">
                         ${(() => {
                           const ls = this.sharedState.chart.datasets.labels ?? [];
                           const validScatterAxes = ls.length >= 2 && this.scatterXAxis !== this.scatterYAxis;
 
                           return html`
-                            <!-- scatter-chart-js is ALWAYS in the DOM to preserve local edits across tab switches -->
-                            <div style="position:absolute; inset:0; padding:10px; box-sizing:border-box;
-                                        display:${isFixedScatterplotTab && validScatterAxes ? 'block' : 'none'};">
+                            <div class="chart-host-wrap"
+                                 style="display:${isFixedScatterplotTab && validScatterAxes ? 'block' : 'none'};">
                               <scatter-chart-js
                                 style="display:block; width:100%; height:100%;"
                                 .datasets=${this.sharedState.chart.datasets}

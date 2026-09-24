@@ -10,7 +10,13 @@ An interactive data visualization widget for [WebWriter](https://webwriter.app/)
 
 | Name | Import Path |
 | --- | --- |
-...
+| Bar + Line Chart | `@webwriter/chart/snippets/bar+line-chart.html` |
+| Pie + Doughnut Chart | `@webwriter/chart/snippets/pie+doughnut-chart.html` |
+| Polar Area Chart | `@webwriter/chart/snippets/polar-area-chart.html` |
+| Radar Chart | `@webwriter/chart/snippets/radar-chart.html` |
+| Scatterplot Exercise | `@webwriter/chart/snippets/scatterplot-exercise.html` |
+| Mean/Median Exercise | `@webwriter/chart/snippets/mean-median-exercise.html` |
+| Sunscreen Exercise | `@webwriter/chart/snippets/sunscreen-exercise.html` |
 
 ## WebwriterChart (`<webwriter-chart>`)
 
@@ -35,7 +41,6 @@ With a bundler:
 | Attribute | Type | Description | Default | Reflected |
 | --- | --- | --- | --- | --- |
 | `sharedState` | `Object` | Full widget state (visualizations, datasets, options). Serialized to an HTML attribute by WebWriter for persistence. | — | ✓ |
-| `analyzable` | `boolean` | Reserved for future analysis mode. | `false` | ✓ |
 | `show-chart` | `boolean` | Whether a chart tab is currently active. | `false` | ✓ |
 | `show-data` | `boolean` | Whether the Data tab is currently active. | `true` | ✓ |
 | `scatter-x` | `number` | Column index used as the X-axis in the fixed Scatter plot tab. | `0` | ✓ |
@@ -64,7 +69,7 @@ With a bundler:
 | **Line** | Multi-series line chart with optional smoothing and custom Y-scale. |
 | **Polar Area** | Radial chart where each segment's radius encodes its value. |
 | **Radar** | Spider/web chart; each column becomes a spoke axis. |
-| **Scatter plot** | Fixed tab with D3-powered interaction: drag points, draw regression lines, toggle grid/outliers/mean. |
+| **Scatter plot** | Fixed tab built on Chart.js: drag points, draw lines, regression overlays with correlation stats, toggle grid/outliers/mean. |
 
 ---
 
@@ -92,16 +97,13 @@ Abstract base for all Chart.js-backed charts. Declares shared properties (`datas
 Central registry. Defines option schemas for every chart type, exports `availableCharts`, `getOptionsDefinition(type)`, and the `getChart()` factory that renders the correct chart element via `unsafeStatic`.
 
 ### `src/widget/components/charts/chart-helpers.ts` — `ChartHelper`
-Utility class wrapping a `Chart.js` instance. Provides `setYScales()`, `setRScales()`, `setLegendHoverHighlight()`, `setLineSmooth()`, `setHideExactValues()`, and `update()`. Also exports `CHART_PALETTE` and `LINE_PALETTE` color arrays and `makeCircularLegendCallbacks()` for pie/doughnut/polar hover effects.
+Utility class wrapping a `Chart.js` instance. Provides `setYScales()`, `setRScales()`, `setLegendHoverHighlight()`, `setLineSmooth()`, `setHideExactValues()`, and `update()`, plus touch support: tap-to-dismiss for tooltips and a two-tap legend interaction on devices without hover (first tap highlights, second tap toggles visibility). Also exports `CHART_PALETTE` and `LINE_PALETTE` color arrays and `makeCircularLegendCallbacks()` for pie/doughnut/polar hover effects.
+
+### `src/widget/components/charts/html-legend.ts`
+HTML legend following the official Chart.js pattern: the native canvas legend is disabled and rebuilt as DOM below the canvas — visually identical (same generateLabels metadata: box colors, border, radius, font) but inside a scrollable container with a fixed max-height, so charts with many legend items keep a stable canvas size. Legend clicks toggle visibility exactly like the native legend; hover dimming is preserved via event delegation.
 
 ### `src/widget/components/data-entry/dataset-input.ts` — `DatasetInput` (`<wwci-dataset-input>`)
-Spreadsheet-style table editor for the standard chart data. Supports CSV/Excel file upload (drag-and-drop or file picker), per-cell editing, per-series color picking, and add/delete row/column actions.
-
-### `src/widget/components/data-entry/scatter-dataset-input.ts` — `ScatterDatasetInput` (`<wwci-scatterdataset-input>`)
-Table editor for the standalone (non-fixed) scatter dataset. Supports uploading CSV files with mixed numeric/string columns, column type switching, per-column color filter configuration, and dataset selection.
-
-### `src/widget/components/data-entry/select-dataset.ts` — `SelectDataset` (`<wwci-select-dataset>`)
-Dropdown + X/Y axis selector used inside `ScatterDatasetInput` to pick which datasets and columns to plot.
+Spreadsheet-style table editor for the chart data (used by all tabs, including the fixed Scatter plot tab). Supports CSV/Excel file upload (drag-and-drop or file picker), per-cell editing, per-series color picking, and add/delete row/column actions. The table scrolls inside the fixed-height widget instead of growing it.
 
 ### `src/widget/components/settings/chart-settings-panel.ts` — `ChartSettingsPanel` (`<wwci-chart-settings>`)
 Right-side options panel. Dynamically renders controls (toggle, number input, dropdown) for every option in the active chart's `optionDefinition`. Options can be individually locked by authors to prevent student changes.
@@ -116,13 +118,13 @@ Three reusable Shoelace-backed input controls:
 | `NumberField` | `<wwci-limited-number-input>` | Clamped numeric input; fires `wwci-limited-number-input`. |
 
 ### `src/widget/components/charts/scatter/scatter-chart.ts` — `ScatterChartJs` (`<scatter-chart-js>`)
-The interactive scatter plot built on Chart.js. Features include: draggable data points, freehand line drawing, regression overlays (Linear, Polynomial, Local, Exponential, Logarithmic), snap-to-grid, outlier detection, mean marker, and correlation display. Changes can be written back to the shared dataset via **Apply Changes to Data**.
+The interactive scatter plot built on Chart.js. Features include: draggable data points, freehand line drawing, regression overlays (Linear, Polynomial with configurable degree, Local/LOESS with configurable bandwidth, Exponential, Logarithmic), snap-to-grid, residual-based outlier detection, mean marker, and correlation display (Pearson r, Spearman ρ, R²). Changes can be written back to the shared dataset via **Apply Changes to Data**.
 
-### `src/widget/components/charts/scatter/scatter-utils.ts`
-Pure color utility for the scatter plot: `updateColorForFilter()` assigns colors to data points based on a numeric range or string category filter.
+### `src/widget/components/charts/scatter/regression.ts`
+Pure, dependency-free math module for the scatter plot: least-squares fits for all five regression models (OLS linear, polynomial via pivoted normal equations, robust local-quadratic LOESS with tricube kernel, weighted log-linearized exponential, logarithmic with x ≤ 0 guarding), IQR outlier detection on model residuals, and correlation measures (Pearson r, Spearman ρ with tie handling, R² in original y-space).
 
 ### `src/widget/webwriter-chart.utils.ts`
 Stateless helpers: `normalizeColumnsInput()`, `normalizeColumnIndexesInput()`, and `deriveFixedScatterDatasets()` (converts the standard `ChartDataSets` format into the `ScatterDatasets` format used by the fixed Scatter plot tab).
 
 ### `src/widget/utils.ts`
-Low-level utilities: `converter` (Lit property converter for chart-base properties), color helpers (`convertHexToRGB`, `convertRGBToHex`, `addAlphaToRGB`, `randomColor`, `generateColorWheel`), `chartOption()` factory for building option definitions, and `randomString()` / `randomNumber()` for generating placeholder data.
+Low-level utilities: `converter` (Lit property converter for chart-base properties), color helpers (`convertHexToRGB`, `convertRGBToHex`, `addAlphaToRGB`), and the `chartOption()` factory for building option definitions.

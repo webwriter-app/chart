@@ -3,6 +3,7 @@
 import { customElement, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
 import { ChartHelper, CHART_PALETTE, getContext, updateData, makeCircularLegendCallbacks } from "./chart-helpers";
+import { createHtmlLegendPlugin } from "./html-legend";
 import { GenericChart } from "./chart-base";
 import { addAlphaToRGB, chartOption } from "../../utils";
 
@@ -32,8 +33,10 @@ abstract class CircularChart extends GenericChart<typeof CIRCULAR_OPTIONS> {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: { padding: 8 },
         plugins: { legend: makeCircularLegendCallbacks() },
       },
+      plugins: [createHtmlLegendPlugin(() => this.shadowRoot?.getElementById("html-legend"))],
     });
     this.chartHelper = ChartHelper.create(this.chartJsType, chart) as any;
     this.chartHelper.setTitle(this.label);

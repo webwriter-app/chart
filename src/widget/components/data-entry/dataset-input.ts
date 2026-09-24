@@ -241,14 +241,6 @@ private _handleDrop(e: DragEvent) {
     }
   }
 
-clearDataset() {
-    this.sharedState = {
-      ...this.sharedState,
-      chart: { ...this.sharedState.chart, datasets: { labels: [], sets: [] } },
-    };
-    this.dispatchStateChange();
-  }
-
 render() {
     const canEdit = this.sharedState.editable || this.sharedState.teacherOptions.changeData;
     const canAddRemove = this.sharedState.editable || this.sharedState.teacherOptions.addRemoveData;
@@ -286,7 +278,6 @@ render() {
 
     const { labels, sets } = this.sharedState.chart.datasets;
 
-    // ... (rest of the render method remains exactly the same as the previous version)
     return html`
       <div class="table-wrapper">
         <div class="table-scroll-container">

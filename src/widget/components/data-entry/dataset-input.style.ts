@@ -28,7 +28,6 @@ export default css`
     border-color: var(--sl-color-primary-300);
   }
 
-  /* NEW: Active drag state styling */
   .upload-zone.drag-over {
     background: var(--sl-color-primary-100);
     border-color: var(--sl-color-primary-500);
@@ -39,7 +38,7 @@ export default css`
     margin: 0 0 var(--sl-spacing-2x-small) 0;
     font-size: var(--sl-font-size-large);
     color: var(--sl-color-neutral-700);
-    pointer-events: none; /* Prevents text from interrupting drag events */
+    pointer-events: none; 
   }
 
   .upload-zone p {

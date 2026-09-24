@@ -33,10 +33,6 @@
         <source>Add a data point</source>
         <target>데이터 포인트 추가</target>
       </trans-unit>
-      <trans-unit id="sb65c362178e4bea9">
-        <source>Select exactly one point to edit its position</source>
-        <target>위치를 편집할 점을 정확히 하나 선택하세요</target>
-      </trans-unit>
       <trans-unit id="s7a4c288d491e6856">
         <source>Edit point position</source>
         <target>점 위치 편집</target>
@@ -52,10 +48,6 @@
       <trans-unit id="sdc673e73b5c13aea">
         <source>Delete</source>
         <target>삭제</target>
-      </trans-unit>
-      <trans-unit id="s3e1bac84c3c4c41e">
-        <source>Select points or a line first</source>
-        <target>먼저 점이나 선을 선택하세요</target>
       </trans-unit>
       <trans-unit id="s32b873a2dfa6c573">
         <source>selected points</source>
@@ -96,42 +88,6 @@
       <trans-unit id="s079a052719914d71">
         <source>Category</source>
         <target>카테고리</target>
-      </trans-unit>
-      <trans-unit id="sd6ea5bfe15abc64e">
-        <source>Add First Dataset</source>
-        <target>첫 번째 데이터셋 추가</target>
-      </trans-unit>
-      <trans-unit id="sfd83c43e5e471976">
-        <source>Add New Dataset</source>
-        <target>새 데이터 세트 추가</target>
-      </trans-unit>
-      <trans-unit id="s1760229adf0051d4">
-        <source>Delete Column</source>
-        <target>열 삭제</target>
-      </trans-unit>
-      <trans-unit id="s0a764ae8299c5b85">
-        <source>Convert column values to categorical</source>
-        <target>열 값을 범주형으로 변환</target>
-      </trans-unit>
-      <trans-unit id="s4866dfc6adc9576a">
-        <source>Convert column values to numeric</source>
-        <target>열 값을 숫자로 변환</target>
-      </trans-unit>
-      <trans-unit id="s136c24957f6ff7ae">
-        <source>Add Column</source>
-        <target>열 추가</target>
-      </trans-unit>
-      <trans-unit id="s4d36f5dbd7bce477">
-        <source>Categorical values</source>
-        <target>범주형 값</target>
-      </trans-unit>
-      <trans-unit id="sb3df6ba2722236ae">
-        <source>Numeric values</source>
-        <target>숫자 값</target>
-      </trans-unit>
-      <trans-unit id="s8f4aedf9ea5ac98c">
-        <source>Add Dataset</source>
-        <target>데이터셋 추가</target>
       </trans-unit>
       <trans-unit id="s0b786a0e85eb6783">
         <source>Border Radius</source>
@@ -280,6 +236,34 @@
       <trans-unit id="sa172625dedfc3e78">
         <source>Please add data first to display the graph.</source>
         <target>그래프를 표시하려면 먼저 데이터를 추가해 주세요.</target>
+      </trans-unit>
+      <trans-unit id="s0c19987191b8db0b">
+        <source>Double-click exactly one point to select it, then edit its position</source>
+        <target>정확히 하나의 점을 더블 클릭하여 선택한 다음, 그 위치를 편집하세요</target>
+      </trans-unit>
+      <trans-unit id="s573581bd694a2dc1">
+        <source>Double-click points or click a line to select them first</source>
+        <target>먼저 점을 더블 클릭하거나 선을 클릭하여 선택하십시오</target>
+      </trans-unit>
+      <trans-unit id="s1d2850ee299300a5">
+        <source>Polynomial Degree</source>
+        <target>다항식 차수</target>
+      </trans-unit>
+      <trans-unit id="s6ade9bde0b8065fa">
+        <source>LOESS Bandwidth (%)</source>
+        <target>LOESS 대역폭 (%)</target>
+      </trans-unit>
+      <trans-unit id="scf2226e954d643b0">
+        <source>Not enough data points for this regression model:</source>
+        <target>이 회귀 모델에 사용할 데이터 점이 충분하지 않습니다:</target>
+      </trans-unit>
+      <trans-unit id="s83a0b17c8929365a">
+        <source>Transfer your plot changes into the data table</source>
+        <target>그래프 변경 사항을 데이터 테이블로 반영하십시오</target>
+      </trans-unit>
+      <trans-unit id="sc41b02fb09a50bd4">
+        <source>No unsaved plot changes — move or add points first</source>
+        <target>저장되지 않은 플롯 변경 사항이 없습니다. 먼저 점을 이동하거나 추가하십시오</target>
       </trans-unit>
     </body>
   </file>

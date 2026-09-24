@@ -2,10 +2,15 @@ import { html, css, PropertyValues } from "lit";
 import { msg } from "@lit/localize";
 import { customElement, property, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
-import * as d3regression from "d3-regression";
 import { getContext } from "../chart-helpers";
+import { createHtmlLegendPlugin, htmlLegendStyles } from "../html-legend";
 import { GenericChart } from "../chart-base";
-import { ChartDataSets, DrawnLine } from "../../../state/models";
+import { ChartDataSets, DrawnLine, RegressionType } from "../../../state/models";
+import {
+  computeRegression,
+  type Point as RegPoint,
+  type RegressionComputation,
+} from "./regression";
 import SlButton from "@shoelace-style/shoelace/dist/components/button/button.component.js";
 import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.component.js";
 import SlPopup from "@shoelace-style/shoelace/dist/components/popup/popup.component.js";
@@ -26,6 +31,10 @@ type Mode = "none" | "add-point" | "draw-line";
 
 const SNAP_PX = 12;
 const HIT_PX = 8;
+/** Max. delay between two clicks/taps on the same point to count as the
+ *  confirming double-click that arms the drag mode. Deliberately relaxed so
+ *  slower clicks and double-taps on touchscreens register reliably. */
+const DOUBLE_CLICK_MS = 600;
 const COLORS = [
   "#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3",
   "#03a9f4", "#00bcd4", "#009688", "#4caf50", "#8bc34a", "#ffc107",
@@ -133,6 +142,21 @@ private _hoveredPointIdx: number | null = null;
 
 private _skipNextClick = false;
 
+/** True while a touch drag of a selected point is in progress. */
+private _touchDragging = false;
+
+/** Double-click/double-tap detection for arming the drag mode. Works for
+ *  mouse clicks and for the synthesized clicks that taps produce. */
+private _lastClickIdx: number | null = null;
+
+private _lastClickTime = 0;
+
+private _hTS!: (e: TouchEvent) => void;
+
+private _hTM!: (e: TouchEvent) => void;
+
+private _hTE!: (e: TouchEvent) => void;
+
 /** requestAnimationFrame id for smooth scale expansion during drag. */
 private _scaleExpRAFId = 0;
 /** Timer id for the expansion delay (ms before scale starts growing). */
@@ -156,9 +180,16 @@ private _resizeObserver: ResizeObserver | null = null;
 
 private _plugin: { id: string; afterDraw: (chart: Chart) => void };
 
+private _htmlLegendPlugin = createHtmlLegendPlugin(
+  () => this.shadowRoot?.getElementById("html-legend")
+);
+
 /** Per-point animation progress 0→1 for the dotted-line-to-axis animation. */
 private _animProgress: number[] = [];
 private _animRaf: number | null = null;
+
+/** Memo for the regression pipeline (see _regression()). */
+private _regCache: { key: string; value: RegressionComputation } | null = null;
 
 constructor() {
     super();
@@ -227,24 +258,11 @@ constructor() {
           ctx.restore();
         }
 
-        // ── Outlier highlighting (IQR) ────────────────────────────────────────
-        if (opts.showOutliers && allPoints.length >= 4) {
-          const pct = (s: number[], p: number) => {
-            const idx = p * (s.length - 1);
-            const lo = Math.floor(idx), hi = Math.ceil(idx);
-            return s[lo] + (s[hi] - s[lo]) * (idx - lo);
-          };
-          const iqrBounds = (vals: number[]) => {
-            const s = [...vals].sort((a, b) => a - b);
-            const q1 = pct(s, 0.25), q3 = pct(s, 0.75);
-            const iqr = q3 - q1;
-            return { lo: q1 - 1.5 * iqr, hi: q3 + 1.5 * iqr };
-          };
-          const bx = iqrBounds(allPoints.map((p: any) => p.x));
-          const by = iqrBounds(allPoints.map((p: any) => p.y));
-          allPoints.forEach((p: any) => {
-            const isOut = p.x < bx.lo || p.x > bx.hi || p.y < by.lo || p.y > by.hi;
-            if (!isOut) return;
+        // ── Outlier highlighting (IQR on model residuals; univariate fallback) ─
+        const regComp = this._regression(allPoints);
+        if (opts.showOutliers) {
+          allPoints.forEach((p: any, i: number) => {
+            if (!regComp.outlierMask[i]) return;
             const px = xSc.getPixelForValue(p.x);
             const py = ySc.getPixelForValue(p.y);
             ctx.beginPath();
@@ -293,23 +311,8 @@ constructor() {
         }
 
         // ── Regression line ───────────────────────────────────────────────────
-        const regressionType = this.sharedState?.regressionType ?? "none";
-        if (regressionType !== "none" && allPoints.length >= 2) {
-          let reg: any;
-          try {
-            if (regressionType === "Linear Regression") {
-              reg = (d3regression.regressionLinear() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
-            } else if (regressionType === "Polynomial Regression") {
-              reg = (d3regression.regressionQuad() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
-            } else if (regressionType === "Local Regression") {
-              reg = (d3regression.regressionLoess() as any).bandwidth(0.3).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
-            } else if (regressionType === "Exponential Regression") {
-              reg = (d3regression.regressionExp() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
-            } else if (regressionType === "Logarithmic Regression") {
-              reg = (d3regression.regressionLog() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
-            }
-          } catch { reg = null; }
-
+        {
+          const reg = regComp.fit?.curve;
           if (reg && reg.length >= 2) {
             ctx.save();
             // Clip regression line to chart area so it doesn't extend beyond bounds
@@ -386,11 +389,18 @@ constructor() {
     };
   }
 
-static styles = css`
+static styles = [htmlLegendStyles, css`
     :host {
       display: block;
       width: 100%;
       height: 100%;
+      /* The host is programmatically focused for Delete-key handling —
+         never show a focus outline (appeared as an orange frame). */
+      outline: none;
+    }
+    :host(:focus),
+    :host(:focus-visible) {
+      outline: none;
     }
     .root {
       display: flex;
@@ -429,6 +439,10 @@ static styles = css`
       display: block;
       width: 100% !important;
       height: 100% !important;
+      /* No double-tap zoom / no synthesized-click delay, so quick
+         double-taps on points register reliably */
+      touch-action: manipulation;
+      outline: none;
     }
     .btn-col {
       flex: 0 0 auto;
@@ -555,7 +569,24 @@ static styles = css`
       pointer-events: auto;
       white-space: nowrap;
     }
-  `;
+
+    /* Touch devices: 44px minimum hit targets for the tool buttons */
+    @media (pointer: coarse) {
+      .btn-col sl-button::part(base) {
+        min-width: 44px;
+        min-height: 44px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .root {
+        gap: 4px;
+      }
+      .btn-col {
+        gap: 5px;
+      }
+    }
+  `];
 
 public static get scopedElements() {
     return {
@@ -587,6 +618,9 @@ private _createChart() {
       oldCanvas.removeEventListener("mouseup", this._hMU);
       oldCanvas.removeEventListener("click", this._hCK);
       oldCanvas.removeEventListener("mouseleave", this._hML);
+      oldCanvas.removeEventListener("touchstart", this._hTS);
+      oldCanvas.removeEventListener("touchmove", this._hTM);
+      oldCanvas.removeEventListener("touchend", this._hTE);
       this._chart.destroy();
       this._chart = null;
     }
@@ -611,12 +645,14 @@ private _createChart() {
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
-        events: ["click", "mousemove", "mouseout"],
+        // touchstart/touchmove enable native Chart.js tooltips on touch devices
+        events: ["click", "mousemove", "mouseout", "touchstart", "touchmove"],
         plugins: {
           legend: {
-            position: "bottom",
+            // Rendered as scrollable HTML below the canvas (html-legend.ts);
+            // onHover/onLeave are invoked by the HTML legend's delegation
+            display: false,
             onHover: (_e: any, item: any, legend: any) => {
-              if (legend.chart.canvas) legend.chart.canvas.style.cursor = "pointer";
               const chart = legend.chart;
               if (!legendSaved) {
                 legendSaved = chart.data.datasets.map((ds: any) => ({
@@ -642,7 +678,6 @@ private _createChart() {
               chart.update("none");
             },
             onLeave: (_e: any, _item: any, legend: any) => {
-              this._updateCursor();
               const chart = legend.chart;
               if (legendSaved) {
                 chart.data.datasets.forEach((ds: any, i: number) => {
@@ -674,7 +709,7 @@ private _createChart() {
           y: { type: "linear", grid: { display: true }, title: { display: true, text: this._labels()[this.yAxisIndex] ?? "" } },
         },
       },
-      plugins: [this._plugin],
+      plugins: [this._plugin, this._htmlLegendPlugin],
     });
 
     this._applyFixedPointBounds();
@@ -686,6 +721,11 @@ private _createChart() {
     canvas.addEventListener("mouseup", this._hMU);
     canvas.addEventListener("click", this._hCK);
     canvas.addEventListener("mouseleave", this._hML);
+    // passive: false — the handlers call preventDefault() to suppress
+    // synthesized mouse events and page scrolling during point drags
+    canvas.addEventListener("touchstart", this._hTS, { passive: false });
+    canvas.addEventListener("touchmove", this._hTM, { passive: false });
+    canvas.addEventListener("touchend", this._hTE);
   }
 
   override firstUpdated() {
@@ -698,6 +738,9 @@ private _createChart() {
     this._hMU = this._handleMouseup.bind(this);
     this._hCK = this._handleClick.bind(this);
     this._hKD = this._handleKeydown.bind(this);
+    this._hTS = this._handleTouchStart.bind(this);
+    this._hTM = this._handleTouchMove.bind(this);
+    this._hTE = this._handleTouchEnd.bind(this);
     this._hML = () => {
       if (this._hoveredLineIdx !== null) this._hoveredLineIdx = null;
       if (this._hoveredPointIdx !== null) { this._hoveredPointIdx = null; this._updateCursor(); }
@@ -728,18 +771,6 @@ private _createChart() {
       });
       this._resizeObserver.observe(canvas);
     }
-
-    // Add pointer cursor to legend items to indicate interactivity
-    const applyLegendCursor = () => {
-      const legendItems = document.querySelectorAll('.chartjs-legend li');
-      legendItems.forEach(item => {
-        (item as HTMLElement).style.cursor = 'pointer';
-      });
-    };
-    // Apply immediately and retry if needed
-    applyLegendCursor();
-    setTimeout(applyLegendCursor, 100);
-    setTimeout(applyLegendCursor, 300);
   }
 
 private _showConnectTooltip(px: { x: number; y: number }) {
@@ -771,6 +802,9 @@ override disconnectedCallback() {
       canvas.removeEventListener("mouseup", this._hMU);
       canvas.removeEventListener("click", this._hCK);
       canvas.removeEventListener("mouseleave", this._hML);
+      canvas.removeEventListener("touchstart", this._hTS);
+      canvas.removeEventListener("touchmove", this._hTM);
+      canvas.removeEventListener("touchend", this._hTE);
     }
     if (this._hMU) window.removeEventListener("mouseup", this._hMU);
     if (this._hMM) window.removeEventListener("mousemove", this._hMM);
@@ -807,9 +841,13 @@ override updated(changed: PropertyValues) {
       this._sel.clear();
       this._hid.clear();
       this._selCount = 0;
-    } else if (changed.has("datasets") && !this._hasPendingChanges) {
-      // External data update — re-sync local sets (only if no pending changes)
+      this._touchDragging = false;
+    } else if (changed.has("datasets")) {
+      // External data change (data-tab edit, import, apply) — the data table
+      // is the single source of truth, so always drop the local shadow copy,
+      // including pending plot edits that were never applied.
       this._localSets = null;
+      this._hasPendingChanges = false;
       this._editPopup = null;
     }
 
@@ -824,13 +862,12 @@ override updated(changed: PropertyValues) {
       this._chart.data.datasets = this._buildDatasets();
     }
 
-    if (axisChanged) {
-      // Update scale titles in-place — no destroy needed
+    if (dataChanged) {
+      // Update scale titles in-place — covers axis switches AND column
+      // renames in the data tab (labels change without an axis change)
       const labels = this._labels();
       (this._chart.options.scales!.x as any).title.text = labels[this.xAxisIndex] ?? "";
       (this._chart.options.scales!.y as any).title.text = labels[this.yAxisIndex] ?? "";
-      this._applyFixedPointBounds();
-    } else if (dataChanged) {
       this._applyFixedPointBounds();
     } else if (optionsChanged) {
       this._applyFixedPointBounds();
@@ -841,9 +878,10 @@ override updated(changed: PropertyValues) {
     }
   }
 
-  /** Whether coordinates should snap to integers (from options panel). */
+  /** Whether dragged/added points snap to grid ticks (off by default;
+   *  only active once the user enables the switch). */
   private get _snapToGrid(): boolean {
-    return Boolean(this.sharedState?.chart?.options?.snapToGrid ?? true);
+    return Boolean(this.sharedState?.chart?.options?.snapToGrid ?? false);
   }
 
   /** Returns the current working set array (local shadow or parent). */
@@ -917,7 +955,7 @@ override updated(changed: PropertyValues) {
         label: line.name ?? `Line ${i + 1}`,
         data: [{ x: al.x1, y: al.y1 }, { x: al.x2, y: al.y2 }],
         parsing: false,
-        // Endpoints are drawn in beforeDatasetsDraw behind scatter points
+        // Endpoint handles are drawn by the afterDraw plugin, not as dataset points
         pointRadius: 0,
         pointHoverRadius: 0,
         pointHitRadius: 8,
@@ -1613,37 +1651,7 @@ private _handleMouseup(e: MouseEvent) {
 
     // ── End point drag: commit position to _localSets ───────────────────────
     if (this._dragPoint !== null) {
-      this._stopScaleExp(); // stop any in-progress scale expansion
-      const actuallyMoved = this._dragPos !== null;
-      if (actuallyMoved) {
-        const si = this._dragPoint.setIdx;
-        const xi = this.xAxisIndex;
-        const yi = this.yAxisIndex;
-        // When snap ON: _dragPos is already at the grid tick. When OFF: round raw to 3 decimals.
-        const raw = this._dragRawPos ?? this._dragPos!;
-        const finalX = this._snapToGrid ? this._dragPos!.x : Math.round(raw.x * 100) / 100;
-        const finalY = this._snapToGrid ? this._dragPos!.y : Math.round(raw.y * 100) / 100;
-        this._ensureLocalSets();
-        this._localSets = this._localSets!.map((s: any, i: number) => {
-          if (i !== si) return s;
-          const newData = [...s.data];
-          newData[xi] = finalX;
-          newData[yi] = finalY;
-          return { ...s, data: newData };
-        });
-        this._hasPendingChanges = true;
-        this._skipNextClick = true; // only skip click after an actual drag
-      }
-      this._dragPos = null;
-      this._dragRawPos = null;
-      this._dragPoint = null;
-      this._lockedScaleBounds = null;
-      this._updateCursor();
-      if (this._chart) {
-        this._chart.data.datasets = this._buildDatasets();
-        this._applyFixedPointBounds();
-        this._chart.update("none");
-      }
+      this._commitPointDrag();
     }
 
     // ── End line endpoint drag: commit to _lines ───────────────────────────
@@ -1683,6 +1691,96 @@ private _handleMouseup(e: MouseEvent) {
     }
 
     this._updateCursor();
+  }
+
+/** Commit an in-progress point drag to _localSets and reset drag state.
+   *  Shared by the mouse (mouseup) and touch (touchend) paths. */
+  private _commitPointDrag() {
+    if (this._dragPoint === null) return;
+    this._stopScaleExp(); // stop any in-progress scale expansion
+    const actuallyMoved = this._dragPos !== null;
+    if (actuallyMoved) {
+      const si = this._dragPoint.setIdx;
+      const xi = this.xAxisIndex;
+      const yi = this.yAxisIndex;
+      // When snap ON: _dragPos is already at the grid tick. When OFF: round raw to 3 decimals.
+      const raw = this._dragRawPos ?? this._dragPos!;
+      const finalX = this._snapToGrid ? this._dragPos!.x : Math.round(raw.x * 100) / 100;
+      const finalY = this._snapToGrid ? this._dragPos!.y : Math.round(raw.y * 100) / 100;
+      this._ensureLocalSets();
+      this._localSets = this._localSets!.map((s: any, i: number) => {
+        if (i !== si) return s;
+        const newData = [...s.data];
+        newData[xi] = finalX;
+        newData[yi] = finalY;
+        return { ...s, data: newData };
+      });
+      this._hasPendingChanges = true;
+      this._skipNextClick = true; // only skip click after an actual drag
+    }
+    this._dragPos = null;
+    this._dragRawPos = null;
+    this._dragPoint = null;
+    this._lockedScaleBounds = null;
+    this._updateCursor();
+    if (this._chart) {
+      this._chart.data.datasets = this._buildDatasets();
+      this._applyFixedPointBounds();
+      this._chart.update("none");
+    }
+  }
+
+  // ── Touch dragging (mobile) ──────────────────────────────────────────────
+  // A single tap shows the tooltip (Chart.js touchstart handling); a quick
+  // double-tap arms the drag mode via the synthesized-click double-click
+  // detection in _handleClick (point turns red). Only touching such an
+  // armed (red) point starts a drag. Mouse behavior is unaffected.
+
+  private _touchPx(t: Touch): { x: number; y: number } {
+    const canvas = this._chart?.canvas;
+    if (!canvas) return { x: 0, y: 0 };
+    const r = canvas.getBoundingClientRect();
+    return { x: t.clientX - r.left, y: t.clientY - r.top };
+  }
+
+  private _handleTouchStart(e: TouchEvent) {
+    // add-point / draw-line keep their tap flow (synthesized clicks)
+    if (this._mode !== "none") return;
+    if (e.touches.length !== 1 || !this._chart) return;
+    const pi = this._pointAtPx(this._touchPx(e.touches[0]));
+    // Only a touch on an ALREADY selected point starts a drag; anything else
+    // falls through to the default flow (tap → synthesized click → select).
+    if (pi === null || !this._sel.has(pi) || this._editPopup) return;
+    this._touchDragging = true;
+    this._dragPoint = { setIdx: pi };
+    this._lockScaleBounds();
+    (navigator as any).vibrate?.(30); // haptic feedback where supported
+    // No synthesized click (which would toggle the selection off) and no
+    // page scrolling while dragging.
+    e.preventDefault();
+  }
+
+  private _handleTouchMove(e: TouchEvent) {
+    if (!this._touchDragging || this._dragPoint === null || !this._chart) return;
+    if (e.touches.length !== 1) return;
+    e.preventDefault(); // no page scroll while dragging a point
+    const data = this._pxToData(this._touchPx(e.touches[0]));
+    if (!data) return;
+    this._dragRawPos = data;
+    this._dragPos = this._snapToGrid ? this._snapDragPos(data) : data;
+    this._maybeExpandScale(data);
+    if (this._scaleExpRAFId === 0) {
+      this._chart.data.datasets = this._buildDatasets();
+      this._applyLockedBounds();
+      this._chart.update("none");
+    }
+  }
+
+  private _handleTouchEnd(_e: TouchEvent) {
+    if (!this._touchDragging) return;
+    this._touchDragging = false;
+    this._commitPointDrag();
+    // The point stays selected, so another touch can adjust it further.
   }
 
 private _handleClick(e: MouseEvent) {
@@ -1729,6 +1827,17 @@ private _handleClick(e: MouseEvent) {
       }
       const pi = this._pointAtPx(px);
       if (pi !== null) {
+        // A single click/tap only shows the tooltip (hover on desktop,
+        // Chart.js touch handling on mobile) — no color change, no drag.
+        // Only a quick SECOND click/tap on the same point toggles the red
+        // "draggable" selection state.
+        const now = performance.now();
+        const isDouble =
+          this._lastClickIdx === pi && now - this._lastClickTime < DOUBLE_CLICK_MS;
+        this._lastClickIdx = pi;
+        this._lastClickTime = now;
+        if (!isDouble) return;
+        this._lastClickIdx = null; // consume, so a third click starts fresh
         if (this._sel.has(pi)) this._sel.delete(pi);
         else this._sel.add(pi);
         this._selCount = this._sel.size;
@@ -1739,6 +1848,16 @@ private _handleClick(e: MouseEvent) {
         this.requestUpdate();
         return;
       }
+      // Click/tap on empty chart area: deselect everything — points return
+      // to their original color and are no longer draggable.
+      if (this._sel.size > 0) {
+        this._sel.clear();
+        this._selCount = 0;
+        this._hideConnectTooltip();
+        this._refreshStyles();
+        this.requestUpdate();
+      }
+      this._lastClickIdx = null;
       if (this._selLineIdx !== null) {
         this._selLineIdx = null;
         this._chart?.update("none");
@@ -1855,6 +1974,24 @@ applyToData() {
   }
 
 
+/** Memoized regression pipeline (fit + outlier mask + correlations) —
+   *  shared by the canvas plugin and the HTML annotations. The cache matters
+   *  because afterDraw runs on every mousemove during brush/drag and LOESS
+   *  is O(n²) per evaluation. */
+  private _regression(points: RegPoint[]): RegressionComputation {
+    const opts = this.sharedState?.chart?.options ?? {};
+    const type = (this.sharedState?.regressionType ?? "none") as RegressionType;
+    const params = {
+      degree: Math.round(Number(opts.polynomialDegree ?? 2)) || 2,
+      span: Math.min(1, Math.max(0.15, Number(opts.loessSpan ?? 50) / 100)),
+    };
+    const key = JSON.stringify([type, params, points]);
+    if (this._regCache?.key === key) return this._regCache.value;
+    const value = computeRegression(type, points, params);
+    this._regCache = { key, value };
+    return value;
+  }
+
 private _computeChartAnnotations(): { formula: string; correlation: string } {
     const opts = this.sharedState?.chart?.options ?? {};
     const xi = this.xAxisIndex;
@@ -1866,44 +2003,24 @@ private _computeChartAnnotations(): { formula: string; correlation: string } {
       .map((s: any) => ({ x: Number(s.data[xi]), y: Number(s.data[yi]) }))
       .filter((p: any) => Number.isFinite(p.x) && Number.isFinite(p.y));
 
+    const regComp = this._regression(allPoints);
+
     let formula = "";
-    const regressionType = this.sharedState?.regressionType ?? "none";
-    if (regressionType !== "none" && allPoints.length >= 2) {
-      let reg: any;
-      try {
-        if (regressionType === "Linear Regression")
-          reg = (d3regression.regressionLinear() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
-        else if (regressionType === "Polynomial Regression")
-          reg = (d3regression.regressionQuad() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
-        else if (regressionType === "Exponential Regression")
-          reg = (d3regression.regressionExp() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
-        else if (regressionType === "Logarithmic Regression")
-          reg = (d3regression.regressionLog() as any).x((d: any) => d.x).y((d: any) => d.y)(allPoints);
-      } catch { reg = null; }
-      if (reg) {
-        const sgn = (v: number) => v < 0 ? "−" : "+";
-        if (regressionType === "Linear Regression" && reg.a !== undefined) {
-          formula = `y = ${r3(reg.a)}·x ${sgn(reg.b)} ${Math.abs(r3(reg.b))}`;
-        } else if (regressionType === "Polynomial Regression" && reg.a !== undefined) {
-          formula = `y = ${r3(reg.a)}x² ${sgn(reg.b)} ${Math.abs(r3(reg.b))}x ${sgn(reg.c)} ${Math.abs(r3(reg.c))}`;
-        } else if (regressionType === "Exponential Regression" && reg.a !== undefined) {
-          formula = `y = ${r3(reg.a)}·e^(${r3(reg.b)}·x)`;
-        } else if (regressionType === "Logarithmic Regression" && reg.a !== undefined) {
-          formula = `y = ${r3(reg.a)} ${sgn(reg.b)} ${Math.abs(r3(reg.b))}·ln(x)`;
-        }
-      }
+    if (regComp.fit) {
+      formula = regComp.fit.formula;
+      if (regComp.fit.warning) formula += ` — ${regComp.fit.warning}`;
     }
 
+    // Pearson r (linear association), Spearman ρ (monotone association —
+    // meaningful for exponential/logarithmic trends) and model R²
+    // (1 − SSres/SStot in original y-space; pseudo-R² for non-linear fits).
     let correlation = "";
     if (opts.showCorrelation && allPoints.length >= 2) {
-      const n = allPoints.length;
-      const mx = allPoints.reduce((s: number, p: any) => s + p.x, 0) / n;
-      const my = allPoints.reduce((s: number, p: any) => s + p.y, 0) / n;
-      const num = allPoints.reduce((s: number, p: any) => s + (p.x - mx) * (p.y - my), 0);
-      const dx = Math.sqrt(allPoints.reduce((s: number, p: any) => s + (p.x - mx) ** 2, 0));
-      const dy = Math.sqrt(allPoints.reduce((s: number, p: any) => s + (p.y - my) ** 2, 0));
-      const corr = (dx * dy) > 0 ? num / (dx * dy) : 0;
-      correlation = `r = ${(Math.round(corr * 100) / 100).toFixed(2)}`;
+      const parts: string[] = [];
+      if (regComp.pearson !== null) parts.push(`r = ${regComp.pearson.toFixed(2)}`);
+      if (regComp.spearman !== null) parts.push(`ρ = ${regComp.spearman.toFixed(2)}`);
+      if (regComp.fit && regComp.fit.r2 !== null) parts.push(`R² = ${regComp.fit.r2.toFixed(2)}`);
+      correlation = parts.join("   ");
     }
 
     return { formula, correlation };
@@ -2026,6 +2143,8 @@ override render() {
           `; })() : ""}
         </div>
 
+        <div id="html-legend" class="html-legend-container"></div>
+
         ${(formula || correlation) ? html`
           <div class="chart-annotations">
             ${formula ? html`<span class="annotation-regression">${formula}</span>` : ""}
@@ -2055,7 +2174,7 @@ override render() {
 
           <!-- ── Edit position of selected point ──────────────── -->
           <sl-tooltip hoist placement="top-end"
-            content=${this._selCount !== 1 ? msg("Select exactly one point to edit its position") : msg("Edit point position")}
+            content=${this._selCount !== 1 ? msg("Double-click exactly one point to select it, then edit its position") : msg("Edit point position")}
           >
             <sl-button size="small" circle
               .disabled=${this._selCount !== 1}
@@ -2101,7 +2220,7 @@ override render() {
             content=${this._selLineIdx !== null
               ? `${msg("Delete")} "${this._lines[this._selLineIdx]?.name ?? `Line ${this._selLineIdx + 1}`}"`
               : this._selCount === 0
-              ? msg("Select points or a line first")
+              ? msg("Double-click points or click a line to select them first")
               : `${msg("Delete")} ${this._selCount} ${this._selCount > 1 ? msg("selected points") : msg("selected point")}`}
           >
             <sl-button size="small" circle variant="danger"

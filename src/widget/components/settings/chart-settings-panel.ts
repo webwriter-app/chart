@@ -16,27 +16,22 @@ function translateOptionName(name: string): string {
     "Smooth The Line": msg("Smooth The Line"),
     "Point Radius": msg("Point Radius"),
     "Fill": msg("Fill"),
-    "Regression Model": msg("Regression Model"),
     "Snap to Grid": msg("Snap to Grid"),
     "Show Grid": msg("Show Grid"),
     "Animation": msg("Animation"),
-    "Show Correlation": msg("Show Correlation"),
-    "Show Outliers": msg("Show Outliers"),
+    "Polynomial Degree": msg("Polynomial Degree"),
+    "LOESS Bandwidth (%)": msg("LOESS Bandwidth (%)"),
     "Show Mean": msg("Show Mean"),
   };
   return map[name] ?? name;
 }
-import { customElement, state } from "lit/decorators.js";
+import { customElement } from "lit/decorators.js";
 
-
-import { availableRegressions } from "../charts/chart-registry";
 import { OptionSelect, ToggleSwitch, NumberField } from "../controls/controls";
 import SlButton from "@shoelace-style/shoelace/dist/components/button/button.component.js";
 import SlInput from "@shoelace-style/shoelace/dist/components/input/input.component.js";
 import SlIconButton from "@shoelace-style/shoelace/dist/components/icon-button/icon-button.component.js";
 import SlDetails from "@shoelace-style/shoelace/dist/components/details/details.component.js";
-import SlButtonGroup from "@shoelace-style/shoelace/dist/components/button-group/button-group.component.js";
-import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert.component.js";
 import IconLock from "@tabler/icons/outline/lock.svg";
 import IconUnLock from "@tabler/icons/outline/lock-open.svg";
 import StateComponent from "../../stateful-component";
@@ -55,12 +50,6 @@ interface TOptionInput {
 }
 @customElement("wwci-chart-settings")
 export class ChartSettingsPanel extends StateComponent {
-@state()
-  accessor showErrorMessage = false;
-
-@state()
-  accessor showErrorIcon = false;
-
 static styles = css`
     sl-details::part(header) {
       padding: 0.5em 0;
@@ -110,37 +99,6 @@ static styles = css`
       background-color: unset;
       border: none;
     }
-    /* Ensure wwci-select is relatively positioned */
-    .select-container {
-      position: relative;
-      display: inline-block;
-    }
-
-    .triangle-container {
-      position: absolute;
-      bottom: 0;
-      right: 1px; /* Keep the triangle at the bottom-left of wwci-select */
-      z-index: 10;
-      transform: translateY(40%);
-    }
-    .alert-container {
-      position: absolute;
-      top: 100%; /* Place it right below the select element */
-      left: 0;
-      width: 100%; /* Full width for the alert */
-      z-index: 1000;
-    }
-
-    .mode_switch__error_indicator {
-      color: var(--sl-color-danger-600);
-    }
-    .error-alert {
-      position: relative;
-      width: 100%; /* Ensure it stays full width */
-      max-height: none; /* Allow it to grow vertically */
-      margin-top: 0.5em; /* Add a small gap between the select and the alert */
-      overflow: visible; /* Ensure content is visible when it grows */
-    }
   `;
 
 public static get scopedElements() {
@@ -152,8 +110,6 @@ public static get scopedElements() {
       "wwci-switch": ToggleSwitch,
       "sl-icon-button": SlIconButton,
       "sl-details": SlDetails,
-      "sl-button-group": SlButtonGroup,
-      "sl-alert": SlAlert,
     };
   }
 
@@ -170,18 +126,8 @@ isOptionHiddenForAxes(key: string, x_axis_type: string, y_axis_type: string) {
           disabled = true;
         }
         break;
-      case "showCorrelation":
-        if (x_axis_type !== "number" || y_axis_type !== "number") {
-          disabled = true;
-        }
-        break;
-
-      case "showOutliers":
-        if (x_axis_type !== "number" || y_axis_type !== "number") {
-          disabled = true;
-        }
-        break;
-      case "listRegressionLine":
+      case "polynomialDegree":
+      case "loessSpan":
         if (x_axis_type !== "number" || y_axis_type !== "number") {
           disabled = true;
         }
@@ -204,48 +150,6 @@ isOptionHiddenForAxes(key: string, x_axis_type: string, y_axis_type: string) {
         break;
     }
     return disabled;
-  }
-
-getTotalDataLength() {
-    let length = 0;
-    if (this.sharedState.scatterDatasets.sets.length !== 0) {
-      this.sharedState.scatterDatasets.selected.dataset_indexes.forEach(
-        (dataset_index) => {
-          length +=
-            this.sharedState.scatterDatasets.sets[dataset_index]
-              .dimensional_data.length;
-        }
-      );
-    }
-    return length;
-  }
-
-getSelectedDatasetCount() {
-    return this.sharedState.scatterDatasets.selected.dataset_indexes.length;
-  }
-
-getRegressionErrorState(): {
-    regressionErrorMessages: TemplateResult;
-    regressionError: boolean;
-    color: string;
-  } {
-    let regressionErrorMessages = html``;
-    let regressionError = false;
-    const color = "";
-    const regressionType = this.sharedState.regressionType;
-    if (regressionType === "none") return { regressionErrorMessages, regressionError, color };
-
-    // Regression runs over all visible data points combined — check total count
-    let requiredPoints = 2;
-    if (regressionType === "Polynomial Regression") requiredPoints = 3;
-
-    const totalPoints = this.sharedState.chart.datasets.sets.length;
-    if (totalPoints < requiredPoints) {
-      regressionError = true;
-      regressionErrorMessages = html`Cannot perform ${regressionType} regression: need at least ${requiredPoints} data point${requiredPoints > 1 ? "s" : ""} (have ${totalPoints}).`;
-    }
-
-    return { regressionErrorMessages, regressionError, color };
   }
 
 render() {
@@ -271,36 +175,6 @@ render() {
               this.sharedState.scatterDatasets.selected.axis.y
             )
           ];
-    // TODO: Fix this condition for regression when not enough data
-    if (
-      this.sharedState.regressionType !== "none" &&
-      x_axis_type === "number" &&
-      y_axis_type === "number" &&
-      this.getRegressionErrorState().regressionError
-    ) {
-      this.showErrorIcon = true;
-    } else {
-      this.showErrorIcon = false;
-    }
-
-    const biExclamationTriangle = html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      fill="currentColor"
-      class="bi bi-exclamation-triangle"
-      viewBox="0 0 16 16"
-    >
-      <!-- White Triangle Background -->
-      <polygon fill="#fff" points="8 1 15 14 1 14 8 1" />
-
-      <path
-        d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"
-      />
-      <path
-        d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"
-      />
-    </svg>`;
     const { optionDefinition } = this.sharedState.chart;
 
     const optionInputs: TOptionInput[] = Object.keys(optionDefinition).map(
@@ -328,10 +202,10 @@ render() {
                 max=${max}
                 min=${min}
                 value=${Number(value)}
-                @sl-input=${(e: any) => {
+                @wwci-limited-number-input=${(e: CustomEvent) => {
                   const updatedOptions = {
                     ...this.sharedState.chart.options,
-                    [key]: e.target.value,
+                    [key]: e.detail.value,
                   };
 
                   this.sharedState = {
@@ -354,7 +228,6 @@ render() {
               ?checked=${Boolean(value)}
               @wwci-change=${(e: CustomEvent) => {
                 e.stopPropagation();
-                e.cancelBubble = true;
                 const updatedOptions = {
                   ...this.sharedState.chart.options,
                   [key]: e.detail.value,
@@ -372,57 +245,6 @@ render() {
             ></wwci-switch>`;
             break;
 
-          case "array":
-            option.template = html`
-              <sl-button-group>
-                <div class="select-container">
-                  <wwci-select
-                    .value="${this.sharedState.regressionType}"
-                    ?disabled=${isDisabled}
-                    .selectOptions="${availableRegressions}"
-                    @wwci-change=${(e: CustomEvent) => {
-                      e.stopPropagation();
-                      e.cancelBubble = true;
-                      this.sharedState = {
-                        ...this.sharedState,
-                        regressionType: (e.target as any).value,
-                      };
-
-                      this.dispatchStateChange();
-                    }}
-                  >
-                  </wwci-select>
-                  <div
-                    class="triangle-container"
-                    style=${this.showErrorIcon ? "" : "display: none;"}
-                  >
-                    <div
-                      class="mode_switch__error_indicator"
-                      @mouseenter=${() => (this.showErrorMessage = true)}
-                      @mouseleave=${() => (this.showErrorMessage = false)}
-                    >
-                      ${biExclamationTriangle}
-                    </div>
-                  </div>
-                  ${this.showErrorMessage && this.showErrorIcon
-                    ? html`
-                        <div class="alert-container">
-                          <sl-alert
-                            class="error-alert"
-                            variant="danger"
-                            open
-                            hoist
-                          >
-                            ${this.getRegressionErrorState().regressionErrorMessages}
-                          </sl-alert>
-                        </div>
-                      `
-                    : ""}
-                </div>
-              </sl-button-group>
-            `;
-            break;
-
           default:
             option.template = html`<p>Unknown type: ${type}</p>`;
         }
@@ -430,7 +252,14 @@ render() {
       }
     );
 
-    const disabledOptionKeys = new Set(["scaleMin", "scaleMax", "scaleStepSize"]);
+    const disabledOptionKeys = new Set([
+      "scaleMin",
+      "scaleMax",
+      "scaleStepSize",
+      "listRegressionLine",
+      "showCorrelation",
+      "showOutliers",
+    ]);
 
     const optionInputsToShow = optionInputs.filter(
       (input) =>
@@ -440,8 +269,12 @@ render() {
         !this.isOptionHiddenForAxes(input.key, x_axis_type, y_axis_type) &&
         !disabledOptionKeys.has(input.key) &&
         !(
-          (input.key === "showCorrelation" || input.key === "showOutliers") &&
-          this.sharedState.regressionType === "none"
+          input.key === "polynomialDegree" &&
+          this.sharedState.regressionType !== "Polynomial Regression"
+        ) &&
+        !(
+          input.key === "loessSpan" &&
+          this.sharedState.regressionType !== "Local Regression"
         )
     );
 
@@ -518,7 +351,7 @@ render() {
               <div class="row">
                 <p class="text">${translateOptionName(input.name)}</p>
                 ${this.sharedState.editable
-                  ? html`<!-- Lock controls temporarily disabled -->
+                  ? html`
                       <div></div>`
                   : html`<div></div>`}
               </div>
@@ -526,74 +359,6 @@ render() {
             </div>
           `;
         })}
-      <!-- </sl-details> -->
-      <!-- <sl-details summary="Teacher Options"> -->
-        <!-- <div class="container">
-          <p>show options</p>
-          <wwci-switch
-            ?checked=${this.sharedState.teacherOptions.showOptions}
-            @wwci-state-change=${(e: CustomEvent) => {
-              e.stopPropagation();
-              e.cancelBubble = true;
-              this.sharedState.teacherOptions.showOptions = e.detail.value;
-              this.dispatchStateChange();
-            }}
-          ></wwci-switch>
-          <p>show data</p>
-          <wwci-switch
-            ?checked=${this.sharedState.teacherOptions.showData}
-            @wwci-state-change=${(e: any) => {
-              e.stopPropagation();
-              e.cancelBubble = true;
-              this.sharedState.teacherOptions.showData = e.detail.value;
-              this.dispatchStateChange();
-            }}
-          ></wwci-switch>
-          <p>show locked options</p>
-          <wwci-switch
-            ?checked=${this.sharedState.teacherOptions.showLockedOptions}
-            @wwci-state-change=${(e: any) => {
-              e.stopPropagation();
-              e.cancelBubble = true;
-              this.sharedState.teacherOptions.showLockedOptions =
-                e.detail.value;
-              e.stopPropagation();
-              e.cancelBubble = true;
-            }}
-          ></wwci-switch>
-          <p>change data</p>
-          <wwci-switch
-            ?checked=${this.sharedState.teacherOptions.changeData}
-            @wwci-state-change=${(e: any) => {
-              e.stopPropagation();
-              e.cancelBubble = true;
-              this.sharedState.teacherOptions.changeData = e.detail.value;
-              this.dispatchStateChange();
-            }}
-          ></wwci-switch>
-          <p>change options</p>
-          <wwci-switch
-            ?checked=${this.sharedState.teacherOptions.changeOptions}
-            @wwci-state-change=${(e: any) => {
-              e.stopPropagation();
-              e.cancelBubble = true;
-              this.sharedState.teacherOptions.changeOptions = e.detail.value;
-              this.dispatchStateChange();
-            }}
-          ></wwci-switch>
-          <p>add/remove data</p>
-          <wwci-switch
-            ?checked=${this.sharedState.teacherOptions.addRemoveData}
-            @wwci-state-change=${(e: any) => {
-              e.stopPropagation();
-              e.cancelBubble = true;
-              this.sharedState.teacherOptions.addRemoveData = e.detail.value;
-              e.stopPropagation();
-              e.cancelBubble = true;
-            }}
-          ></wwci-switch>
-        </div> -->
-      <!-- </sl-details> -->
     `;
   }
 }
