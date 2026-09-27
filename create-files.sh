@@ -1,2 +1,0 @@
-echo "import { WwChart as _WwChart } from './ww-chart';export default _WwChart; export { _WwChart as WwChart };" > dist/widget.js
-echo "<head><script type=\"module\" src='./ww-chart.js'></script><link rel=\"stylesheet\" href=\"./style.css\" /></head><body id=main><webwriter-chart /></body>" > dist/index.html

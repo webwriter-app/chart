@@ -1,0 +1,266 @@
+<xliff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="lit-localize-inputs" datatype="plaintext" source-language="en" target-language="da">
+    <body>
+      <trans-unit id="s7853336e2d49e552">
+        <source>Connect data points</source>
+        <target>Forbind datapunkter</target>
+      </trans-unit>
+      <trans-unit id="sce2e89993cd7a286">
+        <source>Line name</source>
+        <target>Linjenavn</target>
+      </trans-unit>
+      <trans-unit id="s5b73a90cdea7a562">
+        <source>Edit coordinates</source>
+        <target>Rediger koordinater</target>
+      </trans-unit>
+      <trans-unit id="sb8f855b49234b81b">
+        <source>Apply</source>
+        <target>Ansøg</target>
+      </trans-unit>
+      <trans-unit id="s2ceb11be2290bb1b">
+        <source>Cancel</source>
+        <target>Annuller</target>
+      </trans-unit>
+      <trans-unit id="sc23e4eb04a4e5d22">
+        <source>Add data first</source>
+        <target>Indtast data først</target>
+      </trans-unit>
+      <trans-unit id="se1002705746ad149">
+        <source>Click on chart to place a new point</source>
+        <target>Klik på diagrammet for at indsætte et nyt punkt</target>
+      </trans-unit>
+      <trans-unit id="s896712776969fe57">
+        <source>Add a data point</source>
+        <target>Tilføj et datapunkt</target>
+      </trans-unit>
+      <trans-unit id="s7a4c288d491e6856">
+        <source>Edit point position</source>
+        <target>Rediger punktets position</target>
+      </trans-unit>
+      <trans-unit id="s2b8b8f3bb6ee5a04">
+        <source>Click two points to draw a line. Drag endpoints to adjust. Press Delete to remove selected.</source>
+        <target>Klik på to punkter for at tegne en linje. Træk i endepunkterne for at justere. Tryk på Delete for at slette det valgte.</target>
+      </trans-unit>
+      <trans-unit id="s622204928541cb72">
+        <source>Draw a line</source>
+        <target>Tegn en linje</target>
+      </trans-unit>
+      <trans-unit id="sdc673e73b5c13aea">
+        <source>Delete</source>
+        <target>Slet</target>
+      </trans-unit>
+      <trans-unit id="s32b873a2dfa6c573">
+        <source>selected points</source>
+        <target>udvalgte punkter</target>
+      </trans-unit>
+      <trans-unit id="s8a1650bddf8ecd32">
+        <source>selected point</source>
+        <target>valgt punkt</target>
+      </trans-unit>
+      <trans-unit id="se8aa1cc7653c6ba2">
+        <source>Brought your own dataset?</source>
+        <target>Har du medbragt dit eget datasæt?</target>
+      </trans-unit>
+      <trans-unit id="s157ba0d6fcb49b36">
+        <source>Upload or drag and drop an Excel (.xlsx) or CSV file here.</source>
+        <target>Upload eller træk og slip en Excel-fil (.xlsx) eller CSV-fil her.</target>
+      </trans-unit>
+      <trans-unit id="sb59e3f80c11ac8d6">
+        <source>Choose File</source>
+        <target>Vælg fil</target>
+      </trans-unit>
+      <trans-unit id="s091d3407b5b2f824">
+        <source>OR</source>
+        <target>ELLER</target>
+      </trans-unit>
+      <trans-unit id="s252bcd59b75fd110">
+        <source>Create Empty Table</source>
+        <target>Opret tom tabel</target>
+      </trans-unit>
+      <trans-unit id="s74d2679756765e55">
+        <source>No data available.</source>
+        <target>Der foreligger ingen data.</target>
+      </trans-unit>
+      <trans-unit id="sd6243fa23e8f2f3d">
+        <source>Chart Title</source>
+        <target>Diagramtitel</target>
+      </trans-unit>
+      <trans-unit id="s079a052719914d71">
+        <source>Category</source>
+        <target>Kategori</target>
+      </trans-unit>
+      <trans-unit id="s0b786a0e85eb6783">
+        <source>Border Radius</source>
+        <target>Kantradius</target>
+      </trans-unit>
+      <trans-unit id="s139c91ebf9b8a6cf">
+        <source>Border Width</source>
+        <target>Kantbredde</target>
+      </trans-unit>
+      <trans-unit id="s4ac65d66ac4579e9">
+        <source>Filled</source>
+        <target>Udfyldt</target>
+      </trans-unit>
+      <trans-unit id="sd4f55ee88b9e1f9b">
+        <source>Dynamic Scaling</source>
+        <target>Dynamisk skalering</target>
+      </trans-unit>
+      <trans-unit id="s4ccf09d603496eb5">
+        <source>Scale Min</source>
+        <target>Skala Min</target>
+      </trans-unit>
+      <trans-unit id="s4ce9f3d60360110b">
+        <source>Scale Max</source>
+        <target>Maks. skala</target>
+      </trans-unit>
+      <trans-unit id="s27873db35f5921f4">
+        <source>Step Size</source>
+        <target>Trinlængde</target>
+      </trans-unit>
+      <trans-unit id="s731f505729e9f61f">
+        <source>Line Width</source>
+        <target>Linjebredde</target>
+      </trans-unit>
+      <trans-unit id="s8708316af61ff162">
+        <source>Point Size</source>
+        <target>Punktstørrelse</target>
+      </trans-unit>
+      <trans-unit id="s7bc47283a5d67e5e">
+        <source>Smooth The Line</source>
+        <target>Udglat linjen</target>
+      </trans-unit>
+      <trans-unit id="sd03b05776bec9ad1">
+        <source>Point Radius</source>
+        <target>Punktradius</target>
+      </trans-unit>
+      <trans-unit id="sd1f81984eeb7c0e8">
+        <source>Fill</source>
+        <target>Udfyld</target>
+      </trans-unit>
+      <trans-unit id="sd2a36db7cf71f4dd">
+        <source>Regression Model</source>
+        <target>Regressionsmodel</target>
+      </trans-unit>
+      <trans-unit id="s9e4ee58d49e9464e">
+        <source>Snap to Grid</source>
+        <target>Juster til gitter</target>
+      </trans-unit>
+      <trans-unit id="s217fd408e63c93f4">
+        <source>Show Grid</source>
+        <target>Vis gitter</target>
+      </trans-unit>
+      <trans-unit id="sa602e3fd3f2d98fd">
+        <source>Animation</source>
+        <target>Animation</target>
+      </trans-unit>
+      <trans-unit id="s454003c366dd48f0">
+        <source>Show Correlation</source>
+        <target>Vis sammenhæng</target>
+      </trans-unit>
+      <trans-unit id="sa3fb0dd3b48ec8d5">
+        <source>Show Outliers</source>
+        <target>Vis afvigelser</target>
+      </trans-unit>
+      <trans-unit id="s34250d39671d5c5d">
+        <source>Show Mean</source>
+        <target>Vis gennemsnit</target>
+      </trans-unit>
+      <trans-unit id="sac8256732f2ee1e5">
+        <source>Data</source>
+        <target>Data</target>
+      </trans-unit>
+      <trans-unit id="se1b3519fe89f4ffc">
+        <source>Scatter plot</source>
+        <target>Spredningsdiagram</target>
+      </trans-unit>
+      <trans-unit id="s66f26fdcbe2101eb">
+        <source>Chart</source>
+        <target>Diagram</target>
+      </trans-unit>
+      <trans-unit id="s194bf0f1cc99bf38">
+        <source>Add visualization</source>
+        <target>Tilføj visualisering</target>
+      </trans-unit>
+      <trans-unit id="s36d76c85f8d9a3e6">
+        <source>Clear Data</source>
+        <target>Slet data</target>
+      </trans-unit>
+      <trans-unit id="s1c5d85ee2e023759">
+        <source>Chart type</source>
+        <target>Diagramtype</target>
+      </trans-unit>
+      <trans-unit id="s0bb151c9319a6813">
+        <source>X-Axis</source>
+        <target>X-aksen</target>
+      </trans-unit>
+      <trans-unit id="s602805b1eb3106c6">
+        <source>Y-Axis</source>
+        <target>Y-aksen</target>
+      </trans-unit>
+      <trans-unit id="s01670713d13f14d5">
+        <source>Apply Changes to Data</source>
+        <target>Anvend ændringer på data</target>
+      </trans-unit>
+      <trans-unit id="se68f81f234173daf">
+        <source>Segments</source>
+        <target>Segmenter</target>
+      </trans-unit>
+      <trans-unit id="sb9f1339b3a61604a">
+        <source>Levels</source>
+        <target>Niveauer</target>
+      </trans-unit>
+      <trans-unit id="s2e036aec33b837e9">
+        <source>Selected Series</source>
+        <target>Udvalgte serier</target>
+      </trans-unit>
+      <trans-unit id="sc3f59ad27535ed54">
+        <source>Spokes</source>
+        <target>Eger</target>
+      </trans-unit>
+      <trans-unit id="s36698f2375b94e75">
+        <source>All spokes</source>
+        <target>Alle eger</target>
+      </trans-unit>
+      <trans-unit id="s383e1658e0bde119">
+        <source>All series</source>
+        <target>Alle serier</target>
+      </trans-unit>
+      <trans-unit id="s8e20bfbd5c1d00b8">
+        <source>Please select two different values for X and Y axis.</source>
+        <target>Vælg venligst to forskellige værdier for X- og Y-aksen.</target>
+      </trans-unit>
+      <trans-unit id="sa172625dedfc3e78">
+        <source>Please add data first to display the graph.</source>
+        <target>Indtast venligst data først for at få vist grafen.</target>
+      </trans-unit>
+      <trans-unit id="s0c19987191b8db0b">
+        <source>Double-click exactly one point to select it, then edit its position</source>
+        <target>Dobbeltklik på præcis ét punkt for at markere det, og rediger derefter dets position</target>
+      </trans-unit>
+      <trans-unit id="s573581bd694a2dc1">
+        <source>Double-click points or click a line to select them first</source>
+        <target>Dobbeltklik på punkter eller klik på en linje for først at markere dem</target>
+      </trans-unit>
+      <trans-unit id="s1d2850ee299300a5">
+        <source>Polynomial Degree</source>
+        <target>Polynomgrad</target>
+      </trans-unit>
+      <trans-unit id="s6ade9bde0b8065fa">
+        <source>LOESS Bandwidth (%)</source>
+        <target>LOESS-båndbredde (%)</target>
+      </trans-unit>
+      <trans-unit id="scf2226e954d643b0">
+        <source>Not enough data points for this regression model:</source>
+        <target>Der er ikke nok datapunkter til denne regressionsmodel:</target>
+      </trans-unit>
+      <trans-unit id="s83a0b17c8929365a">
+        <source>Transfer your plot changes into the data table</source>
+        <target>Overfør dine ændringer i plottet til datatabellen</target>
+      </trans-unit>
+      <trans-unit id="sc41b02fb09a50bd4">
+        <source>No unsaved plot changes — move or add points first</source>
+        <target>Ingen ugemte ændringer i plottet — flyt eller tilføj punkter først</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
