@@ -8,7 +8,7 @@ import { GenericChart } from "./chart-base";
 const LINE_OPTIONS = {
   borderWidth: chartOption("number", 2, "Line Width", 0, 5),
   pointRadius: chartOption("number", 3, "Point Size", 0, 10),
-  dynamicSize: chartOption("boolean", true, "Dynamic Scalling"),
+  dynamicSize: chartOption("boolean", true, "Dynamic Scaling"),
   scaleMin: chartOption("number", 0, "Scale Min", Infinity, Infinity),
   scaleMax: chartOption("number", 100, "Scale Max", Infinity, Infinity),
   scaleStepSize: chartOption("number", 5, "Step Size", Infinity, Infinity),

@@ -51,7 +51,6 @@
 's896712776969fe57': `Añadir un dato`,
 's8a1650bddf8ecd32': `punto seleccionado`,
 's8e20bfbd5c1d00b8': `Selecciona dos valores distintos para los ejes X e Y.`,
-'s97a11808416218cd': `Escalado dinámico`,
 's9e4ee58d49e9464e': `Ajustar a la cuadrícula`,
 'sa172625dedfc3e78': `Por favor, introduce primero los datos para que se muestre el gráfico.`,
 'sa3fb0dd3b48ec8d5': `Mostrar valores atípicos`,

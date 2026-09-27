@@ -1,100 +1,100 @@
 {
-  "name": "@webwriter/chart",
-  "version": "1.3.0",
-  "description": "ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.",
-  "keywords": [
-    "webwriter-widget",
-    "isced2011-2",
-    "isced2011-3",
-    "isced2011-6",
-    "iscedf2013-04",
-    "iscedf2013-05",
-    "iscedf2013-06",
-    "iscedf2013-07",
-    "widget-lang-en",
-    "widget-lang-ar",
-    "widget-lang-bg",
-    "widget-lang-cs",
-    "widget-lang-da",
-    "widget-lang-de",
-    "widget-lang-el",
-    "widget-lang-es",
-    "widget-lang-et",
-    "widget-lang-fi",
-    "widget-lang-fr",
-    "widget-lang-hu",
-    "widget-lang-id",
-    "widget-lang-it",
-    "widget-lang-ja",
-    "widget-lang-ko",
-    "widget-lang-lt",
-    "widget-lang-lv",
-    "widget-lang-nb",
-    "widget-lang-nl",
-    "widget-lang-pl",
-    "widget-lang-pt-PT",
-    "widget-lang-ro",
-    "widget-lang-ru",
-    "widget-lang-sk",
-    "widget-lang-sl",
-    "widget-lang-sv",
-    "widget-lang-tr",
-    "widget-lang-uk",
-    "widget-lang-pt-BR",
-    "widget-lang-zh-hans",
-    "widget-lang-zh-hant"
-  ],
-  "license": "MIT",
-  "author": "Phuong Anh Nguyen",
-  "repository": {
-    "url": "https://git.rwth-aachen.de/learntech-lufgi9/bama/webwriter/ww-chart",
-    "type": "git"
-  },
-  "scripts": {
-    "prepublishOnly": "npx @webwriter/build",
-    "dev": "npx @webwriter/build dev",
-    "localize": "lit-localize extract && node scripts/localize-snippets.mjs && npx @webwriter/build localize && node scripts/localize-snippets.mjs --apply && lit-localize build && rm -f localization/generated/index.js"
-  },
-  "dependencies": {
-    "@lit/localize": "^0.12.2",
-    "@shoelace-style/shoelace": "^2.15.1",
-    "@tabler/icons": "^3.40.0",
-    "@webwriter/lit": "^2.0.0",
-    "chart.js": "^4.4.2",
-    "lit": "^3.1.4",
-    "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "@lit/localize-tools": "^0.8.2",
-    "typescript": "^5.6.3"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "type": "module",
-  "exports": {
-    "./widgets/webwriter-chart.*": {
-      "source": "./src/widget/webwriter-chart.ts",
-      "default": "./dist/widgets.*"
+    "name": "@webwriter/chart",
+    "version": "1.3.0",
+    "description": "ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.",
+    "keywords": [
+        "webwriter-widget",
+        "isced2011-2",
+        "isced2011-3",
+        "isced2011-6",
+        "iscedf2013-04",
+        "iscedf2013-05",
+        "iscedf2013-06",
+        "iscedf2013-07",
+        "widget-lang-en",
+        "widget-lang-ar",
+        "widget-lang-bg",
+        "widget-lang-cs",
+        "widget-lang-da",
+        "widget-lang-de",
+        "widget-lang-el",
+        "widget-lang-es",
+        "widget-lang-et",
+        "widget-lang-fi",
+        "widget-lang-fr",
+        "widget-lang-hu",
+        "widget-lang-id",
+        "widget-lang-it",
+        "widget-lang-ja",
+        "widget-lang-ko",
+        "widget-lang-lt",
+        "widget-lang-lv",
+        "widget-lang-nb",
+        "widget-lang-nl",
+        "widget-lang-pl",
+        "widget-lang-pt-PT",
+        "widget-lang-ro",
+        "widget-lang-ru",
+        "widget-lang-sk",
+        "widget-lang-sl",
+        "widget-lang-sv",
+        "widget-lang-tr",
+        "widget-lang-uk",
+        "widget-lang-pt-BR",
+        "widget-lang-zh-hans",
+        "widget-lang-zh-hant"
+    ],
+    "license": "MIT",
+    "author": "Phuong Anh Nguyen",
+    "repository": {
+        "url": "https://git.rwth-aachen.de/learntech-lufgi9/bama/webwriter/ww-chart",
+        "type": "git"
     },
-    "./snippets/scatterplot-exercise.html": "./src/snippets/scatterplot-exercise.html",
-    "./snippets/mean-median-exercise.html": "./src/snippets/mean-median-exercise.html",
-    "./snippets/bar+line-chart.html": "./src/snippets/bar+line-chart.html",
-    "./snippets/pie+doughnut-chart.html": "./src/snippets/pie+doughnut-chart.html",
-    "./snippets/polar-area-chart.html": "./src/snippets/polar-area-chart.html",
-    "./snippets/radar-chart.html": "./src/snippets/radar-chart.html",
-    "./snippets/sunscreen-exercise.html": "./src/snippets/sunscreen-exercise.html",
-    "./icon": "./chart-dots-2.svg",
-    "./editing-config.json": "./editing-config.json"
-  },
-  "editingConfig": {
-    "./widgets/webwriter-chart": {},
-    "./snippets/scatterplot-exercise.html": {},
-    "./snippets/mean-median-exercise.html": {},
-    "./snippets/bar+line-chart.html": {},
-    "./snippets/pie+doughnut-chart.html": {},
-    "./snippets/polar-area-chart.html": {},
-    "./snippets/radar-chart.html": {},
-    "./snippets/sunscreen-exercise.html": {}
-  }
+    "scripts": {
+        "prepublishOnly": "npx @webwriter/build",
+        "dev": "npx @webwriter/build dev",
+        "localize": "lit-localize extract && node scripts/localize-snippets.mjs && npx @webwriter/build localize && node scripts/localize-snippets.mjs --apply && lit-localize build && rm -f localization/generated/index.js"
+    },
+    "dependencies": {
+        "@lit/localize": "^0.12.2",
+        "@shoelace-style/shoelace": "^2.15.1",
+        "@tabler/icons": "^3.40.0",
+        "@webwriter/lit": "^2.0.0",
+        "chart.js": "^4.4.2",
+        "lit": "^3.1.4",
+        "xlsx": "^0.18.5"
+    },
+    "devDependencies": {
+        "@lit/localize-tools": "^0.8.2",
+        "typescript": "^5.6.3"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "type": "module",
+    "exports": {
+        "./widgets/webwriter-chart.*": {
+            "source": "./src/widget/webwriter-chart.ts",
+            "default": "./dist/widgets.*"
+        },
+        "./snippets/scatterplot-exercise.html": "./src/snippets/scatterplot-exercise.html",
+        "./snippets/mean-median-exercise.html": "./src/snippets/mean-median-exercise.html",
+        "./snippets/bar+line-chart.html": "./src/snippets/bar+line-chart.html",
+        "./snippets/pie+doughnut-chart.html": "./src/snippets/pie+doughnut-chart.html",
+        "./snippets/polar-area-chart.html": "./src/snippets/polar-area-chart.html",
+        "./snippets/radar-chart.html": "./src/snippets/radar-chart.html",
+        "./snippets/sunscreen-exercise.html": "./src/snippets/sunscreen-exercise.html",
+        "./icon": "./chart-dots-2.svg",
+        "./editing-config.json": "./editing-config.json"
+    },
+    "editingConfig": {
+        "./widgets/webwriter-chart": {},
+        "./snippets/scatterplot-exercise.html": {},
+        "./snippets/mean-median-exercise.html": {},
+        "./snippets/bar+line-chart.html": {},
+        "./snippets/pie+doughnut-chart.html": {},
+        "./snippets/polar-area-chart.html": {},
+        "./snippets/radar-chart.html": {},
+        "./snippets/sunscreen-exercise.html": {}
+    }
 }

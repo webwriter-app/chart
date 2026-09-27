@@ -51,7 +51,6 @@
 's896712776969fe57': `Adicionar um ponto de dados`,
 's8a1650bddf8ecd32': `ponto selecionado`,
 's8e20bfbd5c1d00b8': `Selecione dois valores diferentes para os eixos X e Y.`,
-'s97a11808416218cd': `Escalonamento dinâmico`,
 's9e4ee58d49e9464e': `Alinhar à grade`,
 'sa172625dedfc3e78': `Por favor, insira os dados primeiro para exibir o gráfico.`,
 'sa3fb0dd3b48ec8d5': `Mostrar valores atípicos`,

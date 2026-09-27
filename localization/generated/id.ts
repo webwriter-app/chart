@@ -51,7 +51,6 @@
 's896712776969fe57': `Tambahkan satu titik data`,
 's8a1650bddf8ecd32': `titik yang dipilih`,
 's8e20bfbd5c1d00b8': `Silakan pilih dua nilai yang berbeda untuk sumbu X dan Y.`,
-'s97a11808416218cd': `Penskalaan Dinamis`,
 's9e4ee58d49e9464e': `Sesuaikan dengan Kisi`,
 'sa172625dedfc3e78': `Silakan tambahkan data terlebih dahulu agar grafik dapat ditampilkan.`,
 'sa3fb0dd3b48ec8d5': `Tampilkan Nilai yang Menyimpang`,

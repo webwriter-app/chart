@@ -51,7 +51,6 @@
 's896712776969fe57': `Pievienot datu punktu`,
 's8a1650bddf8ecd32': `izvēlētais punkts`,
 's8e20bfbd5c1d00b8': `Lūdzu, izvēlieties divas atšķirīgas vērtības X un Y asij.`,
-'s97a11808416218cd': `Dinamiskā mērogošana`,
 's9e4ee58d49e9464e': `Piesaistīt pie režģa`,
 'sa172625dedfc3e78': `Lūdzu, vispirms ievadiet datus, lai parādītu grafiku.`,
 'sa3fb0dd3b48ec8d5': `Rādīt novirzes`,

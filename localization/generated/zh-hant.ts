@@ -20,7 +20,6 @@
 's0b786a0e85eb6783': `Border Radius`,
 's139c91ebf9b8a6cf': `Border Width`,
 's4ac65d66ac4579e9': `Filled`,
-'s97a11808416218cd': `Dynamic Scalling`,
 'sd4f55ee88b9e1f9b': `Dynamic Scaling`,
 's4ccf09d603496eb5': `Scale Min`,
 's4ce9f3d60360110b': `Scale Max`,

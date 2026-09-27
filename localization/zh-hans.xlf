@@ -101,10 +101,6 @@
         <source>Filled</source>
         <target>已填满</target>
       </trans-unit>
-      <trans-unit id="s97a11808416218cd">
-        <source>Dynamic Scalling</source>
-        <target>动态缩放</target>
-      </trans-unit>
       <trans-unit id="sd4f55ee88b9e1f9b">
         <source>Dynamic Scaling</source>
         <target>动态缩放</target>

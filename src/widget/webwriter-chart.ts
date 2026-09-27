@@ -52,6 +52,7 @@ import { ScatterChartJs } from "./components/charts/scatter/scatter-chart";
 import { ChartState, Visualization } from "./state/models";
 import {
   deriveFixedScatterDatasets,
+  migrateLegacyScatterDatasets,
   normalizeColumnIndexesInput,
   normalizeColumnsInput,
 } from "./webwriter-chart.utils";
@@ -182,6 +183,21 @@ export class WwChart extends LitElementWw {
       !vizs.some((v) => v.id === activeId)
     ) {
       this.sharedState = { ...this.sharedState, activeVisualizationId: vizs[0].id };
+    }
+
+    if (
+      _changed.has("sharedState") &&
+      this.sharedState.activeVisualizationId === WwChart.FIXED_SCATTERPLOT_TAB_ID
+    ) {
+      const migrated = migrateLegacyScatterDatasets(this.sharedState);
+      if (migrated) {
+        this.sharedState = {
+          ...this.sharedState,
+          chart: { ...this.sharedState.chart, datasets: migrated.datasets },
+        };
+        this.scatterXAxis = migrated.xAxisIndex;
+        this.scatterYAxis = migrated.yAxisIndex;
+      }
     }
   }
 

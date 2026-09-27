@@ -51,7 +51,6 @@
 's896712776969fe57': `Aggiungi un dato`,
 's8a1650bddf8ecd32': `punto selezionato`,
 's8e20bfbd5c1d00b8': `Si prega di selezionare due valori diversi per gli assi X e Y.`,
-'s97a11808416218cd': `Ridimensionamento dinamico`,
 's9e4ee58d49e9464e': `Allinea alla griglia`,
 'sa172625dedfc3e78': `Per visualizzare il grafico, è necessario inserire prima i dati.`,
 'sa3fb0dd3b48ec8d5': `Mostra i valori anomali`,

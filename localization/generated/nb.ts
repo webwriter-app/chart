@@ -51,7 +51,6 @@
 's896712776969fe57': `Legg til et datapunkt`,
 's8a1650bddf8ecd32': `valgt punkt`,
 's8e20bfbd5c1d00b8': `Velg to forskjellige verdier for X- og Y-aksen.`,
-'s97a11808416218cd': `Dynamisk skalering`,
 's9e4ee58d49e9464e': `Fest til rutenett`,
 'sa172625dedfc3e78': `Legg inn data først for å få vist grafen.`,
 'sa3fb0dd3b48ec8d5': `Vis ekstremverdier`,

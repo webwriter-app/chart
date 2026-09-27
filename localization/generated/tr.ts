@@ -51,7 +51,6 @@
 's896712776969fe57': `Bir veri noktası ekle`,
 's8a1650bddf8ecd32': `seçilen nokta`,
 's8e20bfbd5c1d00b8': `Lütfen X ve Y eksenleri için iki farklı değer seçin.`,
-'s97a11808416218cd': `Dinamik Ölçeklendirme`,
 's9e4ee58d49e9464e': `Izgara'ya Yapıştır`,
 'sa172625dedfc3e78': `Grafiği görüntülemek için lütfen önce verileri ekleyin.`,
 'sa3fb0dd3b48ec8d5': `Aykırı Değerleri Göster`,

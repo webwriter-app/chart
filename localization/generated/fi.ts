@@ -51,7 +51,6 @@
 's896712776969fe57': `Lisää datapiste`,
 's8a1650bddf8ecd32': `valittu piste`,
 's8e20bfbd5c1d00b8': `Valitse kaksi erilaista arvoa X- ja Y-akselille.`,
-'s97a11808416218cd': `Dynaaminen skaalaus`,
 's9e4ee58d49e9464e': `Kiinnitä ruudukkoon`,
 'sa172625dedfc3e78': `Lisää ensin tiedot, jotta kaavio tulee näkyviin.`,
 'sa3fb0dd3b48ec8d5': `Näytä poikkeavat arvot`,

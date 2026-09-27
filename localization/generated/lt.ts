@@ -51,7 +51,6 @@
 's896712776969fe57': `Pridėti duomenų tašką`,
 's8a1650bddf8ecd32': `pasirinktas taškas`,
 's8e20bfbd5c1d00b8': `Prašome pasirinkti dvi skirtingas X ir Y ašių reikšmes.`,
-'s97a11808416218cd': `Dinaminis mastelio keitimas`,
 's9e4ee58d49e9464e': `Prisiderinti prie tinklelio`,
 'sa172625dedfc3e78': `Norėdami peržiūrėti diagramą, pirmiausia įveskite duomenis.`,
 'sa3fb0dd3b48ec8d5': `Rodyti išskirtinius atvejus`,

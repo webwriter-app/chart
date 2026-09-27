@@ -51,7 +51,6 @@
 's896712776969fe57': `Dodaj točko podatkov`,
 's8a1650bddf8ecd32': `izbrana točka`,
 's8e20bfbd5c1d00b8': `Izberite dve različni vrednosti za osi X in Y.`,
-'s97a11808416218cd': `Dinamično prilagajanje velikosti`,
 's9e4ee58d49e9464e': `Poravnaj z mrežo`,
 'sa172625dedfc3e78': `Prosimo, najprej vnesite podatke, da se prikaže graf.`,
 'sa3fb0dd3b48ec8d5': `Prikaži izjemne vrednosti`,

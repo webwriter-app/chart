@@ -53,6 +53,55 @@ function normalizeScatterCellValue(value: unknown): number | string {
   return "";
 }
 
+/**
+ * Older documents (and some shipped snippets) stored scatter points only in
+ * `scatterDatasets`, as sets holding many `dimensional_data` rows. The fixed
+ * scatter tab now reads the shared `chart.datasets` table, where every row is one
+ * point, so derived sets always hold exactly one row. Returns the legacy points
+ * converted into a `chart.datasets` table plus the axis indexes that were
+ * selected, or `null` when the state is already in the current format.
+ */
+export function migrateLegacyScatterDatasets(
+  state: ChartState
+): { datasets: ChartState["chart"]["datasets"]; xAxisIndex: number; yAxisIndex: number } | null {
+  const legacySets = state.scatterDatasets?.sets ?? [];
+  const isLegacy = legacySets.some((set) => (set.dimensional_data ?? []).length !== 1);
+  if (!isLegacy) return null;
+
+  const labels: string[] = [];
+  for (const set of legacySets) {
+    for (const label of set.labels ?? []) {
+      if (!labels.includes(label)) labels.push(label);
+    }
+  }
+
+  const sets = legacySets.flatMap((set) =>
+    (set.dimensional_data ?? []).map((point, pointIndex) => {
+      const color = point.color ?? set.color ?? "#2196f3";
+      const data = labels.map((label) => {
+        const index = (set.labels ?? []).indexOf(label);
+        return index >= 0 ? normalizeScatterCellValue(point.data[index]) : "";
+      });
+      return {
+        name: `${set.name || "Series"} ${set.ids?.[pointIndex] ?? pointIndex + 1}`,
+        color,
+        colors: labels.map(() => color),
+        data,
+      };
+    })
+  );
+  if (labels.length === 0 || sets.length === 0) return null;
+
+  const axis = state.scatterDatasets.selected?.axis ?? { x: "None", y: "None" };
+  const xAxisIndex = Math.max(0, labels.indexOf(axis.x));
+  let yAxisIndex = labels.indexOf(axis.y);
+  if (yAxisIndex < 0 || yAxisIndex === xAxisIndex) {
+    yAxisIndex = labels.findIndex((_, index) => index !== xAxisIndex);
+  }
+
+  return { datasets: { labels, sets }, xAxisIndex, yAxisIndex: Math.max(0, yAxisIndex) };
+}
+
 export function deriveFixedScatterDatasets(
   state: ChartState
 ): ScatterDatasets {

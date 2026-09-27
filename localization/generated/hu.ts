@@ -51,7 +51,6 @@
 's896712776969fe57': `Adjon hozzá egy adatpontot`,
 's8a1650bddf8ecd32': `kiválasztott pont`,
 's8e20bfbd5c1d00b8': `Kérjük, válasszon két különböző értéket az X- és az Y-tengelyhez.`,
-'s97a11808416218cd': `Dinamikus méretezés`,
 's9e4ee58d49e9464e': `Rácshoz igazítás`,
 'sa172625dedfc3e78': `Kérjük, először adjon meg adatokat a grafikon megjelenítéséhez.`,
 'sa3fb0dd3b48ec8d5': `Különálló értékek megjelenítése`,

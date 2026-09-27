@@ -51,7 +51,6 @@
 's896712776969fe57': `Pridať dátový bod`,
 's8a1650bddf8ecd32': `vybraný bod`,
 's8e20bfbd5c1d00b8': `Vyberte, prosím, dve rôzne hodnoty pre os X a os Y.`,
-'s97a11808416218cd': `Dynamické škálovanie`,
 's9e4ee58d49e9464e': `Prispôsobiť mriežke`,
 'sa172625dedfc3e78': `Najskôr prosím zadajte údaje, aby sa zobrazil graf.`,
 'sa3fb0dd3b48ec8d5': `Zobraziť extrémne hodnoty`,

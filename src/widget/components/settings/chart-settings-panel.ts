@@ -6,7 +6,6 @@ function translateOptionName(name: string): string {
     "Border Radius": msg("Border Radius"),
     "Border Width": msg("Border Width"),
     "Filled": msg("Filled"),
-    "Dynamic Scalling": msg("Dynamic Scalling"),
     "Dynamic Scaling": msg("Dynamic Scaling"),
     "Scale Min": msg("Scale Min"),
     "Scale Max": msg("Scale Max"),

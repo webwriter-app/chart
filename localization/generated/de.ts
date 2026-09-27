@@ -51,7 +51,6 @@
 's896712776969fe57': `Datenpunkt hinzufügen`,
 's8a1650bddf8ecd32': `ausgewählten Punkt`,
 's8e20bfbd5c1d00b8': `Bitte wählen Sie zwei verschiedene Werte für die X- und Y-Achse aus.`,
-'s97a11808416218cd': `Dynamische Skalierung`,
 's9e4ee58d49e9464e': `Am Raster ausrichten`,
 'sa172625dedfc3e78': `Bitte fügen Sie zuerst Daten hinzu, um das Diagramm anzuzeigen.`,
 'sa3fb0dd3b48ec8d5': `Ausreißer anzeigen`,

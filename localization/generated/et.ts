@@ -51,7 +51,6 @@
 's896712776969fe57': `Lisa andmepunkt`,
 's8a1650bddf8ecd32': `valitud punkt`,
 's8e20bfbd5c1d00b8': `Palun valige X- ja Y-teljele kaks erinevat väärtust.`,
-'s97a11808416218cd': `Dünaamiline skaalamine`,
 's9e4ee58d49e9464e': `Kinnita võrgustikule`,
 'sa172625dedfc3e78': `Palun sisestage esmalt andmed, et graafikut kuvada.`,
 'sa3fb0dd3b48ec8d5': `Näita hälbeid`,

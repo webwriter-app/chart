@@ -51,7 +51,6 @@
 's896712776969fe57': `Dodaj punkt danych`,
 's8a1650bddf8ecd32': `wybrany punkt`,
 's8e20bfbd5c1d00b8': `Proszę wybrać dwie różne wartości dla osi X i Y.`,
-'s97a11808416218cd': `Skalowanie dynamiczne`,
 's9e4ee58d49e9464e': `Przyciągnij do siatki`,
 'sa172625dedfc3e78': `Aby wyświetlić wykres, należy najpierw wprowadzić dane.`,
 'sa3fb0dd3b48ec8d5': `Pokaż wartości odstające`,

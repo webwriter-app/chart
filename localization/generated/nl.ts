@@ -51,7 +51,6 @@
 's896712776969fe57': `Een gegevenspunt toevoegen`,
 's8a1650bddf8ecd32': `geselecteerd punt`,
 's8e20bfbd5c1d00b8': `Kies twee verschillende waarden voor de X- en Y-as.`,
-'s97a11808416218cd': `Dynamische schaalbaarheid`,
 's9e4ee58d49e9464e': `Aan raster uitlijnen`,
 'sa172625dedfc3e78': `Voer eerst gegevens in om de grafiek weer te geven.`,
 'sa3fb0dd3b48ec8d5': `Uitschieters weergeven`,

@@ -27,7 +27,7 @@ const BAR_OPTIONS = {
   borderRadius: chartOption("number", 0, "Border Radius", 0, 10),
   borderWidth: chartOption("number", 1, "Border Width", 0, 5),
   filled: chartOption("boolean", false, "Filled"),
-  dynamicSize: chartOption("boolean", true, "Dynamic Scalling"),
+  dynamicSize: chartOption("boolean", true, "Dynamic Scaling"),
   scaleMin: chartOption("number", 0, "Scale Min", undefined, undefined),
   scaleMax: chartOption("number", 100, "Scale Max", undefined, undefined),
   scaleStepSize: chartOption("number", 5, "Step Size", 1, undefined),
@@ -36,7 +36,7 @@ const BAR_OPTIONS = {
 const LINE_OPTIONS = {
   borderWidth: chartOption("number", 2, "Line Width", 0, 5),
   pointRadius: chartOption("number", 3, "Point Size", 0, 10),
-  dynamicSize: chartOption("boolean", true, "Dynamic Scalling"),
+  dynamicSize: chartOption("boolean", true, "Dynamic Scaling"),
   scaleMin: chartOption("number", 0, "Scale Min", Infinity, Infinity),
   scaleMax: chartOption("number", 100, "Scale Max", Infinity, Infinity),
   scaleStepSize: chartOption("number", 5, "Step Size", Infinity, Infinity),

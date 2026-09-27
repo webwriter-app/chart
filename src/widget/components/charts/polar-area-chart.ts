@@ -113,10 +113,12 @@ export class PolarChart extends GenericChart<typeof POLAR_OPTIONS> {
     const borderWidth = Number(opts.borderWidth ?? 1);
     return [{
       data: sectorData,
-      backgroundColor: sectorData.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length] + "33"),
+      backgroundColor: sectorData.map((_, si) =>
+        addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], opts.filled ? 1 : 0.2)
+      ),
       borderColor: sectorData.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length]),
       hoverBackgroundColor: sectorData.map((_, si) =>
-        addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], 0.7)
+        addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], opts.filled ? 1 : 0.7)
       ),
       hoverBorderWidth: borderWidth + 1,
       borderWidth,

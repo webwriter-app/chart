@@ -51,7 +51,6 @@
 's896712776969fe57': `Ajouter un point de données`,
 's8a1650bddf8ecd32': `point sélectionné`,
 's8e20bfbd5c1d00b8': `Veuillez sélectionner deux valeurs différentes pour les axes X et Y.`,
-'s97a11808416218cd': `Mise à l'échelle dynamique`,
 's9e4ee58d49e9464e': `Aligner sur la grille`,
 'sa172625dedfc3e78': `Veuillez d'abord saisir des données pour afficher le graphique.`,
 'sa3fb0dd3b48ec8d5': `Afficher les valeurs aberrantes`,

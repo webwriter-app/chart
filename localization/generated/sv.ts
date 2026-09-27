@@ -51,7 +51,6 @@
 's896712776969fe57': `Lägg till en datapunkt`,
 's8a1650bddf8ecd32': `vald punkt`,
 's8e20bfbd5c1d00b8': `Välj två olika värden för X- och Y-axeln.`,
-'s97a11808416218cd': `Dynamisk skalning`,
 's9e4ee58d49e9464e': `Justera till rutnätet`,
 'sa172625dedfc3e78': `Lägg först in data för att visa diagrammet.`,
 'sa3fb0dd3b48ec8d5': `Visa extremvärden`,

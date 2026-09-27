@@ -51,7 +51,6 @@
 's896712776969fe57': `Adaugă un punct de date`,
 's8a1650bddf8ecd32': `punct selectat`,
 's8e20bfbd5c1d00b8': `Vă rugăm să selectați două valori diferite pentru axele X și Y.`,
-'s97a11808416218cd': `Scalare dinamică`,
 's9e4ee58d49e9464e': `Aliniere la grilă`,
 'sa172625dedfc3e78': `Vă rugăm să introduceți mai întâi datele pentru a afișa graficul.`,
 'sa3fb0dd3b48ec8d5': `Afișează valorile aberante`,
