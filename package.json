@@ -46,10 +46,7 @@
     ],
     "license": "MIT",
     "author": "Phuong Anh Nguyen",
-    "repository": {
-        "url": "https://git.rwth-aachen.de/learntech-lufgi9/bama/webwriter/ww-chart",
-        "type": "git"
-    },
+    "repository": "https://github.com/webwriter-app/chart",
     "scripts": {
         "prepublishOnly": "npx @webwriter/build",
         "dev": "npx @webwriter/build dev",
