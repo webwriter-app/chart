@@ -12,6 +12,7 @@ import { OptionSelect } from "./components/controls/controls";
 
 // Shoelace Components & Styles
 import style from "./webwriter-chart.style";
+import { readData, writeData } from "./data-block";
 import "@shoelace-style/shoelace/dist/themes/light.css";
 import SlSwitch from "@shoelace-style/shoelace/dist/components/switch/switch.js";
 import SlButton from "@shoelace-style/shoelace/dist/components/button/button.js";
@@ -67,8 +68,8 @@ declare global {
 export class WwChart extends LitElementWw {
   private static readonly FIXED_SCATTERPLOT_TAB_ID = "viz-scatterplot-fixed";
 
-  @property({ type: Object, attribute: true, reflect: true })
-  accessor sharedState: ChartState = {
+  private defaultChartState(): ChartState {
+    return {
     teacherOptions: { showOptions: true, showData: true, showLockedOptions: true, changeData: true, changeOptions: true, addRemoveData: true },
     scatterDatasets: { title: "My Scatter plot", sets: [], selected: { axis: { x: "None", y: "None" }, dataset_indexes: [] } },
     regressionType: "none",
@@ -77,7 +78,58 @@ export class WwChart extends LitElementWw {
     activeVisualizationId: "viz-1",
     chart: { selectedType: "Bar", title: "My Chart", datasets: { labels: [], sets: [] }, options: {}, optionsLocked: {}, optionDefinition: {} },
     editable: true,
+    };
+  }
+
+  private chartState = this.defaultChartState();
+  private lastStateText: string | null = null;
+
+  private get stateBlockText() {
+    return this.querySelector(':scope > script[type="application/json"][slot="data"]:not([src])')?.textContent ?? null;
+  }
+
+  get sharedState() {
+    const text = this.stateBlockText;
+    if (text !== this.lastStateText) {
+      this.lastStateText = text;
+      const defaults = this.defaultChartState();
+      const saved = readData<ChartState>(this);
+      this.chartState = {
+        ...defaults,
+        ...saved,
+        teacherOptions: { ...defaults.teacherOptions, ...saved.teacherOptions },
+        chart: { ...defaults.chart, ...saved.chart },
+      };
+    }
+    return this.chartState;
+  }
+
+  set sharedState(value: ChartState) {
+    const { editable, chart: { optionDefinition, ...chart }, ...authored } = value;
+    const previous = this.chartState;
+    writeData(this, { ...authored, chart });
+    this.lastStateText = this.stateBlockText;
+    this.chartState = value;
+    this.requestUpdate("sharedState", previous);
+  }
+
+  private chartObserver = new MutationObserver(() => {
+    if (this.stateBlockText === this.lastStateText) return;
+    const previous = this.chartState;
+    void this.sharedState;
+    this.requestUpdate("sharedState", previous);
+  });
+
+  static actions = {
+    configureChart: { label: { _: "Chart settings", de: "Diagrammeinstellungen" } },
   };
+
+  readonly actions = WwChart.actions;
+
+  configureChart() {
+    const dialog = this.renderRoot.querySelector<HTMLDialogElement>("#settings");
+    if (dialog && !dialog.open) dialog.showModal();
+  }
 
   @property({ type: Boolean, attribute: true, reflect: true }) accessor showChart: boolean = false;
   @property({ type: Boolean, attribute: true, reflect: true }) accessor showData: boolean = true;
@@ -152,10 +204,13 @@ export class WwChart extends LitElementWw {
 
   connectedCallback(): void {
     super.connectedCallback();
+    this.chartObserver.observe(this, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["slot", "type", "src"] });
+    this.requestUpdate("sharedState", undefined);
     this.addEventListener("wwci-state-change", this.onStateChange as EventListener);
   }
 
   disconnectedCallback(): void {
+    this.chartObserver.disconnect();
     super.disconnectedCallback();
     this.removeEventListener("wwci-state-change", this.onStateChange as EventListener);
   }
@@ -533,16 +588,9 @@ export class WwChart extends LitElementWw {
 
     const canChangeOptions = this.sharedState.editable || this.sharedState.teacherOptions.changeOptions;
     const canAddRemoveData = this.sharedState.editable || this.sharedState.teacherOptions.addRemoveData;
-    const hasChartData =
-      (this.sharedState.chart.datasets.labels?.length ?? 0) > 0 &&
-      (this.sharedState.chart.datasets.sets?.length ?? 0) > 0;
-
     return html`
-      <div
-        part="options"
-        id="settings"
-        class=${this.isContentEditable && !this.showData && hasChartData ? "" : "hidden"}
-      >
+      <dialog id="settings" aria-label=${msg("Chart settings")}>
+        <form method="dialog"><button>${msg("Close")}</button></form>
         <div id="settings-wrapper">
           <wwci-chart-settings
             class="chart-settings-host"
@@ -551,7 +599,7 @@ export class WwChart extends LitElementWw {
             @wwci-state-change=${this.onStateChange}
           ></wwci-chart-settings>
         </div>
-      </div>
+      </dialog>
 
       <div
         id="main"
