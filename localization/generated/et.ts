@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Klõpsa kahele punktile, et joonistada joon. Lohistades otspunkte saad joont kohandada. Vajuta klahvi Delete, et valitud joon eemaldada.`,
 's2ceb11be2290bb1b': `Tühista`,
 's2e036aec33b837e9': `Valitud sarjad`,
+'s31bccdb022de127c': `Diagrammi seaded`,
 's32b873a2dfa6c573': `valitud punktid`,
 's34250d39671d5c5d': `Näita keskmist`,
 's36698f2375b94e75': `Kõik kodarad`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Maksimaalne skaala`,
 's573581bd694a2dc1': `Topeltklõpsake punktidel või klõpsake joonel, et need esmalt valida`,
 's5b73a90cdea7a562': `Koordinaatide muutmine`,
+'s5e8250fb85d64c23': `Sulge`,
 's602805b1eb3106c6': `Y-telg`,
 's622204928541cb72': `Joonista joon`,
 's66f26fdcbe2101eb': `Diagramm`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmendid`,
 'se8aa1cc7653c6ba2': `Kas tõid kaasa oma andmekogumi?`,
     };
-  

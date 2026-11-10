@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Zwei Punkte anklicken, um eine Linie zu zeichnen. Endpunkte ziehen zum Anpassen. Entf drücken zum Löschen.`,
 's2ceb11be2290bb1b': `Abbrechen`,
 's2e036aec33b837e9': `Ausgewählte Reihen`,
+'s31bccdb022de127c': `Diagrammeinstellungen`,
 's32b873a2dfa6c573': `ausgewählte Punkte`,
 's34250d39671d5c5d': `Mittelwert anzeigen`,
 's36698f2375b94e75': `Alle Speichen`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Skalenmaximum`,
 's573581bd694a2dc1': `Doppelklicken Sie auf Punkte oder klicken Sie auf eine Linie, um diese zunächst auszuwählen`,
 's5b73a90cdea7a562': `Koordinaten bearbeiten`,
+'s5e8250fb85d64c23': `Schließen`,
 's602805b1eb3106c6': `Y-Achse`,
 's622204928541cb72': `Linie zeichnen`,
 's66f26fdcbe2101eb': `Diagramm`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmente`,
 'se8aa1cc7653c6ba2': `Eigenen Datensatz mitgebracht?`,
     };
-  

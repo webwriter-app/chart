@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Faceți clic pe două puncte pentru a trasa o linie. Trageți de capetele liniei pentru a o ajusta. Apăsați tasta Delete pentru a șterge elementul selectat.`,
 's2ceb11be2290bb1b': `Anulează`,
 's2e036aec33b837e9': `Serii selectate`,
+'s31bccdb022de127c': `Setări diagramă`,
 's32b873a2dfa6c573': `puncte selectate`,
 's34250d39671d5c5d': `Afișează media`,
 's36698f2375b94e75': `Toate spițele`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Scala maximă`,
 's573581bd694a2dc1': `Faceți dublu clic pe puncte sau faceți clic pe o linie pentru a le selecta mai întâi`,
 's5b73a90cdea7a562': `Editează coordonatele`,
+'s5e8250fb85d64c23': `Închide`,
 's602805b1eb3106c6': `Axa Y`,
 's622204928541cb72': `Trasează o linie`,
 's66f26fdcbe2101eb': `Grafic`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmente`,
 'se8aa1cc7653c6ba2': `Ai adus propriul set de date?`,
     };
-  

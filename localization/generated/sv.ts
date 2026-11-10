@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Klicka på två punkter för att rita en linje. Dra i ändpunkterna för att justera. Tryck på Delete för att ta bort det markerade.`,
 's2ceb11be2290bb1b': `Avbryt`,
 's2e036aec33b837e9': `Utvalda serier`,
+'s31bccdb022de127c': `Diagraminställningar`,
 's32b873a2dfa6c573': `utvalda punkter`,
 's34250d39671d5c5d': `Visa medelvärde`,
 's36698f2375b94e75': `Alla ekrar`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Maxskala`,
 's573581bd694a2dc1': `Dubbelklicka på punkter eller klicka på en linje för att först markera dem`,
 's5b73a90cdea7a562': `Redigera koordinater`,
+'s5e8250fb85d64c23': `Stäng`,
 's602805b1eb3106c6': `Y-axeln`,
 's622204928541cb72': `Rita en linje`,
 's66f26fdcbe2101eb': `Diagram`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segment`,
 'se8aa1cc7653c6ba2': `Har du tagit med dig din egen datamängd?`,
     };
-  

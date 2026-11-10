@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Klik på to punkter for at tegne en linje. Træk i endepunkterne for at justere. Tryk på Delete for at slette det valgte.`,
 's2ceb11be2290bb1b': `Annuller`,
 's2e036aec33b837e9': `Udvalgte serier`,
+'s31bccdb022de127c': `Diagramindstillinger`,
 's32b873a2dfa6c573': `udvalgte punkter`,
 's34250d39671d5c5d': `Vis gennemsnit`,
 's36698f2375b94e75': `Alle eger`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Maks. skala`,
 's573581bd694a2dc1': `Dobbeltklik på punkter eller klik på en linje for først at markere dem`,
 's5b73a90cdea7a562': `Rediger koordinater`,
+'s5e8250fb85d64c23': `Luk`,
 's602805b1eb3106c6': `Y-aksen`,
 's622204928541cb72': `Tegn en linje`,
 's66f26fdcbe2101eb': `Diagram`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmenter`,
 'se8aa1cc7653c6ba2': `Har du medbragt dit eget datasæt?`,
     };
-  

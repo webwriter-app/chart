@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Kliknutím na dva body nakreslíte čáru. Přetažením koncových bodů můžete čáru upravit. Stisknutím klávesy Delete vybraný prvek odstraníte.`,
 's2ceb11be2290bb1b': `Zrušit`,
 's2e036aec33b837e9': `Vybrané série`,
+'s31bccdb022de127c': `Nastavení grafu`,
 's32b873a2dfa6c573': `vybrané body`,
 's34250d39671d5c5d': `Zobrazit průměr`,
 's36698f2375b94e75': `Všechny paprsky`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Maximální měřítko`,
 's573581bd694a2dc1': `Nejprve body vyberte dvojitým kliknutím nebo kliknutím na přímku`,
 's5b73a90cdea7a562': `Upravit souřadnice`,
+'s5e8250fb85d64c23': `Zavřít`,
 's602805b1eb3106c6': `Osa Y`,
 's622204928541cb72': `Nakresli čáru`,
 's66f26fdcbe2101eb': `Graf`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmenty`,
 'se8aa1cc7653c6ba2': `Přinesli jste si vlastní datový soubor?`,
     };
-  

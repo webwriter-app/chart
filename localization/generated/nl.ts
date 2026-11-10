@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Klik op twee punten om een lijn te tekenen. Sleep de eindpunten om de lijn aan te passen. Druk op Delete om de selectie te verwijderen.`,
 's2ceb11be2290bb1b': `Annuleren`,
 's2e036aec33b837e9': `Geselecteerde series`,
+'s31bccdb022de127c': `Grafiekinstellingen`,
 's32b873a2dfa6c573': `geselecteerde punten`,
 's34250d39671d5c5d': `Gemiddelde weergeven`,
 's36698f2375b94e75': `Alle spaken`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Maximale schaal`,
 's573581bd694a2dc1': `Dubbelklik op punten of klik op een lijn om ze eerst te selecteren`,
 's5b73a90cdea7a562': `Coördinaten bewerken`,
+'s5e8250fb85d64c23': `Sluiten`,
 's602805b1eb3106c6': `Y-as`,
 's622204928541cb72': `Trek een lijn`,
 's66f26fdcbe2101eb': `Grafiek`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmenten`,
 'se8aa1cc7653c6ba2': `Heb je je eigen dataset meegenomen?`,
     };
-  

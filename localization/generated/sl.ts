@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Kliknite dve točki, da narišete črto. Končne točke prilagodite s povlekanjem. Za odstranitev izbrane črte pritisnite tipko Delete.`,
 's2ceb11be2290bb1b': `Prekliči`,
 's2e036aec33b837e9': `Izbrane serije`,
+'s31bccdb022de127c': `Nastavitve grafikona`,
 's32b873a2dfa6c573': `izbrane točke`,
 's34250d39671d5c5d': `Pokaži povprečje`,
 's36698f2375b94e75': `Vse kolesne špice`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Največja lestvica`,
 's573581bd694a2dc1': `Najprej dvokliknite točke ali kliknite črto, da jih izberete`,
 's5b73a90cdea7a562': `Uredi koordinate`,
+'s5e8250fb85d64c23': `Zapri`,
 's602805b1eb3106c6': `Os Y`,
 's622204928541cb72': `Nariši črto`,
 's66f26fdcbe2101eb': `Graf`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmenti`,
 'se8aa1cc7653c6ba2': `Ste prinesli svoj nabor podatkov?`,
     };
-  

@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Bir çizgi çizmek için iki noktaya tıklayın. Ayarlamak için uç noktaları sürükleyin. Seçili öğeyi silmek için Delete tuşuna basın.`,
 's2ceb11be2290bb1b': `İptal et`,
 's2e036aec33b837e9': `Seçilmiş Diziler`,
+'s31bccdb022de127c': `Grafik ayarları`,
 's32b873a2dfa6c573': `seçilen noktalar`,
 's34250d39671d5c5d': `Ortalamayı Göster`,
 's36698f2375b94e75': `Tüm jant telleri`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Maksimum Ölçek`,
 's573581bd694a2dc1': `Noktaları çift tıklayın veya bir çizgiyi tıklayarak önce bunları seçin`,
 's5b73a90cdea7a562': `Koordinatları düzenle`,
+'s5e8250fb85d64c23': `Kapat`,
 's602805b1eb3106c6': `Y ekseni`,
 's622204928541cb72': `Bir çizgi çizin`,
 's66f26fdcbe2101eb': `Grafik`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmentler`,
 'se8aa1cc7653c6ba2': `Kendi veri setinizi getirdiniz mi?`,
     };
-  

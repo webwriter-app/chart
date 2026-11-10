@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Kliknite na dva body, aby ste nakreslili čiaru. Posúvaním koncových bodov môžete čiaru upraviť. Stlačením klávesy Delete vybraný prvok odstránite.`,
 's2ceb11be2290bb1b': `Zrušiť`,
 's2e036aec33b837e9': `Vybrané série`,
+'s31bccdb022de127c': `Nastavenia grafu`,
 's32b873a2dfa6c573': `vybrané body`,
 's34250d39671d5c5d': `Zobraziť priemer`,
 's36698f2375b94e75': `Všetky lúče`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Maximálna stupnica`,
 's573581bd694a2dc1': `Najprv vyberte body dvojitým kliknutím alebo kliknutím na čiaru`,
 's5b73a90cdea7a562': `Upraviť súradnice`,
+'s5e8250fb85d64c23': `Zatvoriť`,
 's602805b1eb3106c6': `Os Y`,
 's622204928541cb72': `Nakresli čiaru`,
 's66f26fdcbe2101eb': `Graf`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmenty`,
 'se8aa1cc7653c6ba2': `Priniesli ste si vlastný súbor údajov?`,
     };
-  

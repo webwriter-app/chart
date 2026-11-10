@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Kattintson két pontra egy vonal megrajzolásához. A végpontok húzásával állítsa be a vonalat. A Delete billentyű lenyomásával törölheti a kijelölést.`,
 's2ceb11be2290bb1b': `Mégse`,
 's2e036aec33b837e9': `Kiválasztott sorozatok`,
+'s31bccdb022de127c': `Diagram beállításai`,
 's32b873a2dfa6c573': `kiválasztott pontok`,
 's34250d39671d5c5d': `Átlag megjelenítése`,
 's36698f2375b94e75': `Minden küllő`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Maximális skála`,
 's573581bd694a2dc1': `Kattintson duplán a pontokra, vagy kattintson egy egyenesre, hogy azokat először kijelölje`,
 's5b73a90cdea7a562': `Koordináták szerkesztése`,
+'s5e8250fb85d64c23': `Bezárás`,
 's602805b1eb3106c6': `Y-tengely`,
 's622204928541cb72': `Rajzolj egy vonalat`,
 's66f26fdcbe2101eb': `Táblázat`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Szegmensek`,
 'se8aa1cc7653c6ba2': `Hoztál saját adatkészletet?`,
     };
-  

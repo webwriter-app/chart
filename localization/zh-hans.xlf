@@ -1,5 +1,6 @@
-<xliff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-  <file original="lit-localize-inputs" datatype="plaintext" source-language="en" target-language="zh-Hans">
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" version="1.2">
+  <file original="lit-localize-inputs" datatype="plaintext" source-language="en" target-language="zh-hans">
     <body>
       <trans-unit id="s7853336e2d49e552">
         <source>Connect data points</source>
@@ -261,6 +262,12 @@
         <source>No unsaved plot changes — move or add points first</source>
         <target>没有未保存的图表更改——请先移动或添加数据点</target>
       </trans-unit>
-    </body>
+    <trans-unit id="s31bccdb022de127c">
+  <source>Chart settings</source>
+<target>图表设置</target></trans-unit>
+<trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+<target>关闭</target></trans-unit>
+</body>
   </file>
 </xliff>

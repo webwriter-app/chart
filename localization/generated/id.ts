@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Klik dua titik untuk menggambar garis. Seret ujung-ujung garis untuk menyesuaikannya. Tekan tombol Delete untuk menghapus yang dipilih.`,
 's2ceb11be2290bb1b': `Batal`,
 's2e036aec33b837e9': `Seri Terpilih`,
+'s31bccdb022de127c': `Pengaturan bagan`,
 's32b873a2dfa6c573': `titik-titik terpilih`,
 's34250d39671d5c5d': `Tampilkan Rata-rata`,
 's36698f2375b94e75': `Semua jari-jari`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Skala Maksimum`,
 's573581bd694a2dc1': `Klik ganda titik-titik atau klik sebuah garis untuk memilihnya terlebih dahulu`,
 's5b73a90cdea7a562': `Edit koordinat`,
+'s5e8250fb85d64c23': `Tutup`,
 's602805b1eb3106c6': `Sumbu Y`,
 's622204928541cb72': `Gambarlah sebuah garis`,
 's66f26fdcbe2101eb': `Grafik`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmen`,
 'se8aa1cc7653c6ba2': `Sudah membawa dataset Anda sendiri?`,
     };
-  

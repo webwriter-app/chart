@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Noklikšķiniet uz diviem punktiem, lai uzzīmētu līniju. Velciet galapunktus, lai pielāgotu. Nospiediet taustiņu „Delete“, lai dzēstu atlasīto.`,
 's2ceb11be2290bb1b': `Atcelt`,
 's2e036aec33b837e9': `Izvēlētās sērijas`,
+'s31bccdb022de127c': `Diagrammas iestatījumi`,
 's32b873a2dfa6c573': `izvēlētie punkti`,
 's34250d39671d5c5d': `Rādīt vidējo vērtību`,
 's36698f2375b94e75': `Visi spieķi`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Maksimālā skala`,
 's573581bd694a2dc1': `Divkārši noklikšķiniet uz punktiem vai noklikšķiniet uz līnijas, lai tos vispirms atlasītu`,
 's5b73a90cdea7a562': `Rediģēt koordinātas`,
+'s5e8250fb85d64c23': `Aizvērt`,
 's602805b1eb3106c6': `Y-ass`,
 's622204928541cb72': `Uzzīmē līniju`,
 's66f26fdcbe2101eb': `Diagramma`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmenti`,
 'se8aa1cc7653c6ba2': `Vai esat atnesis savu datu kopu?`,
     };
-  

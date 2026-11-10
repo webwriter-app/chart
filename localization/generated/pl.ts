@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Kliknij dwa punkty, aby narysować linię. Przeciągnij końce linii, aby ją dopasować. Naciśnij klawisz Delete, aby usunąć zaznaczenie.`,
 's2ceb11be2290bb1b': `Anuluj`,
 's2e036aec33b837e9': `Wybrane serie`,
+'s31bccdb022de127c': `Ustawienia wykresu`,
 's32b873a2dfa6c573': `wybrane punkty`,
 's34250d39671d5c5d': `Pokaż średnią`,
 's36698f2375b94e75': `Wszystkie szprychy`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Maksymalna skala`,
 's573581bd694a2dc1': `Najpierw kliknij dwukrotnie punkty lub kliknij linię, aby je zaznaczyć`,
 's5b73a90cdea7a562': `Edytuj współrzędne`,
+'s5e8250fb85d64c23': `Zamknij`,
 's602805b1eb3106c6': `Oś Y`,
 's622204928541cb72': `Narysuj linię`,
 's66f26fdcbe2101eb': `Wykres`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmenty`,
 'se8aa1cc7653c6ba2': `Przyniosłeś własny zbiór danych?`,
     };
-  

@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `Clique em dois pontos para traçar uma linha. Arraste os pontos finais para ajustar. Prima a tecla Delete para remover o elemento selecionado.`,
 's2ceb11be2290bb1b': `Cancelar`,
 's2e036aec33b837e9': `Séries selecionadas`,
+'s31bccdb022de127c': `Definições do gráfico`,
 's32b873a2dfa6c573': `pontos selecionados`,
 's34250d39671d5c5d': `Mostrar média`,
 's36698f2375b94e75': `Todos os raios`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `Escala Máxima`,
 's573581bd694a2dc1': `Clique duas vezes nos pontos ou clique numa linha para os selecionar primeiro`,
 's5b73a90cdea7a562': `Editar coordenadas`,
+'s5e8250fb85d64c23': `Fechar`,
 's602805b1eb3106c6': `Eixo Y`,
 's622204928541cb72': `Traça uma linha`,
 's66f26fdcbe2101eb': `Gráfico`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `Segmentos`,
 'se8aa1cc7653c6ba2': `Trouxeste o teu próprio conjunto de dados?`,
     };
-  

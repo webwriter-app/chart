@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,6 +26,7 @@
 's2b8b8f3bb6ee5a04': `두 지점을 클릭하여 선을 그립니다. 끝점을 드래그하여 조정합니다. Delete 키를 눌러 선택한 항목을 삭제합니다.`,
 's2ceb11be2290bb1b': `취소`,
 's2e036aec33b837e9': `선정된 시리즈`,
+'s31bccdb022de127c': `차트 설정`,
 's32b873a2dfa6c573': `선택된 점들`,
 's34250d39671d5c5d': `평균 표시`,
 's36698f2375b94e75': `모든 스포크`,
@@ -37,6 +38,7 @@
 's4ce9f3d60360110b': `최대 눈금`,
 's573581bd694a2dc1': `먼저 점을 더블 클릭하거나 선을 클릭하여 선택하십시오`,
 's5b73a90cdea7a562': `좌표 편집`,
+'s5e8250fb85d64c23': `닫기`,
 's602805b1eb3106c6': `Y축`,
 's622204928541cb72': `선을 그어 보세요`,
 's66f26fdcbe2101eb': `차트`,
@@ -75,4 +77,3 @@
 'se68f81f234173daf': `세그먼트`,
 'se8aa1cc7653c6ba2': `직접 데이터셋을 가져오셨나요?`,
     };
-  
