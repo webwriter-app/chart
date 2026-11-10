@@ -1,4 +1,5 @@
 import { html, css, PropertyValues } from "lit";
+import { str } from "@lit/localize";
 import { customElement, property, state } from "lit/decorators.js";
 import Chart from "chart.js/auto";
 import { getContext } from "../chart-helpers";
@@ -951,7 +952,7 @@ override updated(changed: PropertyValues) {
       const al = this._getActiveLine(line, i);
       return {
         type: "line",
-        label: line.name ?? `Line ${i + 1}`,
+        label: line.name ?? this.msg(str`Line ${i + 1}`),
         data: [{ x: al.x1, y: al.y1 }, { x: al.x2, y: al.y2 }],
         parsing: false,
         // Endpoint handles are drawn by the afterDraw plugin, not as dataset points
@@ -973,7 +974,7 @@ override updated(changed: PropertyValues) {
             if (!cursor) return null;
             return {
               type: "line",
-              label: "Preview line",
+              label: this.msg("Preview line"),
               data: [
                 { x: this._lineStart.x, y: this._lineStart.y },
                 { x: cursor.x, y: cursor.y },
@@ -1808,7 +1809,7 @@ private _handleClick(e: MouseEvent) {
         if (length > 1e-10) {
           this._lines = [
             ...this._lines,
-            { x1: this._lineStart.x, y1: this._lineStart.y, x2: end.x, y2: end.y, name: `Line ${this._lines.length + 1}` },
+            { x1: this._lineStart.x, y1: this._lineStart.y, x2: end.x, y2: end.y, name: this.msg(str`Line ${this._lines.length + 1}`) },
           ];
         }
         this._setMode("none"); // deactivates button immediately
@@ -1909,7 +1910,7 @@ private _connectSelected() {
     selPts.sort((a, b) => a.x - b.x || a.y - b.y);
     const p1 = selPts[0];
     const p2 = selPts[selPts.length - 1];
-    this._lines = [...this._lines, { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, name: `Line ${this._lines.length + 1}` }];
+    this._lines = [...this._lines, { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, name: this.msg(str`Line ${this._lines.length + 1}`) }];
     this._hideConnectTooltip();
     this._sel.clear();
     this._selCount = 0;
@@ -2039,7 +2040,7 @@ override render() {
           <!-- ── Line formula hover tooltip ────────────────────── -->
           ${this._hoveredLineIdx !== null && this._hoverPx && this._lines[this._hoveredLineIdx] ? html`
             <div class="line-tooltip" style="left:${this._hoverPx.x + 14}px;top:${this._hoverPx.y - 16}px;">
-              <div class="line-tooltip-name">${this._lines[this._hoveredLineIdx].name ?? `Line ${this._hoveredLineIdx + 1}`}</div>
+              <div class="line-tooltip-name">${this._lines[this._hoveredLineIdx].name ?? this.msg(str`Line ${this._hoveredLineIdx + 1}`)}</div>
               <div>${lineFormula(this._lines[this._hoveredLineIdx], "x", "y")}</div>
             </div>
           ` : ""}
@@ -2072,7 +2073,7 @@ override render() {
               @click=${(e: Event) => e.stopPropagation()}>
               <input
                 type="text"
-                .value=${sl.name ?? `Line ${this._selLineIdx! + 1}`}
+                .value=${sl.name ?? this.msg(str`Line ${this._selLineIdx! + 1}`)}
                 placeholder=${this.msg("Line name")}
                 @input=${(e: Event) => {
                   const val = (e.target as HTMLInputElement).value;
@@ -2167,7 +2168,7 @@ override render() {
               .disabled=${!hasData}
               @click=${() => this._toggle("add-point")}
             >
-              <sl-icon src=${IconPluslg} label="Add point" style="pointer-events:none"></sl-icon>
+              <sl-icon src=${IconPluslg} label=${this.msg("Add a data point")} style="pointer-events:none"></sl-icon>
             </sl-button>
           </sl-tooltip>
 
@@ -2193,7 +2194,7 @@ override render() {
                 }
               }}
             >
-              <sl-icon src=${IconArrowsMove} label="Edit position" style="pointer-events:none"></sl-icon>
+              <sl-icon src=${IconArrowsMove} label=${this.msg("Edit point position")} style="pointer-events:none"></sl-icon>
             </sl-button>
           </sl-tooltip>
 
@@ -2210,14 +2211,14 @@ override render() {
               .disabled=${!hasData}
               @click=${() => this._toggle("draw-line")}
             >
-              <sl-icon src=${IconLine} label="Draw line" style="pointer-events:none"></sl-icon>
+              <sl-icon src=${IconLine} label=${this.msg("Draw a line")} style="pointer-events:none"></sl-icon>
             </sl-button>
           </sl-tooltip>
 
           <!-- ── Delete selected (points or line) ─────────────── -->
           <sl-tooltip hoist placement="top-end"
             content=${this._selLineIdx !== null
-              ? `${this.msg("Delete")} "${this._lines[this._selLineIdx]?.name ?? `Line ${this._selLineIdx + 1}`}"`
+              ? `${this.msg("Delete")} "${this._lines[this._selLineIdx]?.name ?? this.msg(str`Line ${this._selLineIdx + 1}`)}"`
               : this._selCount === 0
               ? this.msg("Double-click points or click a line to select them first")
               : `${this.msg("Delete")} ${this._selCount} ${this._selCount > 1 ? this.msg("selected points") : this.msg("selected point")}`}
@@ -2233,7 +2234,7 @@ override render() {
                 }
               }}
             >
-              <sl-icon src=${IconTrash} label="Delete" style="pointer-events:none"></sl-icon>
+              <sl-icon src=${IconTrash} label=${this.msg("Delete")} style="pointer-events:none"></sl-icon>
             </sl-button>
           </sl-tooltip>
 

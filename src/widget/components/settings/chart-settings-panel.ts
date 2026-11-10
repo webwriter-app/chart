@@ -292,7 +292,7 @@ render() {
                   src=${this.sharedState.chart.optionsLocked["title"]
                     ? IconLock
                     : IconUnLock}
-                  label="Lock this option"
+                  label=${this.msg("Lock this option")}
                   @click=${() => {
                     const updatedOptionsLocked = {
                       ...this.sharedState.chart.optionsLocked,

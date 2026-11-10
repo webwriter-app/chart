@@ -1,3 +1,5 @@
+import { str, type MsgFn } from "@lit/localize";
+import { sourceMsg } from "../../localization/localizer";
 import { ChartState, ScatterDatasets } from "./state/models";
 
 export function normalizeColumnsInput(value: unknown): string[] {
@@ -103,7 +105,8 @@ export function migrateLegacyScatterDatasets(
 }
 
 export function deriveFixedScatterDatasets(
-  state: ChartState
+  state: ChartState,
+  msg: MsgFn = sourceMsg
 ): ScatterDatasets {
   const labels = [...(state.chart.datasets.labels ?? [])];
   const chartSets = state.chart.datasets.sets ?? [];
@@ -116,7 +119,7 @@ export function deriveFixedScatterDatasets(
 
     return {
       color,
-      name: set.name || `Series ${setIndex + 1}`,
+      name: set.name || msg(str`Series ${setIndex + 1}`),
       ids: [0],
       labels: [...labels],
       typeOfEachData: rowData.map((item) =>

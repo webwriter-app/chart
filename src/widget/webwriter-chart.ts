@@ -2,7 +2,7 @@ import { PropertyValueMap, html } from "lit";
 import { keyed } from "lit/directives/keyed.js";
 import { customElement, property, state } from "lit/decorators.js";
 import { LitElementWw } from "@webwriter/lit";
-import type { MsgFn } from "@lit/localize";
+import { str, type MsgFn } from "@lit/localize";
 import { createLocalizer, effectiveLanguage, drawerLabel, sourceMsg } from "../../localization/localizer";
 
 // Components
@@ -76,17 +76,16 @@ export class WwChart extends LitElementWw {
   private defaultChartState(): ChartState {
     return {
     teacherOptions: { showOptions: true, showData: true, showLockedOptions: true, changeData: true, changeOptions: true, addRemoveData: true },
-    scatterDatasets: { title: "My Scatter plot", sets: [], selected: { axis: { x: "None", y: "None" }, dataset_indexes: [] } },
+    scatterDatasets: { title: this.msg("My scatter plot"), sets: [], selected: { axis: { x: "None", y: "None" }, dataset_indexes: [] } },
     regressionType: "none",
     scatterLines: [],
-    visualizations: [{ id: "viz-1", name: "Chart 1", selectedType: "Bar" }],
+    visualizations: [{ id: "viz-1", name: this.msg(str`Chart ${1}`), selectedType: "Bar" }],
     activeVisualizationId: "viz-1",
-    chart: { selectedType: "Bar", title: "My Chart", datasets: { labels: [], sets: [] }, options: {}, optionsLocked: {}, optionDefinition: {} },
+    chart: { selectedType: "Bar", title: this.msg("My Chart"), datasets: { labels: [], sets: [] }, options: {}, optionsLocked: {}, optionDefinition: {} },
     editable: true,
     };
   }
 
-  private chartState = this.defaultChartState();
   private lastStateText: string | null = null;
 
   private get stateBlockText() {
@@ -155,8 +154,10 @@ export class WwChart extends LitElementWw {
 
   localize = createLocalizer(this, () => {
       Object.assign(this.actions, WwChart.makeActions(this.msg, this.localize.getLocale()));
+      if (this.stateBlockText === null) this.chartState = this.defaultChartState();
   });
   readonly msg = this.localize.msg;
+  private chartState = this.defaultChartState();
 
   static styles = style;
 
@@ -271,7 +272,7 @@ export class WwChart extends LitElementWw {
   }
 
   private syncFixedScatterplotFromChartData() {
-    const nextScatterDatasets = deriveFixedScatterDatasets(this.sharedState);
+    const nextScatterDatasets = deriveFixedScatterDatasets(this.sharedState, this.msg);
     if (JSON.stringify(nextScatterDatasets) !== JSON.stringify(this.sharedState.scatterDatasets)) {
       this.sharedState = { ...this.sharedState, scatterDatasets: nextScatterDatasets };
     }
@@ -353,7 +354,7 @@ export class WwChart extends LitElementWw {
     const optDef = getOptionsDefinition(defaultType);
     const defaultOptions: Record<string, any> =
       Object.fromEntries(Object.entries(optDef).map(([k, d]) => [k, (d as any).default]));
-    const newViz: Visualization = { id, name: `Chart ${vizs.length + 1}`, selectedType: defaultType, options: defaultOptions };
+    const newViz: Visualization = { id, name: this.msg(str`Chart ${vizs.length + 1}`), selectedType: defaultType, options: defaultOptions };
     this.sharedState = {
       ...this.sharedState,
       visualizations: [...vizs, newViz],
@@ -575,6 +576,15 @@ export class WwChart extends LitElementWw {
       : this.sharedState.visualizations?.find(
           (v) => v.id === this.sharedState.activeVisualizationId
         ) ?? this.sharedState.visualizations?.[0];
+    const chartTypeLabels = {
+      Pie: this.msg("Pie Chart"),
+      Doughnut: this.msg("Doughnut Chart"),
+      Bar: this.msg("Bar Chart"),
+      Line: this.msg("Line Chart"),
+      "Polar Area": this.msg("Polar Area Chart"),
+      Radar: this.msg("Radar Chart"),
+      "Scatter plot": this.msg("Scatter plot"),
+    };
 
     if (isFixedScatterplotTab) {
       this.sharedState.chart.selectedType = "Scatter plot";
@@ -732,6 +742,7 @@ export class WwChart extends LitElementWw {
                             .icon=${IconChartDots2}
                             .value=${activeViz?.selectedType ?? "Bar"}
                             .selectOptions=${availableCharts}
+                            .selectLabels=${availableCharts.map(type => chartTypeLabels[type])}
                             ?disabled=${!canChangeOptions}
                             @wwci-change=${(e: CustomEvent) => {
                               e.stopPropagation();
@@ -935,6 +946,14 @@ export class WwChart extends LitElementWw {
                           (this.sharedState.teacherOptions.changeOptions && !locked[key]);
                         const regressionType = this.sharedState.regressionType;
                         const warning = this.regressionPointsWarning();
+                        const regressionLabels = {
+                          none: this.msg("No regression"),
+                          "Linear Regression": this.msg("Linear Regression"),
+                          "Polynomial Regression": this.msg("Polynomial Regression"),
+                          "Local Regression": this.msg("Local Regression"),
+                          "Exponential Regression": this.msg("Exponential Regression"),
+                          "Logarithmic Regression": this.msg("Logarithmic Regression"),
+                        };
                         return html`
                           <div class="viz-type-row analysis-row">
                             <span class="viz-type-label">${this.msg("Regression Model")}</span>
@@ -955,9 +974,7 @@ export class WwChart extends LitElementWw {
                               }}
                             >
                               <sl-icon slot="prefix" src=${IconRegexOff}></sl-icon>
-                              ${availableRegressions.map(
-                                (r) => html`<sl-option value=${r}>${r}</sl-option>`
-                              )}
+                              ${availableRegressions.map(r => html`<sl-option value=${r}>${regressionLabels[r]}</sl-option>`)}
                             </sl-select>
 
                             ${warning ? html`
