@@ -105,7 +105,16 @@
       "om": "Meeshaa WebWriter keessatti daataa mul'isuuf gargaaru; chaartii fi diyaagiraamota garaagaraa agarsiisa.",
       "so": "Qalab isdhexgal leh oo xogta loogu muujiyo WebWriter; wuxuu sameeyaa shaxanno kala duwan oo xogta lagu bandhigo ama lagu falanqeeyo.",
       "ti": "በWebWriter ውስጥ ውሂብን በበይነተገናኝ ሁኔታ የሚያሳይ መግብር፤ ለቋሚና ለምርምር ማሳያ የተለያዩ ሰንጠረዦችንና ሥዕሎችን ይፈጥራል።",
-      "ha": "Na'urar WebWriter mai hulɗa don nuna bayanai; tana ƙirƙira jadawali daban-daban don bayyanawa da binciken bayanai."
+      "ha": "Na'urar WebWriter mai hulɗa don nuna bayanai; tana ƙirƙira jadawali daban-daban don bayyanawa da binciken bayanai.",
+      "yue-Hans": "ww-chart 系 WebWriter 嘅互动式资料视觉化小工具，实作多种图表同图解，支援静态同探索式资料视觉化。",
+      "yue-Hant": "ww-chart 係 WebWriter 嘅互動式資料視覺化小工具，實作多種圖表同圖解，支援靜態同探索式資料視覺化。",
+      "kmr": "ww-chart widgeteke dîtbarîkirina daneyên înteraktîf e ji bo amûra WebWriter; ew cûrbecûr grafîk û diagraman ji bo dîtbarîkirina daneyên sabît û keşfkirinê pêk tîne.",
+      "kmr-Latn": "ww-chart widgeteke dîtbarîkirina daneyên înteraktîf e ji bo amûra WebWriter; ew cûrbecûr grafîk û diagraman ji bo dîtbarîkirina daneyên sabît û keşfkirinê pêk tîne.",
+      "kmr-Arab": "وو-جهارت ودگەتەکە دیتباریکرنا دانەیێن ئینتەراکتیف ئە ژ بۆ ئاموورا WebWriter; ئەو جووربەجوور گرافیک ئوو داگرامان ژ بۆ دیتباریکرنا دانەیێن سابیت ئوو کەشفکرنێ پێک تینە.",
+      "ckb": "ویجێتی ww-chart بۆ وێنەکردنی داتا کارلێک‌لێکراوە، تایبەتە بە ئامرازی WebWriter و چەندین جۆر چارت و دیاگرام بۆ وێنەکردنی جێگیر و لێکۆڵینەوەیی پێشکەش دەکات.",
+      "ckb-Arab": "ویجێتی ww-chart بۆ وێنەکردنی داتا کارلێک‌لێکراوە، تایبەتە بە ئامرازی WebWriter و چەندین جۆر چارت و دیاگرام بۆ وێنەکردنی جێگیر و لێکۆڵینەوەیی پێشکەش دەکات.",
+      "af-ZA": "ww-chart is ’n interaktiewe datavisualiseringswidget vir WebWriter met verskillende kaarte en diagramme vir vaste en verkennende datavisualisering.",
+      "af-NA": "ww-chart is ’n interaktiewe datavisualiseringswidget vir WebWriter met verskillende kaarte en diagramme vir vaste en verkennende datavisualisering."
     },
     "label": {
       "_": "Chart",
@@ -210,7 +219,16 @@
       "om": "Chaartii",
       "so": "Shaxan",
       "ti": "ሰንጠረዥ",
-      "ha": "Jadawali"
+      "ha": "Jadawali",
+      "yue-Hans": "图表",
+      "yue-Hant": "圖表",
+      "kmr": "Grafîk",
+      "kmr-Latn": "Grafîk",
+      "kmr-Arab": "گرافیک",
+      "ckb": "چارت",
+      "ckb-Arab": "چارت",
+      "af-ZA": "Grafiek",
+      "af-NA": "Grafiek"
     }
   },
   "./widgets/webwriter-chart": {
@@ -319,7 +337,16 @@
       "om": "Chaartiiwwan",
       "so": "Shaxanno",
       "ti": "ሰንጠረዦች",
-      "ha": "Jadawalai"
+      "ha": "Jadawalai",
+      "yue-Hans": "图表",
+      "yue-Hant": "圖表",
+      "kmr": "Grafîk",
+      "kmr-Latn": "Grafîk",
+      "kmr-Arab": "گرافیک",
+      "ckb": "چارتەکان",
+      "ckb-Arab": "چارتەکان",
+      "af-ZA": "Grafieke",
+      "af-NA": "Grafieke"
     }
   },
   "./snippets/scatterplot-exercise.html": {
@@ -428,7 +455,16 @@
       "om": "Shaakala scatterplot",
       "so": "Layli jaantus kala firdhisan",
       "ti": "የተበታተነ ስዕል ልምምድ",
-      "ha": "Aikin zane mai warwatse"
+      "ha": "Aikin zane mai warwatse",
+      "yue-Hans": "散布图练习",
+      "yue-Hant": "散佈圖練習",
+      "kmr": "Pratîka grafîka belavbûnê",
+      "kmr-Latn": "Pratîka grafîka belavbûnê",
+      "kmr-Arab": "پراتیکا گرافیکا بەلاڤبوونێ",
+      "ckb": "ڕاهێنانی خاڵەبڵاو",
+      "ckb-Arab": "ڕاهێنانی خاڵەبڵاو",
+      "af-ZA": "Spreidiagram-oefening",
+      "af-NA": "Spreidiagram-oefening"
     }
   },
   "./snippets/mean-median-exercise.html": {
@@ -537,7 +573,16 @@
       "om": "Shaakala giddugaleessaa fi mediyaanaa",
       "so": "Layli celcelis iyo dhex-dhexaad",
       "ti": "የአማካይና የመካከለኛ እሴት ልምምድ",
-      "ha": "Aikin matsakaici da tsakiya"
+      "ha": "Aikin matsakaici da tsakiya",
+      "yue-Hans": "平均数－中位数练习",
+      "yue-Hant": "平均數－中位數練習",
+      "kmr": "Pratîka navîn û navînî",
+      "kmr-Latn": "Pratîka navîn û navînî",
+      "kmr-Arab": "پراتیکا ناڤین ئوو ناڤینی",
+      "ckb": "ڕاهێنانی ناوەند-ناوەڕاست",
+      "ckb-Arab": "ڕاهێنانی ناوەند-ناوەڕاست",
+      "af-ZA": "Oefening oor gemiddelde en mediaan",
+      "af-NA": "Oefening oor gemiddelde en mediaan"
     }
   },
   "./snippets/bar+line-chart": {
@@ -644,7 +689,16 @@
       "om": "Chaartii barruu fi sararaa",
       "so": "Shaxanka tiirarka iyo xariiqda",
       "ti": "የአምድና የመስመር ሰንጠረዥ",
-      "ha": "Jadawalin sanduna da layi"
+      "ha": "Jadawalin sanduna da layi",
+      "yue-Hans": "长条图同折线图",
+      "yue-Hant": "長條圖同折線圖",
+      "kmr": "Grafîka stûn û xêz",
+      "kmr-Latn": "Grafîka stûn û xêz",
+      "kmr-Arab": "گرافیکا ستوون ئوو خێز",
+      "ckb": "چارتی ستوونی و هێڵی",
+      "ckb-Arab": "چارتی ستوونی و هێڵی",
+      "af-ZA": "Staaf- en lyngrafiek",
+      "af-NA": "Staaf- en lyngrafiek"
     }
   },
   "./snippets/pie+doughnut-chart": {
@@ -751,7 +805,16 @@
       "om": "Chaartii geengoo fi ringii",
       "so": "Shaxanka wareegga iyo giraanta",
       "ti": "የክብና የቀለበት ሰንጠረዥ",
-      "ha": "Jadawalin kek da zobe"
+      "ha": "Jadawalin kek da zobe",
+      "yue-Hans": "圆形图同圆环图",
+      "yue-Hant": "圓形圖同圓環圖",
+      "kmr": "Grafîka pîroz û donat",
+      "kmr-Latn": "Grafîka pîroz û donat",
+      "kmr-Arab": "گرافیکا پیرۆز ئوو دۆنات",
+      "ckb": "چارتی بازنە و دۆنەت",
+      "ckb-Arab": "چارتی بازنە و دۆنەت",
+      "af-ZA": "Sirkel- en ringdiagram",
+      "af-NA": "Sirkel- en ringdiagram"
     }
   },
   "./snippets/polar-area-chart": {
@@ -858,7 +921,16 @@
       "om": "Chaartii naannoo poolaar",
       "so": "Shaxanka aagga cirifka",
       "ti": "የዋልታ አካባቢ ሰንጠረዥ",
-      "ha": "Jadawalin yankin polar"
+      "ha": "Jadawalin yankin polar",
+      "yue-Hans": "极区图",
+      "yue-Hant": "極區圖",
+      "kmr": "Grafîka qada polêr",
+      "kmr-Latn": "Grafîka qada polêr",
+      "kmr-Arab": "گرافیکا قادا پۆلێر",
+      "ckb": "چارتی ناوچەییی لەنگەری",
+      "ckb-Arab": "چارتی ناوچەییی لەنگەری",
+      "af-ZA": "Polêre areagrafiek",
+      "af-NA": "Polêre areagrafiek"
     }
   },
   "./snippets/radar-chart": {
@@ -965,7 +1037,16 @@
       "om": "Chaartii raadaaraa",
       "so": "Jaantus raadaar",
       "ti": "ራዳር ቻርት",
-      "ha": "Jadawalin radar"
+      "ha": "Jadawalin radar",
+      "yue-Hans": "雷达图",
+      "yue-Hant": "雷達圖",
+      "kmr": "Grafîka radarê",
+      "kmr-Latn": "Grafîka radarê",
+      "kmr-Arab": "گرافیکا رادارێ",
+      "ckb": "چارتی ڕادار",
+      "ckb-Arab": "چارتی ڕادار",
+      "af-ZA": "Radargrafiek",
+      "af-NA": "Radargrafiek"
     }
   },
   "./snippets/sunscreen-exercise": {
@@ -1072,7 +1153,16 @@
       "om": "Shaakala kiriimii aduu",
       "so": "Layli kareemka qorraxda",
       "ti": "የፀሐይ መከላከያ ልምምድ",
-      "ha": "Aikin hasken rana"
+      "ha": "Aikin hasken rana",
+      "yue-Hans": "防晒用品练习",
+      "yue-Hant": "防曬用品練習",
+      "kmr": "Pratîka kremê rojê",
+      "kmr-Latn": "Pratîka kremê rojê",
+      "kmr-Arab": "پراتیکا کرەمێ رۆژێ",
+      "ckb": "ڕاهێنانی کرێمی خۆر",
+      "ckb-Arab": "ڕاهێنانی کرێمی خۆر",
+      "af-ZA": "Sonskermoefening",
+      "af-NA": "Sonskermoefening"
     }
   }
 }
