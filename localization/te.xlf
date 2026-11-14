@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<file target-language="te" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="se88220063fb37241">
+  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
+<target>రేఖ <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+<trans-unit id="sbeab0d8a4ec2b217">
+  <source>Preview line</source>
+<target>రేఖ ప్రివ్యూ</target></trans-unit>
+<trans-unit id="s7853336e2d49e552">
+  <source>Connect data points</source>
+<target>డేటా బిందువులను కలపండి</target></trans-unit>
+<trans-unit id="sce2e89993cd7a286">
+  <source>Line name</source>
+<target>రేఖ పేరు</target></trans-unit>
+<trans-unit id="s5b73a90cdea7a562">
+  <source>Edit coordinates</source>
+<target>కోఆర్డినేట్లను సవరించండి</target></trans-unit>
+<trans-unit id="sb8f855b49234b81b">
+  <source>Apply</source>
+<target>వర్తింపజేయి</target></trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
+<target>రద్దు చేయండి</target></trans-unit>
+<trans-unit id="sc23e4eb04a4e5d22">
+  <source>Add data first</source>
+<target>ముందుగా డేటాను జోడించండి</target></trans-unit>
+<trans-unit id="se1002705746ad149">
+  <source>Click on chart to place a new point</source>
+<target>కొత్త బిందువును ఉంచడానికి చార్ట్‌పై క్లిక్ చేయండి</target></trans-unit>
+<trans-unit id="s896712776969fe57">
+  <source>Add a data point</source>
+<target>డేటా బిందువును జోడించండి</target></trans-unit>
+<trans-unit id="s0c19987191b8db0b">
+  <source>Double-click exactly one point to select it, then edit its position</source>
+<target>ఒక బిందువును ఎంచుకోవడానికి దానిపై రెండుసార్లు క్లిక్ చేసి, దాని స్థానాన్ని సవరించండి</target></trans-unit>
+<trans-unit id="s7a4c288d491e6856">
+  <source>Edit point position</source>
+<target>బిందువు స్థానాన్ని సవరించండి</target></trans-unit>
+<trans-unit id="s2b8b8f3bb6ee5a04">
+  <source>Click two points to draw a line. Drag endpoints to adjust. Press Delete to remove selected.</source>
+<target>రేఖను గీయడానికి రెండు బిందువులపై క్లిక్ చేయండి. సర్దుబాటు చేయడానికి చివరలను లాగండి. ఎంచుకున్నదాన్ని తొలగించడానికి Delete నొక్కండి.</target></trans-unit>
+<trans-unit id="s622204928541cb72">
+  <source>Draw a line</source>
+<target>రేఖను గీయండి</target></trans-unit>
+<trans-unit id="sdc673e73b5c13aea">
+  <source>Delete</source>
+<target>తొలగించు</target></trans-unit>
+<trans-unit id="s573581bd694a2dc1">
+  <source>Double-click points or click a line to select them first</source>
+<target>ముందుగా బిందువులను ఎంచుకోవడానికి వాటిపై రెండుసార్లు లేదా రేఖపై ఒకసారి క్లిక్ చేయండి</target></trans-unit>
+<trans-unit id="s32b873a2dfa6c573">
+  <source>selected points</source>
+<target>ఎంచుకున్న బిందువులు</target></trans-unit>
+<trans-unit id="s8a1650bddf8ecd32">
+  <source>selected point</source>
+<target>ఎంచుకున్న బిందువు</target></trans-unit>
+<trans-unit id="s5be250e35cab2f5c">
+  <source>Pick custom color</source>
+<target>అనుకూల రంగును ఎంచుకోండి</target></trans-unit>
+<trans-unit id="s76a88aa1ae8b851f">
+  <source>My Chart</source>
+<target>నా చార్ట్</target></trans-unit>
+<trans-unit id="s380ecc0df3cd6a9f">
+  <source>Could not parse the file. Please ensure it is a valid Excel or CSV file.</source>
+<target>ఫైల్‌ను చదవలేకపోయాం. ఇది సరైన Excel లేదా CSV ఫైల్ అని నిర్ధారించండి.</target></trans-unit>
+<trans-unit id="se8aa1cc7653c6ba2">
+  <source>Brought your own dataset?</source>
+<target>మీ డేటాసెట్‌ను తీసుకొచ్చారా?</target></trans-unit>
+<trans-unit id="s157ba0d6fcb49b36">
+  <source>Upload or drag and drop an Excel (.xlsx) or CSV file here.</source>
+<target>Excel (.xlsx) లేదా CSV ఫైల్‌ను ఇక్కడ అప్‌లోడ్ చేయండి లేదా లాగి వదలండి.</target></trans-unit>
+<trans-unit id="sb59e3f80c11ac8d6">
+  <source>Choose File</source>
+<target>ఫైల్‌ను ఎంచుకోండి</target></trans-unit>
+<trans-unit id="s091d3407b5b2f824">
+  <source>OR</source>
+<target>లేదా</target></trans-unit>
+<trans-unit id="s252bcd59b75fd110">
+  <source>Create Empty Table</source>
+<target>ఖాళీ పట్టికను సృష్టించండి</target></trans-unit>
+<trans-unit id="s74d2679756765e55">
+  <source>No data available.</source>
+<target>డేటా అందుబాటులో లేదు.</target></trans-unit>
+<trans-unit id="sd6243fa23e8f2f3d">
+  <source>Chart Title</source>
+<target>చార్ట్ శీర్షిక</target></trans-unit>
+<trans-unit id="sa14c12118a766127">
+  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
+<target>వర్గం <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+<trans-unit id="sf5dc01a3ccf20c4a">
+  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
+<target>శ్రేణి <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
+<trans-unit id="s0b786a0e85eb6783">
+  <source>Border Radius</source>
+<target>అంచు వంపు</target></trans-unit>
+<trans-unit id="s139c91ebf9b8a6cf">
+  <source>Border Width</source>
+<target>అంచు వెడల్పు</target></trans-unit>
+<trans-unit id="s4ac65d66ac4579e9">
+  <source>Filled</source>
+<target>నింపబడింది</target></trans-unit>
+<trans-unit id="sd4f55ee88b9e1f9b">
+  <source>Dynamic Scaling</source>
+<target>డైనమిక్ స్కేలింగ్</target></trans-unit>
+<trans-unit id="s4ccf09d603496eb5">
+  <source>Scale Min</source>
+<target>స్కేల్ కనిష్ఠం</target></trans-unit>
+<trans-unit id="s4ce9f3d60360110b">
+  <source>Scale Max</source>
+<target>స్కేల్ గరిష్ఠం</target></trans-unit>
+<trans-unit id="s27873db35f5921f4">
+  <source>Step Size</source>
+<target>దశ పరిమాణం</target></trans-unit>
+<trans-unit id="s731f505729e9f61f">
+  <source>Line Width</source>
+<target>రేఖ వెడల్పు</target></trans-unit>
+<trans-unit id="s8708316af61ff162">
+  <source>Point Size</source>
+<target>బిందువు పరిమాణం</target></trans-unit>
+<trans-unit id="s7bc47283a5d67e5e">
+  <source>Smooth The Line</source>
+<target>రేఖను సున్నితంగా చేయండి</target></trans-unit>
+<trans-unit id="sd03b05776bec9ad1">
+  <source>Point Radius</source>
+<target>బిందువు వ్యాసార్థం</target></trans-unit>
+<trans-unit id="sd1f81984eeb7c0e8">
+  <source>Fill</source>
+<target>నింపండి</target></trans-unit>
+<trans-unit id="s9e4ee58d49e9464e">
+  <source>Snap to Grid</source>
+<target>గ్రిడ్‌కు అమర్చండి</target></trans-unit>
+<trans-unit id="s217fd408e63c93f4">
+  <source>Show Grid</source>
+<target>గ్రిడ్‌ను చూపండి</target></trans-unit>
+<trans-unit id="sa602e3fd3f2d98fd">
+  <source>Animation</source>
+<target>యానిమేషన్</target></trans-unit>
+<trans-unit id="s1d2850ee299300a5">
+  <source>Polynomial Degree</source>
+<target>బహుపది డిగ్రీ</target></trans-unit>
+<trans-unit id="s6ade9bde0b8065fa">
+  <source>LOESS Bandwidth (%)</source>
+<target>LOESS బ్యాండ్‌విడ్త్ (%)</target></trans-unit>
+<trans-unit id="s34250d39671d5c5d">
+  <source>Show Mean</source>
+<target>సగటును చూపండి</target></trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>ఈ ఎంపికను లాక్ చేయండి</target></trans-unit>
+<trans-unit id="s88798c01f6bd95c0">
+  <source>My scatter plot</source>
+<target>నా స్కాటర్ ప్లాట్</target></trans-unit>
+<trans-unit id="s81d60333bb76471d">
+  <source>Chart <x id="0" equiv-text="${1}" /></source>
+<target>చార్ట్ <x id="0" equiv-text="${1}" /></target></trans-unit>
+<trans-unit id="s31bccdb022de127c">
+  <source>Chart settings</source>
+<target>చార్ట్ సెట్టింగ్‌లు</target></trans-unit>
+<trans-unit id="scf2226e954d643b0">
+  <source>Not enough data points for this regression model:</source>
+<target>ఈ రిగ్రెషన్ మోడల్‌కు తగినన్ని డేటా బిందువులు లేవు:</target></trans-unit>
+<trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+<target>మూసివేయి</target></trans-unit>
+<trans-unit id="sac8256732f2ee1e5">
+  <source>Data</source>
+<target>డేటా</target></trans-unit>
+<trans-unit id="se1b3519fe89f4ffc">
+  <source>Scatter plot</source>
+<target>స్కాటర్ ప్లాట్</target></trans-unit>
+<trans-unit id="s66f26fdcbe2101eb">
+  <source>Chart</source>
+<target>చార్ట్</target></trans-unit>
+<trans-unit id="s194bf0f1cc99bf38">
+  <source>Add visualization</source>
+<target>విజువలైజేషన్‌ను జోడించండి</target></trans-unit>
+<trans-unit id="s36d76c85f8d9a3e6">
+  <source>Clear Data</source>
+<target>డేటాను క్లియర్ చేయండి</target></trans-unit>
+<trans-unit id="s1c5d85ee2e023759">
+  <source>Chart type</source>
+<target>చార్ట్ రకం</target></trans-unit>
+<trans-unit id="s0bb151c9319a6813">
+  <source>X-Axis</source>
+<target>X-అక్షం</target></trans-unit>
+<trans-unit id="s602805b1eb3106c6">
+  <source>Y-Axis</source>
+<target>Y-అక్షం</target></trans-unit>
+<trans-unit id="s83a0b17c8929365a">
+  <source>Transfer your plot changes into the data table</source>
+<target>ప్లాట్ మార్పులను డేటా పట్టికలోకి బదిలీ చేయండి</target></trans-unit>
+<trans-unit id="sc41b02fb09a50bd4">
+  <source>No unsaved plot changes — move or add points first</source>
+<target>ప్లాట్‌లో సేవ్ చేయని మార్పులేవీ లేవు — ముందుగా బిందువులను కదపండి లేదా జోడించండి</target></trans-unit>
+<trans-unit id="s01670713d13f14d5">
+  <source>Apply Changes to Data</source>
+<target>డేటాకు మార్పులను వర్తింపజేయండి</target></trans-unit>
+<trans-unit id="s2e036aec33b837e9">
+  <source>Selected Series</source>
+<target>ఎంచుకున్న శ్రేణి</target></trans-unit>
+<trans-unit id="se68f81f234173daf">
+  <source>Segments</source>
+<target>విభాగాలు</target></trans-unit>
+<trans-unit id="sb9f1339b3a61604a">
+  <source>Levels</source>
+<target>స్థాయిలు</target></trans-unit>
+<trans-unit id="sc3f59ad27535ed54">
+  <source>Spokes</source>
+<target>వ్యాసార్థ రేఖలు</target></trans-unit>
+<trans-unit id="s36698f2375b94e75">
+  <source>All spokes</source>
+<target>అన్ని వ్యాసార్థ రేఖలు</target></trans-unit>
+<trans-unit id="s383e1658e0bde119">
+  <source>All series</source>
+<target>అన్ని శ్రేణులు</target></trans-unit>
+<trans-unit id="sd2a36db7cf71f4dd">
+  <source>Regression Model</source>
+<target>రిగ్రెషన్ మోడల్</target></trans-unit>
+<trans-unit id="s454003c366dd48f0">
+  <source>Show Correlation</source>
+<target>సహసంబంధాన్ని చూపండి</target></trans-unit>
+<trans-unit id="sa3fb0dd3b48ec8d5">
+  <source>Show Outliers</source>
+<target>అసాధారణ విలువలను చూపండి</target></trans-unit>
+<trans-unit id="s8e20bfbd5c1d00b8">
+  <source>Please select two different values for X and Y axis.</source>
+<target>దయచేసి X, Y అక్షాల కోసం వేర్వేరు విలువలను ఎంచుకోండి.</target></trans-unit>
+<trans-unit id="sa172625dedfc3e78">
+  <source>Please add data first to display the graph.</source>
+<target>గ్రాఫ్‌ను చూపించడానికి ముందుగా డేటాను జోడించండి.</target></trans-unit>
+<trans-unit id="s949645bf1d8d57d9">
+  <source>Pie Chart</source>
+<target>పై చార్ట్</target></trans-unit>
+<trans-unit id="s098c7cd9fea6205b">
+  <source>Doughnut Chart</source>
+<target>వలయ చార్ట్</target></trans-unit>
+<trans-unit id="s8b2d6a8bfb92cf22">
+  <source>Bar Chart</source>
+<target>బార్ చార్ట్</target></trans-unit>
+<trans-unit id="se7f20b3f2e2266eb">
+  <source>Line Chart</source>
+<target>రేఖా చార్ట్</target></trans-unit>
+<trans-unit id="s36f26f6aef018e04">
+  <source>Polar Area Chart</source>
+<target>పోలార్ ఏరియా చార్ట్</target></trans-unit>
+<trans-unit id="s74eac1ec007cd4f7">
+  <source>Radar Chart</source>
+<target>రాడార్ చార్ట్</target></trans-unit>
+<trans-unit id="sd9617fc541e589df">
+  <source>No regression</source>
+<target>రిగ్రెషన్ లేదు</target></trans-unit>
+<trans-unit id="s657a38e4ed34ebb5">
+  <source>Linear Regression</source>
+<target>రేఖీయ రిగ్రెషన్</target></trans-unit>
+<trans-unit id="sa7d4d92678c16d8c">
+  <source>Polynomial Regression</source>
+<target>బహుపది రిగ్రెషన్</target></trans-unit>
+<trans-unit id="s6a53d84f80e988bd">
+  <source>Local Regression</source>
+<target>స్థానిక రిగ్రెషన్</target></trans-unit>
+<trans-unit id="seed653f9fe02893d">
+  <source>Exponential Regression</source>
+<target>ఘాతాంక రిగ్రెషన్</target></trans-unit>
+<trans-unit id="sb5dca811884aa909">
+  <source>Logarithmic Regression</source>
+<target>లాగరిథమిక్ రిగ్రెషన్</target></trans-unit>
+</body>
+</file>
+</xliff>

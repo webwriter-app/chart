@@ -48,10 +48,12 @@ export default css`
 
     overflow: auto;
     padding-top: 0px !important;
-    width: 100%;
-
-    box-sizing: content-box;
-    padding-left: 10px;
+    width: min(30rem, calc(100% - 2rem));
+    max-height: 85%;
+    box-sizing: border-box;
+  }
+  #settings form {
+    text-align: end;
   }
   #settings-wrapper {
     display: flex;

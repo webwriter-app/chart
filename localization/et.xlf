@@ -1,4 +1,5 @@
-<xliff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" version="1.2">
   <file original="lit-localize-inputs" datatype="plaintext" source-language="en" target-language="et">
     <body>
       <trans-unit id="s7853336e2d49e552">
@@ -261,6 +262,78 @@
         <source>No unsaved plot changes — move or add points first</source>
         <target>Salvestamata graafiku muudatusi pole — liiguta või lisa esmalt punkte</target>
       </trans-unit>
-    </body>
+    <trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+<target>Sulge</target></trans-unit>
+<trans-unit id="s31bccdb022de127c">
+  <source>Chart settings</source>
+<target>Diagrammi seaded</target></trans-unit>
+<trans-unit id="se88220063fb37241">
+  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
+<target>Joon <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+<trans-unit id="sbeab0d8a4ec2b217">
+  <source>Preview line</source>
+<target>Eelvaatejoon</target></trans-unit>
+<trans-unit id="s5be250e35cab2f5c">
+  <source>Pick custom color</source>
+<target>Vali kohandatud värv</target></trans-unit>
+<trans-unit id="s76a88aa1ae8b851f">
+  <source>My Chart</source>
+<target>Minu diagramm</target></trans-unit>
+<trans-unit id="s380ecc0df3cd6a9f">
+  <source>Could not parse the file. Please ensure it is a valid Excel or CSV file.</source>
+<target>Faili ei saanud lugeda. Veendu, et see on kehtiv Exceli- või CSV-fail.</target></trans-unit>
+<trans-unit id="sa14c12118a766127">
+  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
+<target>Kategooria <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+<trans-unit id="sf5dc01a3ccf20c4a">
+  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
+<target>Andmesari <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>Lukusta see suvand</target></trans-unit>
+<trans-unit id="s88798c01f6bd95c0">
+  <source>My scatter plot</source>
+<target>Minu hajuvusdiagramm</target></trans-unit>
+<trans-unit id="s81d60333bb76471d">
+  <source>Chart <x id="0" equiv-text="${1}" /></source>
+<target>Diagramm <x id="0" equiv-text="${1}" /></target></trans-unit>
+<trans-unit id="s949645bf1d8d57d9">
+  <source>Pie Chart</source>
+<target>Sektordiagramm</target></trans-unit>
+<trans-unit id="s098c7cd9fea6205b">
+  <source>Doughnut Chart</source>
+<target>Rõngasdiagramm</target></trans-unit>
+<trans-unit id="s8b2d6a8bfb92cf22">
+  <source>Bar Chart</source>
+<target>Lintdiagramm</target></trans-unit>
+<trans-unit id="se7f20b3f2e2266eb">
+  <source>Line Chart</source>
+<target>Joondiagramm</target></trans-unit>
+<trans-unit id="s36f26f6aef018e04">
+  <source>Polar Area Chart</source>
+<target>Polaarne pindala diagramm</target></trans-unit>
+<trans-unit id="s74eac1ec007cd4f7">
+  <source>Radar Chart</source>
+<target>Radardiagramm</target></trans-unit>
+<trans-unit id="sd9617fc541e589df">
+  <source>No regression</source>
+<target>Regressioonita</target></trans-unit>
+<trans-unit id="s657a38e4ed34ebb5">
+  <source>Linear Regression</source>
+<target>Lineaarne regressioon</target></trans-unit>
+<trans-unit id="sa7d4d92678c16d8c">
+  <source>Polynomial Regression</source>
+<target>Polünomiaalne regressioon</target></trans-unit>
+<trans-unit id="s6a53d84f80e988bd">
+  <source>Local Regression</source>
+<target>Lokaalne regressioon</target></trans-unit>
+<trans-unit id="seed653f9fe02893d">
+  <source>Exponential Regression</source>
+<target>Eksponentsiaalne regressioon</target></trans-unit>
+<trans-unit id="sb5dca811884aa909">
+  <source>Logarithmic Regression</source>
+<target>Logaritmiline regressioon</target></trans-unit>
+</body>
   </file>
 </xliff>

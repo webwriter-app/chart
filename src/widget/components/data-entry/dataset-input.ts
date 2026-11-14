@@ -1,5 +1,5 @@
 import { html } from "lit";
-import { msg } from "@lit/localize";
+import { str } from "@lit/localize";
 import { customElement, state } from "lit/decorators.js";
 import {
   EditableSet,
@@ -107,7 +107,7 @@ private _renderColorSwatch(color: string, rowIdx: number, canEdit: boolean) {
                 }}
               ></button>
             `)}
-            <div class="color-popover-custom" title="Pick custom color">
+            <div class="color-popover-custom" title=${this.msg("Pick custom color")}>
               +
               <input
                 type="color"
@@ -151,11 +151,11 @@ initializeManualEntry() {
       ...this.sharedState,
       chart: {
         ...this.sharedState.chart,
-        title: "My Chart",
+        title: this.msg("My Chart"),
         datasets: {
           labels: [],
           sets: [
-            { name: "Series 1", color: getDistributedColor(0), colors: [], data: [] },
+            { name: this.msg(str`Series ${1}`), color: getDistributedColor(0), colors: [], data: [] },
           ],
         },
       },
@@ -168,7 +168,7 @@ addDataset() {
     const colCount = existing.length > 0 ? existing[0].data.length : this.sharedState.chart.datasets.labels.length;
     const rowColor = getDistributedColor(existing.length);
     const newSets = [...existing, {
-      name: `Series ${existing.length + 1}`,
+      name: this.msg(str`Series ${existing.length + 1}`),
       color: rowColor,
       colors: Array.from({ length: colCount }, () => rowColor),
       data: Array.from({ length: colCount }, () => null),
@@ -184,7 +184,7 @@ addColumn() {
     }));
     const updatedLabels = [
       ...this.sharedState.chart.datasets.labels,
-      `Category ${this.sharedState.chart.datasets.labels.length + 1}`,
+      this.msg(str`Category ${this.sharedState.chart.datasets.labels.length + 1}`),
     ];
     this.applyDatasetChanges(updatedSets, updatedLabels);
   }
@@ -209,7 +209,7 @@ private _processFile(file: File) {
     reader.onload = (e) => {
       try {
         const fileBuffer = e.target?.result as ArrayBuffer;
-        const { labels, sets, parsedTitle } = parseSpreadsheet(fileBuffer);
+        const { labels, sets, parsedTitle } = parseSpreadsheet(fileBuffer, this.msg);
         this.applyDatasetChanges(
           sets,
           labels,
@@ -217,7 +217,7 @@ private _processFile(file: File) {
         );
       } catch (error) {
         console.error("Failed to parse file:", error);
-        alert("Could not parse the file. Please ensure it is a valid Excel or CSV file.");
+        alert(this.msg("Could not parse the file. Please ensure it is a valid Excel or CSV file."));
       }
     };
     reader.readAsArrayBuffer(file);
@@ -255,23 +255,23 @@ render() {
               @dragleave=${this._handleDragLeave}
               @drop=${this._handleDrop}
             >
-              <h3>${msg("Brought your own dataset?")}</h3>
-              <p>${msg("Upload or drag and drop an Excel (.xlsx) or CSV file here.")}</p>
+              <h3>${this.msg("Brought your own dataset?")}</h3>
+              <p>${this.msg("Upload or drag and drop an Excel (.xlsx) or CSV file here.")}</p>
               <input type="file" id="data-uploader"
                 accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
                 class="hidden-file-input"
                 @change=${this.handleFileUpload} />
               <sl-button variant="primary" @click=${() => this.shadowRoot?.getElementById('data-uploader')?.click()}>
                 <sl-icon src=${IconTableImport} class="table-btn" ></sl-icon>
-                ${msg("Choose File")}
+                ${this.msg("Choose File")}
               </sl-button>
             </div>
-            <div class="empty-divider">${msg("OR")}</div>
+            <div class="empty-divider">${this.msg("OR")}</div>
             <sl-button variant="default" @click=${() => this.initializeManualEntry()}>
               <sl-icon src=${IconTablePlus} class="table-btn" ></sl-icon>
-              ${msg("Create Empty Table")}
+              ${this.msg("Create Empty Table")}
             </sl-button>
-          ` : html`<p class="empty-title">${msg("No data available.")}</p>`}
+          ` : html`<p class="empty-title">${this.msg("No data available.")}</p>`}
         </div>
       `;
     }
@@ -289,7 +289,7 @@ render() {
                     class="cell-input title-input"
                     type="text"
                     .value=${this.sharedState.chart.title}
-                    placeholder=${msg("Chart Title")}
+                    placeholder=${this.msg("Chart Title")}
                     ?disabled=${!canEdit}
                     @focus=${(e: FocusEvent) => {
                       const input = e.target as HTMLInputElement;
@@ -309,7 +309,7 @@ render() {
                         class="cell-input"
                         type="text"
                         .value=${label}
-                        placeholder="${msg("Category")}${i + 1}"
+                        placeholder=${this.msg(str`Category ${i + 1}`)}
                         ?disabled=${!canEdit}                      @focus=${(e: FocusEvent) => {
                         const input = e.target as HTMLInputElement;
                         setTimeout(() => input.select(), 0);
@@ -345,7 +345,7 @@ render() {
                         class="cell-input"
                         type="text"
                         .value=${dataset.name}
-                        placeholder="Series ${i + 1}"
+                        placeholder=${this.msg(str`Series ${i + 1}`)}
                         ?disabled=${!canEdit}
                         @focus=${(e: FocusEvent) => {
                           const input = e.target as HTMLInputElement;

@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<file target-language="tl" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="se88220063fb37241">
+  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
+<target>Linya <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+<trans-unit id="sbeab0d8a4ec2b217">
+  <source>Preview line</source>
+<target>Linya ng silip</target></trans-unit>
+<trans-unit id="s7853336e2d49e552">
+  <source>Connect data points</source>
+<target>Ikonekta ang mga punto ng data</target></trans-unit>
+<trans-unit id="sce2e89993cd7a286">
+  <source>Line name</source>
+<target>Pangalan ng linya</target></trans-unit>
+<trans-unit id="s5b73a90cdea7a562">
+  <source>Edit coordinates</source>
+<target>I-edit ang mga coordinate</target></trans-unit>
+<trans-unit id="sb8f855b49234b81b">
+  <source>Apply</source>
+<target>Ilapat</target></trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
+<target>Kanselahin</target></trans-unit>
+<trans-unit id="sc23e4eb04a4e5d22">
+  <source>Add data first</source>
+<target>Magdagdag muna ng data</target></trans-unit>
+<trans-unit id="se1002705746ad149">
+  <source>Click on chart to place a new point</source>
+<target>I-click ang tsart upang maglagay ng bagong punto</target></trans-unit>
+<trans-unit id="s896712776969fe57">
+  <source>Add a data point</source>
+<target>Magdagdag ng punto ng data</target></trans-unit>
+<trans-unit id="s0c19987191b8db0b">
+  <source>Double-click exactly one point to select it, then edit its position</source>
+<target>I-double-click ang isang punto lamang upang piliin ito, saka i-edit ang posisyon nito</target></trans-unit>
+<trans-unit id="s7a4c288d491e6856">
+  <source>Edit point position</source>
+<target>I-edit ang posisyon ng punto</target></trans-unit>
+<trans-unit id="s2b8b8f3bb6ee5a04">
+  <source>Click two points to draw a line. Drag endpoints to adjust. Press Delete to remove selected.</source>
+<target>I-click ang dalawang punto upang gumuhit ng linya. I-drag ang mga dulo para baguhin ito. Pindutin ang Delete upang alisin ang napili.</target></trans-unit>
+<trans-unit id="s622204928541cb72">
+  <source>Draw a line</source>
+<target>Gumuhit ng linya</target></trans-unit>
+<trans-unit id="sdc673e73b5c13aea">
+  <source>Delete</source>
+<target>Burahin</target></trans-unit>
+<trans-unit id="s573581bd694a2dc1">
+  <source>Double-click points or click a line to select them first</source>
+<target>I-double-click ang mga punto o i-click muna ang linya upang piliin ang mga ito</target></trans-unit>
+<trans-unit id="s32b873a2dfa6c573">
+  <source>selected points</source>
+<target>mga napiling punto</target></trans-unit>
+<trans-unit id="s8a1650bddf8ecd32">
+  <source>selected point</source>
+<target>napiling punto</target></trans-unit>
+<trans-unit id="s5be250e35cab2f5c">
+  <source>Pick custom color</source>
+<target>Pumili ng sariling kulay</target></trans-unit>
+<trans-unit id="s76a88aa1ae8b851f">
+  <source>My Chart</source>
+<target>Chart ko</target></trans-unit>
+<trans-unit id="s380ecc0df3cd6a9f">
+  <source>Could not parse the file. Please ensure it is a valid Excel or CSV file.</source>
+<target>Hindi mabasa ang file. Tiyaking wastong Excel o CSV file ito.</target></trans-unit>
+<trans-unit id="se8aa1cc7653c6ba2">
+  <source>Brought your own dataset?</source>
+<target>May sarili kang dataset?</target></trans-unit>
+<trans-unit id="s157ba0d6fcb49b36">
+  <source>Upload or drag and drop an Excel (.xlsx) or CSV file here.</source>
+<target>Mag-upload o mag-drag-and-drop ng Excel (.xlsx) o CSV file dito.</target></trans-unit>
+<trans-unit id="sb59e3f80c11ac8d6">
+  <source>Choose File</source>
+<target>Pumili ng File</target></trans-unit>
+<trans-unit id="s091d3407b5b2f824">
+  <source>OR</source>
+<target>O</target></trans-unit>
+<trans-unit id="s252bcd59b75fd110">
+  <source>Create Empty Table</source>
+<target>Gumawa ng Blangkong Talahanayan</target></trans-unit>
+<trans-unit id="s74d2679756765e55">
+  <source>No data available.</source>
+<target>Walang available na data.</target></trans-unit>
+<trans-unit id="sd6243fa23e8f2f3d">
+  <source>Chart Title</source>
+<target>Pamagat ng Tsart</target></trans-unit>
+<trans-unit id="sa14c12118a766127">
+  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
+<target>Kategorya <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+<trans-unit id="sf5dc01a3ccf20c4a">
+  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
+<target>Serye <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
+<trans-unit id="s0b786a0e85eb6783">
+  <source>Border Radius</source>
+<target>Radius ng Border</target></trans-unit>
+<trans-unit id="s139c91ebf9b8a6cf">
+  <source>Border Width</source>
+<target>Lapad ng Border</target></trans-unit>
+<trans-unit id="s4ac65d66ac4579e9">
+  <source>Filled</source>
+<target>May laman</target></trans-unit>
+<trans-unit id="sd4f55ee88b9e1f9b">
+  <source>Dynamic Scaling</source>
+<target>Dynamic na Scale</target></trans-unit>
+<trans-unit id="s4ccf09d603496eb5">
+  <source>Scale Min</source>
+<target>Pinakamababang Scale</target></trans-unit>
+<trans-unit id="s4ce9f3d60360110b">
+  <source>Scale Max</source>
+<target>Pinakamataas na Scale</target></trans-unit>
+<trans-unit id="s27873db35f5921f4">
+  <source>Step Size</source>
+<target>Laki ng Hakbang</target></trans-unit>
+<trans-unit id="s731f505729e9f61f">
+  <source>Line Width</source>
+<target>Lapad ng Linya</target></trans-unit>
+<trans-unit id="s8708316af61ff162">
+  <source>Point Size</source>
+<target>Laki ng Punto</target></trans-unit>
+<trans-unit id="s7bc47283a5d67e5e">
+  <source>Smooth The Line</source>
+<target>Pakininis ang Linya</target></trans-unit>
+<trans-unit id="sd03b05776bec9ad1">
+  <source>Point Radius</source>
+<target>Radius ng Punto</target></trans-unit>
+<trans-unit id="sd1f81984eeb7c0e8">
+  <source>Fill</source>
+<target>Punan</target></trans-unit>
+<trans-unit id="s9e4ee58d49e9464e">
+  <source>Snap to Grid</source>
+<target>I-snap sa Grid</target></trans-unit>
+<trans-unit id="s217fd408e63c93f4">
+  <source>Show Grid</source>
+<target>Ipakita ang Grid</target></trans-unit>
+<trans-unit id="sa602e3fd3f2d98fd">
+  <source>Animation</source>
+<target>Animation</target></trans-unit>
+<trans-unit id="s1d2850ee299300a5">
+  <source>Polynomial Degree</source>
+<target>Degree ng Polynomial</target></trans-unit>
+<trans-unit id="s6ade9bde0b8065fa">
+  <source>LOESS Bandwidth (%)</source>
+<target>Bandwidth ng LOESS (%)</target></trans-unit>
+<trans-unit id="s34250d39671d5c5d">
+  <source>Show Mean</source>
+<target>Ipakita ang Mean</target></trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>I-lock ang opsiyong ito</target></trans-unit>
+<trans-unit id="s88798c01f6bd95c0">
+  <source>My scatter plot</source>
+<target>Scatter plot ko</target></trans-unit>
+<trans-unit id="s81d60333bb76471d">
+  <source>Chart <x id="0" equiv-text="${1}" /></source>
+<target>Chart <x id="0" equiv-text="${1}" /></target></trans-unit>
+<trans-unit id="s31bccdb022de127c">
+  <source>Chart settings</source>
+<target>Mga Setting ng Tsart</target></trans-unit>
+<trans-unit id="scf2226e954d643b0">
+  <source>Not enough data points for this regression model:</source>
+<target>Kulang ang mga punto ng data para sa regression model na ito:</target></trans-unit>
+<trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+<target>Isara</target></trans-unit>
+<trans-unit id="sac8256732f2ee1e5">
+  <source>Data</source>
+<target>Data</target></trans-unit>
+<trans-unit id="se1b3519fe89f4ffc">
+  <source>Scatter plot</source>
+<target>Scatter Plot</target></trans-unit>
+<trans-unit id="s66f26fdcbe2101eb">
+  <source>Chart</source>
+<target>Tsart</target></trans-unit>
+<trans-unit id="s194bf0f1cc99bf38">
+  <source>Add visualization</source>
+<target>Magdagdag ng visualization</target></trans-unit>
+<trans-unit id="s36d76c85f8d9a3e6">
+  <source>Clear Data</source>
+<target>I-clear ang Data</target></trans-unit>
+<trans-unit id="s1c5d85ee2e023759">
+  <source>Chart type</source>
+<target>Uri ng Tsart</target></trans-unit>
+<trans-unit id="s0bb151c9319a6813">
+  <source>X-Axis</source>
+<target>X-Axis</target></trans-unit>
+<trans-unit id="s602805b1eb3106c6">
+  <source>Y-Axis</source>
+<target>Y-Axis</target></trans-unit>
+<trans-unit id="s83a0b17c8929365a">
+  <source>Transfer your plot changes into the data table</source>
+<target>Ilipat ang mga pagbabago sa plot papunta sa talahanayan ng data</target></trans-unit>
+<trans-unit id="sc41b02fb09a50bd4">
+  <source>No unsaved plot changes — move or add points first</source>
+<target>Walang hindi na-save na pagbabago sa plot — ilipat o magdagdag muna ng mga punto</target></trans-unit>
+<trans-unit id="s01670713d13f14d5">
+  <source>Apply Changes to Data</source>
+<target>Ilapat ang mga Pagbabago sa Data</target></trans-unit>
+<trans-unit id="s2e036aec33b837e9">
+  <source>Selected Series</source>
+<target>Napiling Series</target></trans-unit>
+<trans-unit id="se68f81f234173daf">
+  <source>Segments</source>
+<target>Mga Segment</target></trans-unit>
+<trans-unit id="sb9f1339b3a61604a">
+  <source>Levels</source>
+<target>Mga Level</target></trans-unit>
+<trans-unit id="sc3f59ad27535ed54">
+  <source>Spokes</source>
+<target>Mga Spoke</target></trans-unit>
+<trans-unit id="s36698f2375b94e75">
+  <source>All spokes</source>
+<target>Lahat ng Spoke</target></trans-unit>
+<trans-unit id="s383e1658e0bde119">
+  <source>All series</source>
+<target>Lahat ng Series</target></trans-unit>
+<trans-unit id="sd2a36db7cf71f4dd">
+  <source>Regression Model</source>
+<target>Regression Model</target></trans-unit>
+<trans-unit id="s454003c366dd48f0">
+  <source>Show Correlation</source>
+<target>Ipakita ang Correlation</target></trans-unit>
+<trans-unit id="sa3fb0dd3b48ec8d5">
+  <source>Show Outliers</source>
+<target>Ipakita ang Outliers</target></trans-unit>
+<trans-unit id="s8e20bfbd5c1d00b8">
+  <source>Please select two different values for X and Y axis.</source>
+<target>Pumili ng dalawang magkaibang value para sa X at Y axis.</target></trans-unit>
+<trans-unit id="sa172625dedfc3e78">
+  <source>Please add data first to display the graph.</source>
+<target>Magdagdag muna ng data upang maipakita ang graph.</target></trans-unit>
+<trans-unit id="s949645bf1d8d57d9">
+  <source>Pie Chart</source>
+<target>Pie chart</target></trans-unit>
+<trans-unit id="s098c7cd9fea6205b">
+  <source>Doughnut Chart</source>
+<target>Donut chart</target></trans-unit>
+<trans-unit id="s8b2d6a8bfb92cf22">
+  <source>Bar Chart</source>
+<target>Bar Chart</target></trans-unit>
+<trans-unit id="se7f20b3f2e2266eb">
+  <source>Line Chart</source>
+<target>Line Chart</target></trans-unit>
+<trans-unit id="s36f26f6aef018e04">
+  <source>Polar Area Chart</source>
+<target>Tsart ng Polar Area</target></trans-unit>
+<trans-unit id="s74eac1ec007cd4f7">
+  <source>Radar Chart</source>
+<target>Tsart ng Radar</target></trans-unit>
+<trans-unit id="sd9617fc541e589df">
+  <source>No regression</source>
+<target>Walang regresyon</target></trans-unit>
+<trans-unit id="s657a38e4ed34ebb5">
+  <source>Linear Regression</source>
+<target>Linyar na regresyon</target></trans-unit>
+<trans-unit id="sa7d4d92678c16d8c">
+  <source>Polynomial Regression</source>
+<target>Polinomial na regresyon</target></trans-unit>
+<trans-unit id="s6a53d84f80e988bd">
+  <source>Local Regression</source>
+<target>Lokal na regresyon</target></trans-unit>
+<trans-unit id="seed653f9fe02893d">
+  <source>Exponential Regression</source>
+<target>Eksponensiyal na regresyon</target></trans-unit>
+<trans-unit id="sb5dca811884aa909">
+  <source>Logarithmic Regression</source>
+<target>Logaritmikong regresyon</target></trans-unit>
+</body>
+</file>
+</xliff>

@@ -1,16 +1,12 @@
+import { connectMessages } from "../../localization/localizer";
 import { LitElementWw } from "@webwriter/lit";
 import { property } from "lit/decorators.js";
-import { updateWhenLocaleChanges } from "@lit/localize";
 import { ChartState } from "./state/models";
 
 export default class StateComponent extends LitElementWw {
+  protected readonly msg = connectMessages(this);
   @property({ type: Object })
   accessor sharedState: ChartState;
-
-  constructor() {
-    super();
-    updateWhenLocaleChanges(this);
-  }
 
   dispatchStateChange() {
     this.dispatchEvent(

@@ -1,4 +1,6 @@
 import * as XLSX from "xlsx";
+import { str, type MsgFn } from "@lit/localize";
+import { sourceMsg } from "../../../../localization/localizer";
 
 export type EditableCell = number | string | null | undefined;
 
@@ -86,7 +88,7 @@ export function normalizeSetColors(sets: EditableSet[]): EditableSet[] {
   });
 }
 
-export function parseSpreadsheet(fileBuffer: ArrayBuffer): {
+export function parseSpreadsheet(fileBuffer: ArrayBuffer, msg: MsgFn = sourceMsg): {
   labels: string[];
   sets: EditableSet[];
   parsedTitle: string | null;
@@ -120,7 +122,7 @@ export function parseSpreadsheet(fileBuffer: ArrayBuffer): {
 
   maxDataColumns = Math.max(maxDataColumns, labels.length);
   while (labels.length < maxDataColumns) {
-    labels.push(`Category ${labels.length + 1}`);
+    labels.push(msg(str`Category ${labels.length + 1}`));
   }
 
   const sets: EditableSet[] = [];
@@ -138,7 +140,7 @@ export function parseSpreadsheet(fileBuffer: ArrayBuffer): {
       name:
         row[0] !== undefined && row[0] !== ""
           ? String(row[0])
-          : `Series ${rowIndex}`,
+          : msg(str`Series ${rowIndex}`),
       color,
       colors: Array.from({ length: maxDataColumns }, () => color),
       data: rowData,

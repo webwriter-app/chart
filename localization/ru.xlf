@@ -1,4 +1,5 @@
-<xliff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" version="1.2">
   <file original="lit-localize-inputs" datatype="plaintext" source-language="en" target-language="ru">
     <body>
       <trans-unit id="s7853336e2d49e552">
@@ -261,6 +262,78 @@
         <source>No unsaved plot changes — move or add points first</source>
         <target>Нет несохраненных изменений графика — сначала переместите или добавьте точки</target>
       </trans-unit>
-    </body>
+    <trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+<target>Закрыть</target></trans-unit>
+<trans-unit id="s31bccdb022de127c">
+  <source>Chart settings</source>
+<target>Настройки диаграммы</target></trans-unit>
+<trans-unit id="se88220063fb37241">
+  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
+<target>Линия <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+<trans-unit id="sbeab0d8a4ec2b217">
+  <source>Preview line</source>
+<target>Линия предпросмотра</target></trans-unit>
+<trans-unit id="s5be250e35cab2f5c">
+  <source>Pick custom color</source>
+<target>Выберите свой цвет</target></trans-unit>
+<trans-unit id="s76a88aa1ae8b851f">
+  <source>My Chart</source>
+<target>Моя диаграмма</target></trans-unit>
+<trans-unit id="s380ecc0df3cd6a9f">
+  <source>Could not parse the file. Please ensure it is a valid Excel or CSV file.</source>
+<target>Не удалось прочитать файл. Убедитесь, что это допустимый файл Excel или CSV.</target></trans-unit>
+<trans-unit id="sa14c12118a766127">
+  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
+<target>Категория <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+<trans-unit id="sf5dc01a3ccf20c4a">
+  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
+<target>Ряд <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>Заблокировать этот параметр</target></trans-unit>
+<trans-unit id="s88798c01f6bd95c0">
+  <source>My scatter plot</source>
+<target>Моя диаграмма рассеяния</target></trans-unit>
+<trans-unit id="s81d60333bb76471d">
+  <source>Chart <x id="0" equiv-text="${1}" /></source>
+<target>Диаграмма <x id="0" equiv-text="${1}" /></target></trans-unit>
+<trans-unit id="s949645bf1d8d57d9">
+  <source>Pie Chart</source>
+<target>Круговая диаграмма</target></trans-unit>
+<trans-unit id="s098c7cd9fea6205b">
+  <source>Doughnut Chart</source>
+<target>Кольцевая диаграмма</target></trans-unit>
+<trans-unit id="s8b2d6a8bfb92cf22">
+  <source>Bar Chart</source>
+<target>Столбчатая диаграмма</target></trans-unit>
+<trans-unit id="se7f20b3f2e2266eb">
+  <source>Line Chart</source>
+<target>Линейная диаграмма</target></trans-unit>
+<trans-unit id="s36f26f6aef018e04">
+  <source>Polar Area Chart</source>
+<target>Полярная диаграмма</target></trans-unit>
+<trans-unit id="s74eac1ec007cd4f7">
+  <source>Radar Chart</source>
+<target>Радарная диаграмма</target></trans-unit>
+<trans-unit id="sd9617fc541e589df">
+  <source>No regression</source>
+<target>Без регрессии</target></trans-unit>
+<trans-unit id="s657a38e4ed34ebb5">
+  <source>Linear Regression</source>
+<target>Линейная регрессия</target></trans-unit>
+<trans-unit id="sa7d4d92678c16d8c">
+  <source>Polynomial Regression</source>
+<target>Полиномиальная регрессия</target></trans-unit>
+<trans-unit id="s6a53d84f80e988bd">
+  <source>Local Regression</source>
+<target>Локальная регрессия</target></trans-unit>
+<trans-unit id="seed653f9fe02893d">
+  <source>Exponential Regression</source>
+<target>Экспоненциальная регрессия</target></trans-unit>
+<trans-unit id="sb5dca811884aa909">
+  <source>Logarithmic Regression</source>
+<target>Логарифмическая регрессия</target></trans-unit>
+</body>
   </file>
 </xliff>

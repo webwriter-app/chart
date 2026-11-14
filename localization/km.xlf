@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<file target-language="km" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="se88220063fb37241">
+  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
+<target>បន្ទាត់ <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+<trans-unit id="sbeab0d8a4ec2b217">
+  <source>Preview line</source>
+<target>មើលបន្ទាត់ជាមុន</target></trans-unit>
+<trans-unit id="s7853336e2d49e552">
+  <source>Connect data points</source>
+<target>ភ្ជាប់ចំណុចទិន្នន័យ</target></trans-unit>
+<trans-unit id="sce2e89993cd7a286">
+  <source>Line name</source>
+<target>ឈ្មោះបន្ទាត់</target></trans-unit>
+<trans-unit id="s5b73a90cdea7a562">
+  <source>Edit coordinates</source>
+<target>កែសម្រួលកូអរដោនេ</target></trans-unit>
+<trans-unit id="sb8f855b49234b81b">
+  <source>Apply</source>
+<target>អនុវត្ត</target></trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
+<target>បោះបង់</target></trans-unit>
+<trans-unit id="sc23e4eb04a4e5d22">
+  <source>Add data first</source>
+<target>បន្ថែមទិន្នន័យជាមុន</target></trans-unit>
+<trans-unit id="se1002705746ad149">
+  <source>Click on chart to place a new point</source>
+<target>ចុចលើគំនូសតាងដើម្បីដាក់ចំណុចថ្មី</target></trans-unit>
+<trans-unit id="s896712776969fe57">
+  <source>Add a data point</source>
+<target>បន្ថែមចំណុចទិន្នន័យ</target></trans-unit>
+<trans-unit id="s0c19987191b8db0b">
+  <source>Double-click exactly one point to select it, then edit its position</source>
+<target>ចុចពីរដងលើចំណុចមួយដើម្បីជ្រើសរើស បន្ទាប់មកកែសម្រួលទីតាំងរបស់វា</target></trans-unit>
+<trans-unit id="s7a4c288d491e6856">
+  <source>Edit point position</source>
+<target>កែសម្រួលទីតាំងចំណុច</target></trans-unit>
+<trans-unit id="s2b8b8f3bb6ee5a04">
+  <source>Click two points to draw a line. Drag endpoints to adjust. Press Delete to remove selected.</source>
+<target>ចុចចំណុចពីរដើម្បីគូសបន្ទាត់។ អូសចុងបន្ទាត់ដើម្បីកែតម្រូវ។ ចុច Delete ដើម្បីលុបអ្វីដែលបានជ្រើស។</target></trans-unit>
+<trans-unit id="s622204928541cb72">
+  <source>Draw a line</source>
+<target>គូសបន្ទាត់</target></trans-unit>
+<trans-unit id="sdc673e73b5c13aea">
+  <source>Delete</source>
+<target>លុប</target></trans-unit>
+<trans-unit id="s573581bd694a2dc1">
+  <source>Double-click points or click a line to select them first</source>
+<target>ចុចពីរដងលើចំណុច ឬចុចលើបន្ទាត់ ដើម្បីជ្រើសរើសជាមុន</target></trans-unit>
+<trans-unit id="s32b873a2dfa6c573">
+  <source>selected points</source>
+<target>ចំណុចដែលបានជ្រើស</target></trans-unit>
+<trans-unit id="s8a1650bddf8ecd32">
+  <source>selected point</source>
+<target>ចំណុចដែលបានជ្រើស</target></trans-unit>
+<trans-unit id="s5be250e35cab2f5c">
+  <source>Pick custom color</source>
+<target>ជ្រើសរើសពណ៌ផ្ទាល់ខ្លួន</target></trans-unit>
+<trans-unit id="s76a88aa1ae8b851f">
+  <source>My Chart</source>
+<target>គំនូសតាងរបស់ខ្ញុំ</target></trans-unit>
+<trans-unit id="s380ecc0df3cd6a9f">
+  <source>Could not parse the file. Please ensure it is a valid Excel or CSV file.</source>
+<target>មិនអាចអានឯកសារបានទេ។ សូមប្រាកដថាវាជាឯកសារ Excel ឬ CSV ត្រឹមត្រូវ។</target></trans-unit>
+<trans-unit id="se8aa1cc7653c6ba2">
+  <source>Brought your own dataset?</source>
+<target>តើអ្នកបាននាំយកសំណុំទិន្នន័យផ្ទាល់ខ្លួនទេ?</target></trans-unit>
+<trans-unit id="s157ba0d6fcb49b36">
+  <source>Upload or drag and drop an Excel (.xlsx) or CSV file here.</source>
+<target>ផ្ទុកឡើង ឬអូសឯកសារ Excel (.xlsx) ឬ CSV មកដាក់ទីនេះ។</target></trans-unit>
+<trans-unit id="sb59e3f80c11ac8d6">
+  <source>Choose File</source>
+<target>ជ្រើសរើសឯកសារ</target></trans-unit>
+<trans-unit id="s091d3407b5b2f824">
+  <source>OR</source>
+<target>ឬ</target></trans-unit>
+<trans-unit id="s252bcd59b75fd110">
+  <source>Create Empty Table</source>
+<target>បង្កើតតារាងទទេ</target></trans-unit>
+<trans-unit id="s74d2679756765e55">
+  <source>No data available.</source>
+<target>មិនមានទិន្នន័យទេ។</target></trans-unit>
+<trans-unit id="sd6243fa23e8f2f3d">
+  <source>Chart Title</source>
+<target>ចំណងជើងគំនូសតាង</target></trans-unit>
+<trans-unit id="sa14c12118a766127">
+  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
+<target>ប្រភេទ <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+<trans-unit id="sf5dc01a3ccf20c4a">
+  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
+<target>ស៊េរី <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
+<trans-unit id="s0b786a0e85eb6783">
+  <source>Border Radius</source>
+<target>កាំមូលស៊ុម</target></trans-unit>
+<trans-unit id="s139c91ebf9b8a6cf">
+  <source>Border Width</source>
+<target>ទទឹងស៊ុម</target></trans-unit>
+<trans-unit id="s4ac65d66ac4579e9">
+  <source>Filled</source>
+<target>បានបំពេញ</target></trans-unit>
+<trans-unit id="sd4f55ee88b9e1f9b">
+  <source>Dynamic Scaling</source>
+<target>មាត្រដ្ឋានថាមវន្ត</target></trans-unit>
+<trans-unit id="s4ccf09d603496eb5">
+  <source>Scale Min</source>
+<target>តម្លៃអប្បបរមានៃមាត្រដ្ឋាន</target></trans-unit>
+<trans-unit id="s4ce9f3d60360110b">
+  <source>Scale Max</source>
+<target>តម្លៃអតិបរមានៃមាត្រដ្ឋាន</target></trans-unit>
+<trans-unit id="s27873db35f5921f4">
+  <source>Step Size</source>
+<target>ទំហំជំហាន</target></trans-unit>
+<trans-unit id="s731f505729e9f61f">
+  <source>Line Width</source>
+<target>ទទឹងបន្ទាត់</target></trans-unit>
+<trans-unit id="s8708316af61ff162">
+  <source>Point Size</source>
+<target>ទំហំចំណុច</target></trans-unit>
+<trans-unit id="s7bc47283a5d67e5e">
+  <source>Smooth The Line</source>
+<target>ធ្វើឱ្យបន្ទាត់រលោង</target></trans-unit>
+<trans-unit id="sd03b05776bec9ad1">
+  <source>Point Radius</source>
+<target>កាំចំណុច</target></trans-unit>
+<trans-unit id="sd1f81984eeb7c0e8">
+  <source>Fill</source>
+<target>បំពេញ</target></trans-unit>
+<trans-unit id="s9e4ee58d49e9464e">
+  <source>Snap to Grid</source>
+<target>តម្រឹមតាមក្រឡាចត្រង្គ</target></trans-unit>
+<trans-unit id="s217fd408e63c93f4">
+  <source>Show Grid</source>
+<target>បង្ហាញក្រឡាចត្រង្គ</target></trans-unit>
+<trans-unit id="sa602e3fd3f2d98fd">
+  <source>Animation</source>
+<target>ចលនា</target></trans-unit>
+<trans-unit id="s1d2850ee299300a5">
+  <source>Polynomial Degree</source>
+<target>ដឺក្រេពហុធា</target></trans-unit>
+<trans-unit id="s6ade9bde0b8065fa">
+  <source>LOESS Bandwidth (%)</source>
+<target>កម្រិតបញ្ជូន LOESS (%)</target></trans-unit>
+<trans-unit id="s34250d39671d5c5d">
+  <source>Show Mean</source>
+<target>បង្ហាញមធ្យម</target></trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>ចាក់សោជម្រើសនេះ</target></trans-unit>
+<trans-unit id="s88798c01f6bd95c0">
+  <source>My scatter plot</source>
+<target>គំនូសតាងចំណុចរាយរបស់ខ្ញុំ</target></trans-unit>
+<trans-unit id="s81d60333bb76471d">
+  <source>Chart <x id="0" equiv-text="${1}" /></source>
+<target>គំនូសតាង <x id="0" equiv-text="${1}" /></target></trans-unit>
+<trans-unit id="s31bccdb022de127c">
+  <source>Chart settings</source>
+<target>ការកំណត់គំនូសតាង</target></trans-unit>
+<trans-unit id="scf2226e954d643b0">
+  <source>Not enough data points for this regression model:</source>
+<target>មិនមានចំណុចទិន្នន័យគ្រប់គ្រាន់សម្រាប់ម៉ូដែលតំរែតំរង់នេះទេ៖</target></trans-unit>
+<trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+<target>បិទ</target></trans-unit>
+<trans-unit id="sac8256732f2ee1e5">
+  <source>Data</source>
+<target>ទិន្នន័យ</target></trans-unit>
+<trans-unit id="se1b3519fe89f4ffc">
+  <source>Scatter plot</source>
+<target>គំនូសតាងចំណុចរាយ</target></trans-unit>
+<trans-unit id="s66f26fdcbe2101eb">
+  <source>Chart</source>
+<target>គំនូសតាង</target></trans-unit>
+<trans-unit id="s194bf0f1cc99bf38">
+  <source>Add visualization</source>
+<target>បន្ថែមការបង្ហាញរូបភាព</target></trans-unit>
+<trans-unit id="s36d76c85f8d9a3e6">
+  <source>Clear Data</source>
+<target>សម្អាតទិន្នន័យ</target></trans-unit>
+<trans-unit id="s1c5d85ee2e023759">
+  <source>Chart type</source>
+<target>ប្រភេទគំនូសតាង</target></trans-unit>
+<trans-unit id="s0bb151c9319a6813">
+  <source>X-Axis</source>
+<target>អ័ក្ស X</target></trans-unit>
+<trans-unit id="s602805b1eb3106c6">
+  <source>Y-Axis</source>
+<target>អ័ក្ស Y</target></trans-unit>
+<trans-unit id="s83a0b17c8929365a">
+  <source>Transfer your plot changes into the data table</source>
+<target>ផ្ទេរការផ្លាស់ប្តូរគំនូសតាងទៅតារាងទិន្នន័យ</target></trans-unit>
+<trans-unit id="sc41b02fb09a50bd4">
+  <source>No unsaved plot changes — move or add points first</source>
+<target>មិនមានការផ្លាស់ប្តូរគំនូសតាងដែលមិនទាន់រក្សាទុកទេ — ផ្លាស់ទី ឬបន្ថែមចំណុចជាមុន</target></trans-unit>
+<trans-unit id="s01670713d13f14d5">
+  <source>Apply Changes to Data</source>
+<target>អនុវត្តការផ្លាស់ប្តូរទៅទិន្នន័យ</target></trans-unit>
+<trans-unit id="s2e036aec33b837e9">
+  <source>Selected Series</source>
+<target>ស៊េរីដែលបានជ្រើស</target></trans-unit>
+<trans-unit id="se68f81f234173daf">
+  <source>Segments</source>
+<target>ផ្នែក</target></trans-unit>
+<trans-unit id="sb9f1339b3a61604a">
+  <source>Levels</source>
+<target>កម្រិត</target></trans-unit>
+<trans-unit id="sc3f59ad27535ed54">
+  <source>Spokes</source>
+<target>បន្ទាត់កាំ</target></trans-unit>
+<trans-unit id="s36698f2375b94e75">
+  <source>All spokes</source>
+<target>បន្ទាត់កាំទាំងអស់</target></trans-unit>
+<trans-unit id="s383e1658e0bde119">
+  <source>All series</source>
+<target>ស៊េរីទាំងអស់</target></trans-unit>
+<trans-unit id="sd2a36db7cf71f4dd">
+  <source>Regression Model</source>
+<target>ម៉ូដែលតំរែតំរង់</target></trans-unit>
+<trans-unit id="s454003c366dd48f0">
+  <source>Show Correlation</source>
+<target>បង្ហាញទំនាក់ទំនង</target></trans-unit>
+<trans-unit id="sa3fb0dd3b48ec8d5">
+  <source>Show Outliers</source>
+<target>បង្ហាញតម្លៃក្រៅក្រុម</target></trans-unit>
+<trans-unit id="s8e20bfbd5c1d00b8">
+  <source>Please select two different values for X and Y axis.</source>
+<target>សូមជ្រើសរើសតម្លៃពីរផ្សេងគ្នាសម្រាប់អ័ក្ស X និង Y។</target></trans-unit>
+<trans-unit id="sa172625dedfc3e78">
+  <source>Please add data first to display the graph.</source>
+<target>សូមបន្ថែមទិន្នន័យជាមុន ដើម្បីបង្ហាញក្រាហ្វ។</target></trans-unit>
+<trans-unit id="s949645bf1d8d57d9">
+  <source>Pie Chart</source>
+<target>គំនូសតាងរង្វង់</target></trans-unit>
+<trans-unit id="s098c7cd9fea6205b">
+  <source>Doughnut Chart</source>
+<target>គំនូសតាងរង្វង់ប្រហោង</target></trans-unit>
+<trans-unit id="s8b2d6a8bfb92cf22">
+  <source>Bar Chart</source>
+<target>គំនូសតាងដំបង</target></trans-unit>
+<trans-unit id="se7f20b3f2e2266eb">
+  <source>Line Chart</source>
+<target>គំនូសតាងបន្ទាត់</target></trans-unit>
+<trans-unit id="s36f26f6aef018e04">
+  <source>Polar Area Chart</source>
+<target>គំនូសតំបន់ប៉ូលា</target></trans-unit>
+<trans-unit id="s74eac1ec007cd4f7">
+  <source>Radar Chart</source>
+<target>គំនូសតាងរ៉ាដា</target></trans-unit>
+<trans-unit id="sd9617fc541e589df">
+  <source>No regression</source>
+<target>គ្មានតម្រែតម្រង់</target></trans-unit>
+<trans-unit id="s657a38e4ed34ebb5">
+  <source>Linear Regression</source>
+<target>តម្រែតម្រង់លីនេអ៊ែរ</target></trans-unit>
+<trans-unit id="sa7d4d92678c16d8c">
+  <source>Polynomial Regression</source>
+<target>តម្រែតម្រង់ពហុធា</target></trans-unit>
+<trans-unit id="s6a53d84f80e988bd">
+  <source>Local Regression</source>
+<target>តម្រែតម្រង់មូលដ្ឋាន</target></trans-unit>
+<trans-unit id="seed653f9fe02893d">
+  <source>Exponential Regression</source>
+<target>តម្រែតម្រង់អិចស្ប៉ូណង់ស្យែល</target></trans-unit>
+<trans-unit id="sb5dca811884aa909">
+  <source>Logarithmic Regression</source>
+<target>តម្រែតម្រង់លោការីត</target></trans-unit>
+</body>
+</file>
+</xliff>

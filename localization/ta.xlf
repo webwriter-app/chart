@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<file target-language="ta" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="se88220063fb37241">
+  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
+<target>கோடு <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+<trans-unit id="sbeab0d8a4ec2b217">
+  <source>Preview line</source>
+<target>கோட்டின் முன்னோட்டம்</target></trans-unit>
+<trans-unit id="s7853336e2d49e552">
+  <source>Connect data points</source>
+<target>தரவு புள்ளிகளை இணைக்கவும்</target></trans-unit>
+<trans-unit id="sce2e89993cd7a286">
+  <source>Line name</source>
+<target>கோட்டின் பெயர்</target></trans-unit>
+<trans-unit id="s5b73a90cdea7a562">
+  <source>Edit coordinates</source>
+<target>ஆயத்தொலைவுகளைத் திருத்து</target></trans-unit>
+<trans-unit id="sb8f855b49234b81b">
+  <source>Apply</source>
+<target>பயன்படுத்து</target></trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
+<target>ரத்துசெய்</target></trans-unit>
+<trans-unit id="sc23e4eb04a4e5d22">
+  <source>Add data first</source>
+<target>முதலில் தரவைச் சேர்க்கவும்</target></trans-unit>
+<trans-unit id="se1002705746ad149">
+  <source>Click on chart to place a new point</source>
+<target>புதிய புள்ளியை வைக்க விளக்கப்படத்தில் கிளிக் செய்யவும்</target></trans-unit>
+<trans-unit id="s896712776969fe57">
+  <source>Add a data point</source>
+<target>தரவு புள்ளியைச் சேர்</target></trans-unit>
+<trans-unit id="s0c19987191b8db0b">
+  <source>Double-click exactly one point to select it, then edit its position</source>
+<target>ஒரு புள்ளியைத் தேர்ந்தெடுக்க அதில் இருமுறை கிளிக் செய்து, அதன் இடத்தைத் திருத்தவும்</target></trans-unit>
+<trans-unit id="s7a4c288d491e6856">
+  <source>Edit point position</source>
+<target>புள்ளியின் இடத்தைத் திருத்து</target></trans-unit>
+<trans-unit id="s2b8b8f3bb6ee5a04">
+  <source>Click two points to draw a line. Drag endpoints to adjust. Press Delete to remove selected.</source>
+<target>கோட்டை வரைய இரண்டு புள்ளிகளில் கிளிக் செய்யவும். சரிசெய்ய முனைகளை இழுக்கவும். தேர்ந்தெடுத்ததை நீக்க Delete அழுத்தவும்.</target></trans-unit>
+<trans-unit id="s622204928541cb72">
+  <source>Draw a line</source>
+<target>ஒரு கோட்டை வரையவும்</target></trans-unit>
+<trans-unit id="sdc673e73b5c13aea">
+  <source>Delete</source>
+<target>நீக்கு</target></trans-unit>
+<trans-unit id="s573581bd694a2dc1">
+  <source>Double-click points or click a line to select them first</source>
+<target>முதலில் புள்ளிகளைத் தேர்ந்தெடுக்க அவற்றில் இருமுறை அல்லது கோட்டில் ஒருமுறை கிளிக் செய்யவும்</target></trans-unit>
+<trans-unit id="s32b873a2dfa6c573">
+  <source>selected points</source>
+<target>தேர்ந்தெடுத்த புள்ளிகள்</target></trans-unit>
+<trans-unit id="s8a1650bddf8ecd32">
+  <source>selected point</source>
+<target>தேர்ந்தெடுத்த புள்ளி</target></trans-unit>
+<trans-unit id="s5be250e35cab2f5c">
+  <source>Pick custom color</source>
+<target>தனிப்பயன் நிறத்தைத் தேர்ந்தெடு</target></trans-unit>
+<trans-unit id="s76a88aa1ae8b851f">
+  <source>My Chart</source>
+<target>எனது விளக்கப்படம்</target></trans-unit>
+<trans-unit id="s380ecc0df3cd6a9f">
+  <source>Could not parse the file. Please ensure it is a valid Excel or CSV file.</source>
+<target>கோப்பைப் படிக்க முடியவில்லை. அது சரியான Excel அல்லது CSV கோப்பு என்பதை உறுதிப்படுத்தவும்.</target></trans-unit>
+<trans-unit id="se8aa1cc7653c6ba2">
+  <source>Brought your own dataset?</source>
+<target>உங்கள் தரவுத் தொகுப்பைக் கொண்டு வந்தீர்களா?</target></trans-unit>
+<trans-unit id="s157ba0d6fcb49b36">
+  <source>Upload or drag and drop an Excel (.xlsx) or CSV file here.</source>
+<target>Excel (.xlsx) அல்லது CSV கோப்பை இங்கே பதிவேற்றவும் அல்லது இழுத்து விடவும்.</target></trans-unit>
+<trans-unit id="sb59e3f80c11ac8d6">
+  <source>Choose File</source>
+<target>கோப்பைத் தேர்ந்தெடு</target></trans-unit>
+<trans-unit id="s091d3407b5b2f824">
+  <source>OR</source>
+<target>அல்லது</target></trans-unit>
+<trans-unit id="s252bcd59b75fd110">
+  <source>Create Empty Table</source>
+<target>காலி அட்டவணையை உருவாக்கு</target></trans-unit>
+<trans-unit id="s74d2679756765e55">
+  <source>No data available.</source>
+<target>தரவு எதுவும் இல்லை.</target></trans-unit>
+<trans-unit id="sd6243fa23e8f2f3d">
+  <source>Chart Title</source>
+<target>விளக்கப்படத் தலைப்பு</target></trans-unit>
+<trans-unit id="sa14c12118a766127">
+  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
+<target>வகை <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+<trans-unit id="sf5dc01a3ccf20c4a">
+  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
+<target>தொடர் <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
+<trans-unit id="s0b786a0e85eb6783">
+  <source>Border Radius</source>
+<target>எல்லையின் வளைவு</target></trans-unit>
+<trans-unit id="s139c91ebf9b8a6cf">
+  <source>Border Width</source>
+<target>எல்லையின் அகலம்</target></trans-unit>
+<trans-unit id="s4ac65d66ac4579e9">
+  <source>Filled</source>
+<target>நிரப்பப்பட்டது</target></trans-unit>
+<trans-unit id="sd4f55ee88b9e1f9b">
+  <source>Dynamic Scaling</source>
+<target>மாறும் அளவீடு</target></trans-unit>
+<trans-unit id="s4ccf09d603496eb5">
+  <source>Scale Min</source>
+<target>அளவின் குறைந்தபட்சம்</target></trans-unit>
+<trans-unit id="s4ce9f3d60360110b">
+  <source>Scale Max</source>
+<target>அளவின் அதிகபட்சம்</target></trans-unit>
+<trans-unit id="s27873db35f5921f4">
+  <source>Step Size</source>
+<target>படி அளவு</target></trans-unit>
+<trans-unit id="s731f505729e9f61f">
+  <source>Line Width</source>
+<target>கோட்டின் அகலம்</target></trans-unit>
+<trans-unit id="s8708316af61ff162">
+  <source>Point Size</source>
+<target>புள்ளியின் அளவு</target></trans-unit>
+<trans-unit id="s7bc47283a5d67e5e">
+  <source>Smooth The Line</source>
+<target>கோட்டை மென்மையாக்கு</target></trans-unit>
+<trans-unit id="sd03b05776bec9ad1">
+  <source>Point Radius</source>
+<target>புள்ளியின் ஆரம்</target></trans-unit>
+<trans-unit id="sd1f81984eeb7c0e8">
+  <source>Fill</source>
+<target>நிரப்பு</target></trans-unit>
+<trans-unit id="s9e4ee58d49e9464e">
+  <source>Snap to Grid</source>
+<target>கட்டத்துடன் ஒட்டு</target></trans-unit>
+<trans-unit id="s217fd408e63c93f4">
+  <source>Show Grid</source>
+<target>கட்டத்தைக் காட்டு</target></trans-unit>
+<trans-unit id="sa602e3fd3f2d98fd">
+  <source>Animation</source>
+<target>அசைவூட்டம்</target></trans-unit>
+<trans-unit id="s1d2850ee299300a5">
+  <source>Polynomial Degree</source>
+<target>பல்லுறுப்புக் கோவையின் படி</target></trans-unit>
+<trans-unit id="s6ade9bde0b8065fa">
+  <source>LOESS Bandwidth (%)</source>
+<target>LOESS அலைவரிசை (%)</target></trans-unit>
+<trans-unit id="s34250d39671d5c5d">
+  <source>Show Mean</source>
+<target>சராசரியைக் காட்டு</target></trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>இந்த விருப்பத்தைப் பூட்டு</target></trans-unit>
+<trans-unit id="s88798c01f6bd95c0">
+  <source>My scatter plot</source>
+<target>எனது சிதறல் விளக்கப்படம்</target></trans-unit>
+<trans-unit id="s81d60333bb76471d">
+  <source>Chart <x id="0" equiv-text="${1}" /></source>
+<target>விளக்கப்படம் <x id="0" equiv-text="${1}" /></target></trans-unit>
+<trans-unit id="s31bccdb022de127c">
+  <source>Chart settings</source>
+<target>விளக்கப்பட அமைப்புகள்</target></trans-unit>
+<trans-unit id="scf2226e954d643b0">
+  <source>Not enough data points for this regression model:</source>
+<target>இந்த பின்னடைவு மாதிரிக்குப் போதுமான தரவுப் புள்ளிகள் இல்லை:</target></trans-unit>
+<trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+<target>மூடு</target></trans-unit>
+<trans-unit id="sac8256732f2ee1e5">
+  <source>Data</source>
+<target>தரவு</target></trans-unit>
+<trans-unit id="se1b3519fe89f4ffc">
+  <source>Scatter plot</source>
+<target>சிதறல் விளக்கப்படம்</target></trans-unit>
+<trans-unit id="s66f26fdcbe2101eb">
+  <source>Chart</source>
+<target>விளக்கப்படம்</target></trans-unit>
+<trans-unit id="s194bf0f1cc99bf38">
+  <source>Add visualization</source>
+<target>காட்சிப்படுத்தலைச் சேர்</target></trans-unit>
+<trans-unit id="s36d76c85f8d9a3e6">
+  <source>Clear Data</source>
+<target>தரவை அழி</target></trans-unit>
+<trans-unit id="s1c5d85ee2e023759">
+  <source>Chart type</source>
+<target>விளக்கப்பட வகை</target></trans-unit>
+<trans-unit id="s0bb151c9319a6813">
+  <source>X-Axis</source>
+<target>X-அச்சு</target></trans-unit>
+<trans-unit id="s602805b1eb3106c6">
+  <source>Y-Axis</source>
+<target>Y-அச்சு</target></trans-unit>
+<trans-unit id="s83a0b17c8929365a">
+  <source>Transfer your plot changes into the data table</source>
+<target>வரைபட மாற்றங்களைத் தரவு அட்டவணைக்கு மாற்று</target></trans-unit>
+<trans-unit id="sc41b02fb09a50bd4">
+  <source>No unsaved plot changes — move or add points first</source>
+<target>சேமிக்கப்படாத வரைபட மாற்றங்கள் இல்லை — முதலில் புள்ளிகளை நகர்த்தவும் அல்லது சேர்க்கவும்</target></trans-unit>
+<trans-unit id="s01670713d13f14d5">
+  <source>Apply Changes to Data</source>
+<target>தரவு மாற்றங்களைப் பயன்படுத்து</target></trans-unit>
+<trans-unit id="s2e036aec33b837e9">
+  <source>Selected Series</source>
+<target>தேர்ந்தெடுத்த தொடர்</target></trans-unit>
+<trans-unit id="se68f81f234173daf">
+  <source>Segments</source>
+<target>பிரிவுகள்</target></trans-unit>
+<trans-unit id="sb9f1339b3a61604a">
+  <source>Levels</source>
+<target>நிலைகள்</target></trans-unit>
+<trans-unit id="sc3f59ad27535ed54">
+  <source>Spokes</source>
+<target>ஆரக் கோடுகள்</target></trans-unit>
+<trans-unit id="s36698f2375b94e75">
+  <source>All spokes</source>
+<target>அனைத்து ஆரக் கோடுகள்</target></trans-unit>
+<trans-unit id="s383e1658e0bde119">
+  <source>All series</source>
+<target>அனைத்து தொடர்கள்</target></trans-unit>
+<trans-unit id="sd2a36db7cf71f4dd">
+  <source>Regression Model</source>
+<target>பின்னடைவு மாதிரி</target></trans-unit>
+<trans-unit id="s454003c366dd48f0">
+  <source>Show Correlation</source>
+<target>தொடர்பைக் காட்டு</target></trans-unit>
+<trans-unit id="sa3fb0dd3b48ec8d5">
+  <source>Show Outliers</source>
+<target>வெளிப்புற மதிப்புகளைக் காட்டு</target></trans-unit>
+<trans-unit id="s8e20bfbd5c1d00b8">
+  <source>Please select two different values for X and Y axis.</source>
+<target>X மற்றும் Y அச்சுகளுக்கு வேறு வேறு மதிப்புகளைத் தேர்ந்தெடுக்கவும்.</target></trans-unit>
+<trans-unit id="sa172625dedfc3e78">
+  <source>Please add data first to display the graph.</source>
+<target>வரைபடத்தைக் காட்ட முதலில் தரவைச் சேர்க்கவும்.</target></trans-unit>
+<trans-unit id="s949645bf1d8d57d9">
+  <source>Pie Chart</source>
+<target>வட்ட விளக்கப்படம்</target></trans-unit>
+<trans-unit id="s098c7cd9fea6205b">
+  <source>Doughnut Chart</source>
+<target>வளைய விளக்கப்படம்</target></trans-unit>
+<trans-unit id="s8b2d6a8bfb92cf22">
+  <source>Bar Chart</source>
+<target>பட்டை விளக்கப்படம்</target></trans-unit>
+<trans-unit id="se7f20b3f2e2266eb">
+  <source>Line Chart</source>
+<target>கோட்டு விளக்கப்படம்</target></trans-unit>
+<trans-unit id="s36f26f6aef018e04">
+  <source>Polar Area Chart</source>
+<target>துருவப் பகுதி விளக்கப்படம்</target></trans-unit>
+<trans-unit id="s74eac1ec007cd4f7">
+  <source>Radar Chart</source>
+<target>ரேடார் விளக்கப்படம்</target></trans-unit>
+<trans-unit id="sd9617fc541e589df">
+  <source>No regression</source>
+<target>பின்னடைவு இல்லை</target></trans-unit>
+<trans-unit id="s657a38e4ed34ebb5">
+  <source>Linear Regression</source>
+<target>நேரியல் பின்னடைவு</target></trans-unit>
+<trans-unit id="sa7d4d92678c16d8c">
+  <source>Polynomial Regression</source>
+<target>பல்லுறுப்புப் பின்னடைவு</target></trans-unit>
+<trans-unit id="s6a53d84f80e988bd">
+  <source>Local Regression</source>
+<target>உள்ளூர் பின்னடைவு</target></trans-unit>
+<trans-unit id="seed653f9fe02893d">
+  <source>Exponential Regression</source>
+<target>அடுக்குப் பின்னடைவு</target></trans-unit>
+<trans-unit id="sb5dca811884aa909">
+  <source>Logarithmic Regression</source>
+<target>மடக்கைப் பின்னடைவு</target></trans-unit>
+</body>
+</file>
+</xliff>

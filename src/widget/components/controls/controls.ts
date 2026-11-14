@@ -22,6 +22,9 @@ export class OptionSelect extends LitElementWw {
   @property({ type: Array, converter })
   accessor selectOptions: Array<string> = [];
 
+  @property({ attribute: false })
+  accessor selectLabels: readonly string[] = [];
+
   @property()
   accessor label: string = "";
 
@@ -103,7 +106,7 @@ export class OptionSelect extends LitElementWw {
       <sl-select
         size=${this.size}
         ?disabled="${this.disabled}"
-        placeholder="${this.selectOptions[this.selectedIndex] ?? this.placeholder}"
+        placeholder="${this.selectLabels[this.selectedIndex] ?? this.selectOptions[this.selectedIndex] ?? this.placeholder}"
         label="${this.label}"
         @sl-change="${this.handleSelectChange}"
         .value=${this.selectedIndex >= 0 ? String(this.selectedIndex) : ""}
@@ -111,7 +114,7 @@ export class OptionSelect extends LitElementWw {
       >
         ${this.icon ? html`<sl-icon slot="prefix" src=${this.icon}></sl-icon>` : ""}
         ${this.selectOptions.map(
-          (option, i) => html`<sl-option value=${String(i)}>${option}</sl-option>`
+          (option, i) => html`<sl-option value=${String(i)}>${this.selectLabels[i] ?? option}</sl-option>`
         )}
       </sl-select>
     `;

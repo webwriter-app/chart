@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<file target-language="ga" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="se88220063fb37241">
+  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
+<target>Líne <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+<trans-unit id="sbeab0d8a4ec2b217">
+  <source>Preview line</source>
+<target>Líne réamhamhairc</target></trans-unit>
+<trans-unit id="s7853336e2d49e552">
+  <source>Connect data points</source>
+<target>Ceangail pointí sonraí</target></trans-unit>
+<trans-unit id="sce2e89993cd7a286">
+  <source>Line name</source>
+<target>Ainm líne</target></trans-unit>
+<trans-unit id="s5b73a90cdea7a562">
+  <source>Edit coordinates</source>
+<target>Cuir comhordanáidí in eagar</target></trans-unit>
+<trans-unit id="sb8f855b49234b81b">
+  <source>Apply</source>
+<target>Cuir i bhfeidhm</target></trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
+<target>Cealaigh</target></trans-unit>
+<trans-unit id="sc23e4eb04a4e5d22">
+  <source>Add data first</source>
+<target>Cuir sonraí leis ar dtús</target></trans-unit>
+<trans-unit id="se1002705746ad149">
+  <source>Click on chart to place a new point</source>
+<target>Cliceáil ar an gcairt chun pointe nua a chur</target></trans-unit>
+<trans-unit id="s896712776969fe57">
+  <source>Add a data point</source>
+<target>Cuir pointe sonraí leis</target></trans-unit>
+<trans-unit id="s0c19987191b8db0b">
+  <source>Double-click exactly one point to select it, then edit its position</source>
+<target>Cliceáil faoi dhó go díreach ar phointe amháin chun é a roghnú, ansin cuir a shuíomh in eagar</target></trans-unit>
+<trans-unit id="s7a4c288d491e6856">
+  <source>Edit point position</source>
+<target>Cuir suíomh an phointe in eagar</target></trans-unit>
+<trans-unit id="s2b8b8f3bb6ee5a04">
+  <source>Click two points to draw a line. Drag endpoints to adjust. Press Delete to remove selected.</source>
+<target>Cliceáil dhá phointe chun líne a tharraingt. Tarraing na foircinn chun í a choigeartú. Brúigh Delete chun an rogha a bhaint.</target></trans-unit>
+<trans-unit id="s622204928541cb72">
+  <source>Draw a line</source>
+<target>Tarraing líne</target></trans-unit>
+<trans-unit id="sdc673e73b5c13aea">
+  <source>Delete</source>
+<target>Scrios</target></trans-unit>
+<trans-unit id="s573581bd694a2dc1">
+  <source>Double-click points or click a line to select them first</source>
+<target>Cliceáil faoi dhó ar phointí nó cliceáil ar líne chun iad a roghnú ar dtús</target></trans-unit>
+<trans-unit id="s32b873a2dfa6c573">
+  <source>selected points</source>
+<target>pointí roghnaithe</target></trans-unit>
+<trans-unit id="s8a1650bddf8ecd32">
+  <source>selected point</source>
+<target>pointe roghnaithe</target></trans-unit>
+<trans-unit id="s5be250e35cab2f5c">
+  <source>Pick custom color</source>
+<target>Roghnaigh dath saincheaptha</target></trans-unit>
+<trans-unit id="s76a88aa1ae8b851f">
+  <source>My Chart</source>
+<target>Mo chairt</target></trans-unit>
+<trans-unit id="s380ecc0df3cd6a9f">
+  <source>Could not parse the file. Please ensure it is a valid Excel or CSV file.</source>
+<target>Níorbh fhéidir an comhad a léamh. Cinntigh gur comhad bailí Excel nó CSV atá ann.</target></trans-unit>
+<trans-unit id="se8aa1cc7653c6ba2">
+  <source>Brought your own dataset?</source>
+<target>Ar thug tú do thacar sonraí féin leat?</target></trans-unit>
+<trans-unit id="s157ba0d6fcb49b36">
+  <source>Upload or drag and drop an Excel (.xlsx) or CSV file here.</source>
+<target>Uaslódáil nó tarraing agus scaoil comhad Excel (.xlsx) nó CSV anseo.</target></trans-unit>
+<trans-unit id="sb59e3f80c11ac8d6">
+  <source>Choose File</source>
+<target>Roghnaigh comhad</target></trans-unit>
+<trans-unit id="s091d3407b5b2f824">
+  <source>OR</source>
+<target>NÓ</target></trans-unit>
+<trans-unit id="s252bcd59b75fd110">
+  <source>Create Empty Table</source>
+<target>Cruthaigh tábla folamh</target></trans-unit>
+<trans-unit id="s74d2679756765e55">
+  <source>No data available.</source>
+<target>Níl aon sonraí ar fáil.</target></trans-unit>
+<trans-unit id="sd6243fa23e8f2f3d">
+  <source>Chart Title</source>
+<target>Teideal cairte</target></trans-unit>
+<trans-unit id="sa14c12118a766127">
+  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
+<target>Catagóir <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+<trans-unit id="sf5dc01a3ccf20c4a">
+  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
+<target>Sraith <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
+<trans-unit id="s0b786a0e85eb6783">
+  <source>Border Radius</source>
+<target>Ga imlíne</target></trans-unit>
+<trans-unit id="s139c91ebf9b8a6cf">
+  <source>Border Width</source>
+<target>Leithead imlíne</target></trans-unit>
+<trans-unit id="s4ac65d66ac4579e9">
+  <source>Filled</source>
+<target>Líonta</target></trans-unit>
+<trans-unit id="sd4f55ee88b9e1f9b">
+  <source>Dynamic Scaling</source>
+<target>Scálú dinimiciúil</target></trans-unit>
+<trans-unit id="s4ccf09d603496eb5">
+  <source>Scale Min</source>
+<target>Íosmhéid scála</target></trans-unit>
+<trans-unit id="s4ce9f3d60360110b">
+  <source>Scale Max</source>
+<target>Uasmhéid scála</target></trans-unit>
+<trans-unit id="s27873db35f5921f4">
+  <source>Step Size</source>
+<target>Méid céime</target></trans-unit>
+<trans-unit id="s731f505729e9f61f">
+  <source>Line Width</source>
+<target>Leithead líne</target></trans-unit>
+<trans-unit id="s8708316af61ff162">
+  <source>Point Size</source>
+<target>Méid pointe</target></trans-unit>
+<trans-unit id="s7bc47283a5d67e5e">
+  <source>Smooth The Line</source>
+<target>Réitigh an líne</target></trans-unit>
+<trans-unit id="sd03b05776bec9ad1">
+  <source>Point Radius</source>
+<target>Ga pointe</target></trans-unit>
+<trans-unit id="sd1f81984eeb7c0e8">
+  <source>Fill</source>
+<target>Líon</target></trans-unit>
+<trans-unit id="s9e4ee58d49e9464e">
+  <source>Snap to Grid</source>
+<target>Snapáil leis an eangach</target></trans-unit>
+<trans-unit id="s217fd408e63c93f4">
+  <source>Show Grid</source>
+<target>Taispeáin eangach</target></trans-unit>
+<trans-unit id="sa602e3fd3f2d98fd">
+  <source>Animation</source>
+<target>Beochan</target></trans-unit>
+<trans-unit id="s1d2850ee299300a5">
+  <source>Polynomial Degree</source>
+<target>Céim iltéarmach</target></trans-unit>
+<trans-unit id="s6ade9bde0b8065fa">
+  <source>LOESS Bandwidth (%)</source>
+<target>Bandaleithead LOESS (%)</target></trans-unit>
+<trans-unit id="s34250d39671d5c5d">
+  <source>Show Mean</source>
+<target>Taispeáin meán</target></trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>Cuir an rogha seo faoi ghlas</target></trans-unit>
+<trans-unit id="s88798c01f6bd95c0">
+  <source>My scatter plot</source>
+<target>Mo scaipchairt</target></trans-unit>
+<trans-unit id="s81d60333bb76471d">
+  <source>Chart <x id="0" equiv-text="${1}" /></source>
+<target>Cairt <x id="0" equiv-text="${1}" /></target></trans-unit>
+<trans-unit id="s31bccdb022de127c">
+  <source>Chart settings</source>
+<target>Socruithe cairte</target></trans-unit>
+<trans-unit id="scf2226e954d643b0">
+  <source>Not enough data points for this regression model:</source>
+<target>Níl dóthain pointí sonraí ann don tsamhail aischéimnithe seo:</target></trans-unit>
+<trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+<target>Dún</target></trans-unit>
+<trans-unit id="sac8256732f2ee1e5">
+  <source>Data</source>
+<target>Sonraí</target></trans-unit>
+<trans-unit id="se1b3519fe89f4ffc">
+  <source>Scatter plot</source>
+<target>Cairt scaipthe</target></trans-unit>
+<trans-unit id="s66f26fdcbe2101eb">
+  <source>Chart</source>
+<target>Cairt</target></trans-unit>
+<trans-unit id="s194bf0f1cc99bf38">
+  <source>Add visualization</source>
+<target>Cuir léirshamhlú leis</target></trans-unit>
+<trans-unit id="s36d76c85f8d9a3e6">
+  <source>Clear Data</source>
+<target>Glan sonraí</target></trans-unit>
+<trans-unit id="s1c5d85ee2e023759">
+  <source>Chart type</source>
+<target>Cineál cairte</target></trans-unit>
+<trans-unit id="s0bb151c9319a6813">
+  <source>X-Axis</source>
+<target>Ais X</target></trans-unit>
+<trans-unit id="s602805b1eb3106c6">
+  <source>Y-Axis</source>
+<target>Ais Y</target></trans-unit>
+<trans-unit id="s83a0b17c8929365a">
+  <source>Transfer your plot changes into the data table</source>
+<target>Aistrigh athruithe an phlota go dtí an tábla sonraí</target></trans-unit>
+<trans-unit id="sc41b02fb09a50bd4">
+  <source>No unsaved plot changes — move or add points first</source>
+<target>Níl aon athruithe neamhshábháilte sa phlota — bog nó cuir pointí leis ar dtús</target></trans-unit>
+<trans-unit id="s01670713d13f14d5">
+  <source>Apply Changes to Data</source>
+<target>Cuir athruithe i bhfeidhm ar na sonraí</target></trans-unit>
+<trans-unit id="s2e036aec33b837e9">
+  <source>Selected Series</source>
+<target>Sraith roghnaithe</target></trans-unit>
+<trans-unit id="se68f81f234173daf">
+  <source>Segments</source>
+<target>Deighleoga</target></trans-unit>
+<trans-unit id="sb9f1339b3a61604a">
+  <source>Levels</source>
+<target>Leibhéil</target></trans-unit>
+<trans-unit id="sc3f59ad27535ed54">
+  <source>Spokes</source>
+<target>Gathanna</target></trans-unit>
+<trans-unit id="s36698f2375b94e75">
+  <source>All spokes</source>
+<target>Gach ga</target></trans-unit>
+<trans-unit id="s383e1658e0bde119">
+  <source>All series</source>
+<target>Gach sraith</target></trans-unit>
+<trans-unit id="sd2a36db7cf71f4dd">
+  <source>Regression Model</source>
+<target>Samhail aischéimnithe</target></trans-unit>
+<trans-unit id="s454003c366dd48f0">
+  <source>Show Correlation</source>
+<target>Taispeáin comhghaol</target></trans-unit>
+<trans-unit id="sa3fb0dd3b48ec8d5">
+  <source>Show Outliers</source>
+<target>Taispeáin asluitigh</target></trans-unit>
+<trans-unit id="s8e20bfbd5c1d00b8">
+  <source>Please select two different values for X and Y axis.</source>
+<target>Roghnaigh dhá luach éagsúla d’aiseanna X agus Y.</target></trans-unit>
+<trans-unit id="sa172625dedfc3e78">
+  <source>Please add data first to display the graph.</source>
+<target>Cuir sonraí leis ar dtús chun an graf a thaispeáint.</target></trans-unit>
+<trans-unit id="s949645bf1d8d57d9">
+  <source>Pie Chart</source>
+<target>Píchairt</target></trans-unit>
+<trans-unit id="s098c7cd9fea6205b">
+  <source>Doughnut Chart</source>
+<target>Cairt fháinne</target></trans-unit>
+<trans-unit id="s8b2d6a8bfb92cf22">
+  <source>Bar Chart</source>
+<target>Cairt Bharra</target></trans-unit>
+<trans-unit id="se7f20b3f2e2266eb">
+  <source>Line Chart</source>
+<target>Cairt Líne</target></trans-unit>
+<trans-unit id="s36f26f6aef018e04">
+  <source>Polar Area Chart</source>
+<target>Cairt achair pholaraigh</target></trans-unit>
+<trans-unit id="s74eac1ec007cd4f7">
+  <source>Radar Chart</source>
+<target>Cairt radair</target></trans-unit>
+<trans-unit id="sd9617fc541e589df">
+  <source>No regression</source>
+<target>Gan aischéimniú</target></trans-unit>
+<trans-unit id="s657a38e4ed34ebb5">
+  <source>Linear Regression</source>
+<target>Aischéimniú líneach</target></trans-unit>
+<trans-unit id="sa7d4d92678c16d8c">
+  <source>Polynomial Regression</source>
+<target>Aischéimniú iltéarmach</target></trans-unit>
+<trans-unit id="s6a53d84f80e988bd">
+  <source>Local Regression</source>
+<target>Aischéimniú logánta</target></trans-unit>
+<trans-unit id="seed653f9fe02893d">
+  <source>Exponential Regression</source>
+<target>Aischéimniú easpónantúil</target></trans-unit>
+<trans-unit id="sb5dca811884aa909">
+  <source>Logarithmic Regression</source>
+<target>Aischéimniú logartamach</target></trans-unit>
+</body>
+</file>
+</xliff>

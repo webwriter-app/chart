@@ -1,7 +1,7 @@
+import type { MsgFn } from "@lit/localize";
 import { css, html, TemplateResult } from "lit";
-import { msg } from "@lit/localize";
 
-function translateOptionName(name: string): string {
+function translateOptionName(name: string, msg: MsgFn): string {
   const map: Record<string, string> = {
     "Border Radius": msg("Border Radius"),
     "Border Width": msg("Border Width"),
@@ -292,7 +292,7 @@ render() {
                   src=${this.sharedState.chart.optionsLocked["title"]
                     ? IconLock
                     : IconUnLock}
-                  label="Lock this option"
+                  label=${this.msg("Lock this option")}
                   @click=${() => {
                     const updatedOptionsLocked = {
                       ...this.sharedState.chart.optionsLocked,
@@ -348,7 +348,7 @@ render() {
           return html`
             <div class="container">
               <div class="row">
-                <p class="text">${translateOptionName(input.name)}</p>
+                <p class="text">${translateOptionName(input.name, this.msg)}</p>
                 ${this.sharedState.editable
                   ? html`
                       <div></div>`
