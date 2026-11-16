@@ -1,0 +1,603 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "src/widgets/webwriter-chart.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "An interactive data visualization widget with several chart types, CSV and Excel import, axis controls per visualization and a scatter plot with regression analysis.\n\nAuthors enter or import data in the Data tab, then use the chart tabs to configure visualizations. Each chart tab has its own type and axis settings. The fixed Scatter plot tab lets learners drag points, draw lines and show regression models with correlation measures.\n\nThe widget keeps its state (visualizations, data, options and the teacher options that decide what learners may change) in a JSON data block.\n\nChart types: Pie, Doughnut, Bar, Line, Polar Area, Radar and the Scatter plot, all drawn with Chart.js. Spreadsheet files are read with SheetJS, which is loaded when the first file is imported.\n\nThe Delete and Backspace keys remove the selected point or line of the scatter plot while it has the focus.",
+          "name": "WebwriterChart",
+          "members": [
+            {
+              "kind": "field",
+              "name": "scopedElements",
+              "type": {
+                "text": "object"
+              },
+              "static": true,
+              "default": "{ \"sl-button\": SlButton, \"sl-switch\": SlSwitch, \"sl-checkbox\": SlCheckbox, \"sl-icon-button\": SlIconButton, \"sl-tooltip\": SlTooltip, \"wwci-dataset-input\": DatasetInput, \"wwci-chart-settings\": ChartSettingsPanel, \"bar-chart\": BarChart, \"doughnut-chart\": DoughnutChart, \"line-chart\": LineChart, \"pie-chart\": PieChart, \"polar-chart\": PolarChart, \"radar-chart\": RadarChart, \"scatter-chart-js\": ScatterChartJs, \"sl-tab-group\": SlTabGroup, \"sl-tab\": SlTab, \"sl-alert\": SlAlert, \"sl-select\": SlSelect, \"sl-option\": SlOption, \"wwci-select\": OptionSelect, \"sl-icon\": SlIcon, }"
+            },
+            {
+              "kind": "field",
+              "name": "actions",
+              "type": {
+                "text": "object"
+              },
+              "static": true,
+              "default": "{ configureChart: { label: (widget: { msg: MsgFn }) => widget.msg(\"Chart settings\") }, deleteSelection: { hidden: true, shortcut: [\"Delete\", \"Backspace\"] }, }"
+            },
+            {
+              "kind": "field",
+              "name": "localize"
+            },
+            {
+              "kind": "field",
+              "name": "msg",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "#permissions",
+              "privacy": "private",
+              "readonly": true,
+              "default": "new Permissions(this)"
+            },
+            {
+              "kind": "field",
+              "name": "#shortcuts",
+              "privacy": "private",
+              "readonly": true,
+              "default": "new Shortcuts(this)"
+            },
+            {
+              "kind": "field",
+              "name": "#data",
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "#merged",
+              "privacy": "private",
+              "type": {
+                "text": "{ source: object; locale: string; state: ChartState } | undefined"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "showChart",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether a chart tab is active.",
+              "attribute": "showChart",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "showData",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether the Data tab is active.",
+              "attribute": "showData",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "scatterXAxis",
+              "type": {
+                "text": "number"
+              },
+              "default": "0",
+              "description": "Column index of the x axis of the Scatter plot tab.",
+              "attribute": "scatter-x",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "scatterYAxis",
+              "type": {
+                "text": "number"
+              },
+              "default": "1",
+              "description": "Column index of the y axis of the Scatter plot tab.",
+              "attribute": "scatter-y",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "dataTabName",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"Data\""
+            },
+            {
+              "kind": "field",
+              "name": "scatterplotTabName",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"Scatter plot\""
+            },
+            {
+              "kind": "field",
+              "name": "editingVisualizationId",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "editingVisualizationName",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"\""
+            },
+            {
+              "kind": "field",
+              "name": "sharedState",
+              "type": {
+                "text": "ChartState"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "defaultChartState",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "ChartState"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "#scatter",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "deleteSelection",
+              "description": "Declines the key unless the scatter plot holds the focus and a selection."
+            },
+            {
+              "kind": "method",
+              "name": "applyScatterChanges",
+              "description": "Moves the edits made in the scatter plot into the data table."
+            },
+            {
+              "kind": "method",
+              "name": "configureChart"
+            },
+            {
+              "kind": "method",
+              "name": "normalizeColumns",
+              "return": {
+                "type": {
+                  "text": "string[]"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": {
+                    "text": "unknown"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "normalizeColumnIndexes",
+              "return": {
+                "type": {
+                  "text": "number[]"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": {
+                    "text": "unknown"
+                  }
+                },
+                {
+                  "name": "labels",
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "syncFixedScatterplotFromChartData",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "defaultOptions",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "OptionValues"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "definition",
+                  "type": {
+                    "text": "OptionDefinitions"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "refreshVisibleChart",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "onStateChange"
+            },
+            {
+              "kind": "method",
+              "name": "handleTabShow",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "CustomEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "handleTabClose",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "CustomEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "addVisualization"
+            },
+            {
+              "kind": "method",
+              "name": "removeVisualization",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "switchVisualization",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "changeVizType",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "newType",
+                  "type": {
+                    "text": "ChartType"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "patchViz",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "patch",
+                  "type": {
+                    "text": "Partial<Visualization>"
+                  }
+                }
+              ],
+              "description": "Changes fields of one visualization."
+            },
+            {
+              "kind": "method",
+              "name": "changeVizColumns",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "columns",
+                  "type": {
+                    "text": "unknown"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "changeVizXAxis",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "xIdx",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "changeVizYColumns",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "columns",
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "changeVizXCategories",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "categories",
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "changeVizScaleLabel",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "label",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "clearChartData"
+            },
+            {
+              "kind": "method",
+              "name": "setScatterOption",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "value",
+                  "type": {
+                    "text": "string | number | boolean"
+                  }
+                }
+              ],
+              "description": "Update a single scatter chart option (reactive: the new sharedState\nreference re-renders the scatter chart immediately)."
+            },
+            {
+              "kind": "method",
+              "name": "startInlineTabRename",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "MouseEvent"
+                  }
+                },
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "commitInlineTabRename",
+              "parameters": [
+                {
+                  "name": "nextNameOverride",
+                  "optional": true,
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "cancelInlineTabRename"
+            },
+            {
+              "kind": "method",
+              "name": "handleInlineTabRenameKeydown",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "handleTabKeydownWhileEditing",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                },
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "name": "focus",
+              "type": {
+                "text": "FocusEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "showChart",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether a chart tab is active.",
+              "fieldName": "showChart"
+            },
+            {
+              "name": "showData",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "description": "Whether the Data tab is active.",
+              "fieldName": "showData"
+            },
+            {
+              "name": "scatter-x",
+              "type": {
+                "text": "number"
+              },
+              "default": "0",
+              "description": "Column index of the x axis of the Scatter plot tab.",
+              "fieldName": "scatterXAxis"
+            },
+            {
+              "name": "scatter-y",
+              "type": {
+                "text": "number"
+              },
+              "default": "1",
+              "description": "Column index of the y axis of the Scatter plot tab.",
+              "fieldName": "scatterYAxis"
+            }
+          ],
+          "superclass": {
+            "name": "LitElementWw",
+            "package": "@webwriter/lit"
+          },
+          "tagName": "webwriter-chart",
+          "customElement": true,
+          "modulePath": "src/widgets/webwriter-chart.ts",
+          "definitionPath": "src/widgets/webwriter-chart.ts"
+        },
+        {
+          "kind": "variable",
+          "name": "id",
+          "default": "`viz-${Date.now()}`"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "WebwriterChart",
+          "declaration": {
+            "name": "WebwriterChart",
+            "module": "src/widgets/webwriter-chart.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "webwriter-chart",
+          "declaration": {
+            "name": "WebwriterChart",
+            "module": "src/widgets/webwriter-chart.ts"
+          }
+        }
+      ]
+    }
+  ]
+}
