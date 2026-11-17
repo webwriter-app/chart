@@ -38,14 +38,6 @@ export interface ChartData {
   };
 }
 
-export interface CompleteChartData {
-  [key: string]: {
-    value: number;
-    color: string;
-    label: string;
-  };
-}
-
 export type ChartType =
   | "bar"
   | "bubble"
@@ -98,7 +90,7 @@ export interface ScatterDatasets {
   };
 }
 
-export interface ScatterDataset {
+interface ScatterDataset {
   color: string;
   name: string;
   ids: number[];

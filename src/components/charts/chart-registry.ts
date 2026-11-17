@@ -2,7 +2,7 @@
 // and the getChart() factory. Replaces the old imports.ts.
 import { html, unsafeStatic } from "lit/static-html.js";
 import { chartOption } from "../../model/chart-options";
-import type { ChartDataSets, ChartState, InternalChartType, OptionDefinitions, OptionValues, TeacherOptions } from "../../model/models";
+import type { ChartDataSets, ChartState, InternalChartType, OptionDefinitions, TeacherOptions } from "../../model/models";
 
 
 // ─── Option definitions (co-located with registry) ───────────────────────────
@@ -125,7 +125,6 @@ export function getChart(
   chartType: InternalChartType | string,
   datasets: ChartDataSets,
   title: string,
-  options: OptionValues,
   teacherOptions: TeacherOptions,
   onChange: (e: CustomEvent) => void,
   sharedState: ChartState,

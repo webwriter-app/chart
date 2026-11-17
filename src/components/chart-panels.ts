@@ -72,7 +72,6 @@ function renderChartDisplay(host: WebwriterChart, viz: Visualization | undefined
               viz?.selectedType ?? "Bar",
               state.chart.datasets,
               state.chart.title,
-              state.chart.options,
               state.teacherOptions,
               host.onStateChange,
               state,

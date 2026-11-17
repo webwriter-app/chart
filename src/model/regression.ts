@@ -9,7 +9,7 @@ export interface Point {
   y: number;
 }
 
-export interface RegressionFit {
+interface RegressionFit {
   predict: (x: number) => number;
   curve: [number, number][];
   formula: string;
@@ -18,7 +18,7 @@ export interface RegressionFit {
   warning?: string;
 }
 
-export interface RegressionOptions {
+interface RegressionOptions {
   degree?: number;
   span?: number;
 }
@@ -168,7 +168,7 @@ export function spearman(points: Point[]): number | null {
  * before building the normal equations to keep them well-conditioned; the
  * coefficients are expanded back to the original x for the formula.
  */
-export function fitPolynomial(points: Point[], degree: number): RegressionFit | null {
+function fitPolynomial(points: Point[], degree: number): RegressionFit | null {
   const n = points.length;
   // Clamp degree: at most n − 1 (unique solvability) and 6 (edge overfitting)
   const deg = Math.max(1, Math.min(Math.floor(degree) || 1, 6, n - 1));
@@ -233,7 +233,7 @@ function superscript(k: number): string {
 }
 
 /** Ordinary least squares line y = m·x + b. */
-export function fitLinear(points: Point[]): RegressionFit | null {
+function fitLinear(points: Point[]): RegressionFit | null {
   const fit = fitPolynomial(points, 1);
   if (!fit) return null;
   // Recompute m and b directly for an exact, simply-formatted formula
@@ -265,7 +265,7 @@ export function fitLinear(points: Point[]): RegressionFit | null {
  * two robustness iterations (bisquare weights on residuals, LOWESS-style).
  * `span` ∈ (0, 1] is the fraction of points per local window.
  */
-export function fitLoess(points: Point[], span: number): RegressionFit | null {
+function fitLoess(points: Point[], span: number): RegressionFit | null {
   const n = points.length;
   if (n < 3) return null;
   const s = Math.min(1, Math.max(0.15, Number.isFinite(span) ? span : 0.5));
@@ -316,7 +316,7 @@ export function fitLoess(points: Point[], span: number): RegressionFit | null {
   // Robustness iterations: fit → residuals → bisquare weights → refit
   let robust = new Array<number>(n).fill(1);
   for (let iter = 0; iter < 2; iter++) {
-    const res = pts.map((p, i) => p.y - localFit(p.x, robust));
+    const res = pts.map((p) => p.y - localFit(p.x, robust));
     const absRes = res.map(Math.abs);
     const sMed = median(absRes);
     if (sMed <= 1e-12) {
@@ -351,7 +351,7 @@ export function fitLoess(points: Point[], span: number): RegressionFit | null {
  * least-squares problem (an unweighted log-fit would over-weight small y).
  * Points with y ≤ 0 cannot enter the model and are dropped with a warning.
  */
-export function fitExponential(points: Point[]): RegressionFit | null {
+function fitExponential(points: Point[]): RegressionFit | null {
   const valid = points.filter((p) => p.y > 0);
   const dropped = points.length - valid.length;
   if (valid.length < 2) return null;
@@ -389,7 +389,7 @@ export function fitExponential(points: Point[]): RegressionFit | null {
  * Logarithmic model y = a + b·ln(x) via OLS on (ln x, y).
  * Points with x ≤ 0 are outside the model domain and dropped with a warning.
  */
-export function fitLogarithmic(points: Point[]): RegressionFit | null {
+function fitLogarithmic(points: Point[]): RegressionFit | null {
   const valid = points.filter((p) => p.x > 0);
   const dropped = points.length - valid.length;
   if (valid.length < 2) return null;
@@ -435,7 +435,7 @@ function iqrBounds(values: number[]): { lo: number; hi: number } | null {
  * Model-based outliers: IQR fences on the residuals y − f(x) of the fit.
  * Points outside the model domain (prediction NaN) are never flagged.
  */
-export function detectOutliersByResiduals(
+function detectOutliersByResiduals(
   points: Point[],
   predict: (x: number) => number
 ): boolean[] {
@@ -451,7 +451,7 @@ export function detectOutliersByResiduals(
 }
 
 /** Univariate fallback (no model selected): IQR fences on x and y separately. */
-export function detectOutliersUnivariate(points: Point[]): boolean[] {
+function detectOutliersUnivariate(points: Point[]): boolean[] {
   if (points.length < 4) return points.map(() => false);
   const bx = iqrBounds(points.map((p) => p.x));
   const by = iqrBounds(points.map((p) => p.y));

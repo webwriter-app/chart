@@ -4,12 +4,12 @@ export const ROW_LABELS = "Row Labels";
 export const COL_LABELS = "Column Labels";
 
 /** Dataset names are stored with underscores for spaces. */
-export function plainName(name: string): string {
+function plainName(name: string): string {
   return name.replace(/_/g, " ").trim();
 }
 
 /** What the axis selectors of a chart type offer, for the visualization and the data table. */
-export type AxisControls = {
+type AxisControls = {
   showXYAxis: boolean;
   showCategoryAxis: boolean;
   showYAxisOnly: boolean;

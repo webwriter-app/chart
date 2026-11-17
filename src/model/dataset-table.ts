@@ -1,4 +1,4 @@
-export type EditableCell = number | string | null | undefined;
+type EditableCell = number | string | null | undefined;
 
 export type EditableSet = {
   name: string;
@@ -85,7 +85,7 @@ export function normalizeSetColors(sets: EditableSet[]): EditableSet[] {
 }
 
 /** Names for columns and rows the spreadsheet leaves empty (numbered from 1). */
-export type DefaultNames = {
+type DefaultNames = {
   category: (index: number) => string;
   series: (index: number) => string;
 };

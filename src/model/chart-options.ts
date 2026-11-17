@@ -60,11 +60,11 @@ export const converter = {
   },
 };
 
-export function isColorHex(color: string): boolean {
+function isColorHex(color: string): boolean {
   return /^#[0-9A-F]{6}$/i.test(color);
 }
 
-export function convertHexToRGB(color: string): string {
+function convertHexToRGB(color: string): string {
   if (!color) return "rgb(0,0,0)";
   if (!isColorHex(color)) return color;
   const r = parseInt(color.substring(1, 3), 16),
@@ -73,7 +73,7 @@ export function convertHexToRGB(color: string): string {
   return `rgb(${r},${g},${b})`;
 }
 
-export function convertRGBToHex(color: string): string {
+function convertRGBToHex(color: string): string {
   if (!color) return "#000000";
   if (!color.startsWith("rgb")) return color;
   const rgb = color

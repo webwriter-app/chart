@@ -2,7 +2,7 @@ import { html } from "lit";
 import IconPlus from "@tabler/icons/outline/plus.svg";
 import type { WebwriterChart } from "../widgets/webwriter-chart";
 
-export const DATA_TAB_ID = "data";
+const DATA_TAB_ID = "data";
 export const SCATTER_TAB_ID = "viz-scatterplot-fixed";
 
 /** The label of a tab: its text, or an editable span while the tab is renamed. */

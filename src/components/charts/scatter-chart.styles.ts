@@ -63,12 +63,6 @@ export const scatterChartStyles = [htmlLegendStyles, css`
       gap: 7px;
       align-items: center;
     }
-    .popup-content {
-      display: flex;
-      flex-direction: column;
-      background: white;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-    }
     .line-tooltip {
       position: absolute;
       background: rgba(0, 0, 0, 0.82);

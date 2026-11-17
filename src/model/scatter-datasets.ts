@@ -5,7 +5,7 @@ import { COLORS, HIT_PX, type Pt } from "./scatter-geometry";
 /** Data points plus the drawn lines, which are line datasets in the same chart. */
 export type PlotDataset = ChartDataset<"scatter" | "line", Point[]>;
 
-export type PlotView = {
+type PlotView = {
   sets: ChartDataSet[];
   xi: number;
   yi: number;
