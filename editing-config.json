@@ -347,7 +347,16 @@
       "ckb-Arab": "چارتەکان",
       "af-ZA": "Grafieke",
       "af-NA": "Grafieke"
-    }
+    },
+    "importFormats": [
+      ".csv",
+      "text/csv",
+      ".xlsx"
+    ],
+    "exportFormats": [
+      "text/csv",
+      "image/png"
+    ]
   },
   "./snippets/scatterplot-exercise.html": {
     "label": {

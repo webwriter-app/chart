@@ -36,7 +36,7 @@ export class BarChart extends GenericChart<typeof BAR_OPTIONS> {
       plugins: [createHtmlLegendPlugin(() => this.shadowRoot?.getElementById("html-legend"))],
     });
     
-    this.chartHelper = ChartHelper.create("bar", chart);
+    this.chartHelper = ChartHelper.create("bar", chart, this);
     this.chartHelper.setTitle(this.label);
     this.chartHelper.setYScales(
       opts.dynamicSize as boolean,
@@ -68,8 +68,9 @@ export class BarChart extends GenericChart<typeof BAR_OPTIONS> {
   private prepareDataset() {
     const opts = this.sharedState.chart.options;
     const { columns } = this.transformByXAxis();
+    const palette = this.palette(CHART_PALETTE);
     return columns.map((col, i) => {
-      const color = col.color ?? CHART_PALETTE[i % CHART_PALETTE.length];
+      const color = col.color ?? palette[i % palette.length];
       const borderWidth = Number(opts.borderWidth ?? 1);
       return {
         label: col.label,

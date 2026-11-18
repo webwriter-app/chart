@@ -11,7 +11,10 @@ import type { WebwriterChart } from "../widgets/webwriter-chart";
 export function renderDataPanel(host: WebwriterChart, visible: boolean, canAddRemoveData: boolean, hasChartData: boolean) {
   return html`
     <div id="data-panel" class="panel-shell ${visible ? '' : 'hidden'}">
-      ${canAddRemoveData && hasChartData
+      ${host.dataLinked
+        ? html`<p class="data-linked" role="status">${host.msg("The data comes from a connected widget. Changes to the table are not kept while it is connected.")}</p>`
+        : ""}
+      ${canAddRemoveData && hasChartData && !host.dataLinked
         ? html`<div class="data-actions-row">
             <sl-button
               size="small"
@@ -44,7 +47,7 @@ function renderChartDisplay(host: WebwriterChart, viz: Visualization | undefined
   const axes = chartAxisProps(viz, labels, state.chart.datasets.sets ?? []);
 
   return html`
-    <div id="display-chart" class="chart-display-wrap">
+    <div id="display-chart" class="chart-display-wrap" part="chart">
       <div class="chart-host-wrap"
            style="display:${isScatterTab && validScatterAxes ? 'block' : 'none'};">
         <scatter-chart-js

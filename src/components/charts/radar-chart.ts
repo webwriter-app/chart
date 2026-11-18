@@ -26,8 +26,9 @@ export class RadarChart extends GenericChart<typeof RADAR_OPTIONS> {
     if (!labels?.length || !sets?.length) return { radarLabels: [] as string[], datasets: [] as ChartDataset<"radar", number[]>[] };
     const opts = this.sharedState.chart.options;
 
+    const palette = this.palette(CHART_PALETTE);
     const makeDataset = (rowLabel: string, data: number[], rowIdx: number) => {
-      const color = CHART_PALETTE[rowIdx % CHART_PALETTE.length];
+      const color = palette[rowIdx % palette.length];
       const pointRadius = Number(opts.pointRadius ?? 3);
       return {
         label: rowLabel,
@@ -109,7 +110,7 @@ export class RadarChart extends GenericChart<typeof RADAR_OPTIONS> {
       },
       plugins: [createHtmlLegendPlugin(() => this.shadowRoot?.getElementById("html-legend"))],
     });
-    this.chartHelper = ChartHelper.create("radar", chart);
+    this.chartHelper = ChartHelper.create("radar", chart, this);
     this.chartHelper.setTitle(this.label);
     this.chartHelper.setLineSmooth(this.sharedState.chart.options.smoothTheLine as boolean);
     this.chartHelper.setRScalePadding();

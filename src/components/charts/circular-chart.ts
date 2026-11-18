@@ -34,7 +34,7 @@ export abstract class CircularChart extends GenericChart<typeof CIRCULAR_OPTIONS
       },
       plugins: [createHtmlLegendPlugin(() => this.shadowRoot?.getElementById("html-legend"))],
     });
-    this.chartHelper = ChartHelper.create(this.chartJsType, chart);
+    this.chartHelper = ChartHelper.create(this.chartJsType, chart, this);
     this.chartHelper.setTitle(this.label);
     this.chartHelper.update();
   }
@@ -53,12 +53,13 @@ export abstract class CircularChart extends GenericChart<typeof CIRCULAR_OPTIONS
     const borderWidth = Number(opts.borderWidth ?? 1);
     const borderRadius = Number(opts.borderRadius ?? 0);
     const { columns } = this.transformByXAxis();
+    const palette = this.palette(CHART_PALETTE);
     return columns.map((col) => ({
       label: col.label,
       data: col.data,
-      backgroundColor: col.data.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length] + "33"),
-      hoverBackgroundColor: col.data.map((_, si) => addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], 0.7)),
-      borderColor: col.data.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length]),
+      backgroundColor: col.data.map((_, si) => palette[si % palette.length] + "33"),
+      hoverBackgroundColor: col.data.map((_, si) => addAlphaToRGB(palette[si % palette.length], 0.7)),
+      borderColor: col.data.map((_, si) => palette[si % palette.length]),
       borderWidth,
       hoverBorderWidth: borderWidth + 1,
       borderRadius,

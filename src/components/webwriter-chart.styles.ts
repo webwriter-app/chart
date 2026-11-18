@@ -1,6 +1,18 @@
 import { css } from "lit";
 
 export default css`
+  :host {
+    display: block;
+    box-sizing: border-box;
+    min-width: 300px;
+    max-width: 2100px;
+    min-height: 20rem;
+    container-type: inline-size;
+    color: var(--ww-text-color, inherit);
+    font-family: var(--ww-font-family, inherit);
+    --sl-font-sans: var(--ww-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol');
+  }
+
   /* The widget host is programmatically focused (keyboard handling) —
      suppress the browser focus outline (showed up as an orange frame). */
   :host,
@@ -18,10 +30,20 @@ export default css`
   #main {
     outline: 1px solid lightgray;
     height: 32rem;
+    min-height: 20rem;
     width: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+  }
+
+  sl-tab-group {
+    --indicator-color: var(--ww-theme-accent-1, var(--sl-color-primary-600));
+  }
+
+  sl-tab::part(close-button) {
+    min-width: 24px;
+    min-height: 24px;
   }
 
   :host(.ww-printable) #main {
@@ -156,6 +178,13 @@ export default css`
     line-height: 1;
   }
 
+  .data-linked {
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 0.8125rem;
+    border-bottom: 1px solid #eee;
+  }
+
   .data-actions-row {
     display: flex;
     justify-content: flex-end;
@@ -219,7 +248,11 @@ export default css`
     overflow-y: auto;
   }
 
-  @media (max-width: 600px) {
+  @container (max-width: 37.5rem) {
+    #main {
+      height: 40rem;
+    }
+
     #main > * {
       padding-left: 4px;
       padding-right: 4px;
@@ -287,5 +320,59 @@ export default css`
     font-size: 0.95rem;
     text-align: center;
     padding: 1rem;
+  }
+
+  /* Printed: the chart of the active tab at the page width, without the controls. */
+  @media print {
+    :host {
+      max-width: none;
+      min-height: 0;
+    }
+    #main {
+      height: auto;
+      min-height: 0;
+      outline: none;
+      overflow: visible;
+    }
+    sl-tab-group,
+    #settings,
+    #data-panel,
+    .viz-type-row,
+    .data-actions-row {
+      display: none !important;
+    }
+    #chart-panel.hidden {
+      display: flex !important;
+    }
+    .panel-shell {
+      overflow: visible;
+    }
+    .chart-display-wrap {
+      flex: none;
+      display: block;
+      height: 26rem;
+      overflow: visible;
+      break-inside: avoid;
+    }
+    .chart-host-wrap {
+      position: static;
+      height: 100%;
+      padding: 0;
+    }
+    .chart-empty-state {
+      justify-content: flex-start;
+    }
+    .html-legend-container {
+      max-height: none !important;
+      overflow: visible;
+    }
+  }
+
+  /* The state during the print dialog: lays out the chart panel at its screen size so the charts can be measured before the page is printed. */
+  #main.printing #data-panel {
+    display: none !important;
+  }
+  #main.printing #chart-panel.hidden {
+    display: flex !important;
   }
 `;

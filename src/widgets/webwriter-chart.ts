@@ -1,6 +1,6 @@
 import { html, type PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { LitElementWw } from "@webwriter/lit";
+import { LitElementWw, computed, signal } from "@webwriter/lit";
 import { Permissions } from "@webwriter/lit/permissions";
 import { str, type MsgFn } from "@lit/localize";
 import { localizer } from "@webwriter/lit/localize";
@@ -11,9 +11,13 @@ import { sourceLocale, targetLocales } from "../../localization/generated/locale
 // Components
 import { DatasetInput } from "../components/dataset-input";
 import { ChartSettingsPanel } from "../components/chart-settings-panel";
-import { renderChartTabs, SCATTER_TAB_ID } from "../components/chart-tabs";
+import { commitRename, renderChartTabs, SCATTER_TAB_ID, startRename } from "../components/chart-tabs";
 import { renderChartPanel, renderDataPanel } from "../components/chart-panels";
 import { OptionSelect } from "../components/controls/option-select";
+import { watchPrint } from "../components/chart-print";
+import { authoredState, defaultChartState, mergeChartState } from "../components/chart-defaults";
+import { exportCsv, exportPng, importCsv, importXlsx, loadTable, stateTable, toTable, defaultNames, XLSX_TYPE } from "../components/chart-exchange";
+import { isDataTable, tableToData, type DataTable, type ImportedData } from "../model/dataset-exchange";
 
 // Shoelace Components & Styles
 import style from "../components/webwriter-chart.styles";
@@ -29,7 +33,6 @@ import SlTab from "@shoelace-style/shoelace/dist/components/tab/tab.component.js
 import SlSelect from "@shoelace-style/shoelace/dist/components/select/select.component.js";
 import SlOption from "@shoelace-style/shoelace/dist/components/option/option.component.js";
 
-// Icons
 import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.component.js";
 
 // Charts & types
@@ -66,6 +69,17 @@ declare global {
  * Chart types: Pie, Doughnut, Bar, Line, Polar Area, Radar and the Scatter plot, all drawn with Chart.js. Spreadsheet files are read with SheetJS, which is loaded when the first file is imported.
  *
  * The Delete and Backspace keys remove the selected point or line of the scatter plot while it has the focus.
+ *
+ * Keyboard: Tab reaches the tabs, the controls, the scatter plot and the legend items. In the scatter plot the arrow keys move between points, Enter or Space selects one, Shift with an arrow key moves the selection by one step (a grid step while snapping), L connects two or more selected points with a line, Escape clears it. Points are added in the Data tab. F2 renames the focused tab. Touch: a double tap selects a point, which can then be dragged. The scatter plot listens to touch and mouse events, not pointer events.
+ *
+ * Conversions: a `table` converts to the widget and back (the first row holds the title and the category names, the first column the series names). Files: CSV (`.csv`, comma, semicolon or tab separated) and Excel (`.xlsx` or its media type, first sheet) import; CSV and a PNG picture of the chart on screen (on the page background color) export. CSV and tables keep the values and names, not the colors, chart types or options.
+ *
+ * Signals: publishes `table` (`{columns, rows}`, the data of the Data tab, null while empty). Effect: `data-from` takes a table from another widget, for example `data-from="#sim[history]"`, and shows it in place of the saved data while the source is connected. The saved data stays in the document and returns when the source is gone.
+ *
+ * Layout: fills its container from 300 px to 2100 px; below 600 px the controls wrap and the frame grows taller. Theme: `--ww-text-color`, `--ww-font-family` and, for series colors the data does not set, `--ww-theme-accent-1` to `-7`. Print: the chart of the active tab at the page width, without tabs and tools.
+ *
+ * @part frame - The bordered box around the tabs and the active panel.
+ * @part chart - The area that holds the chart.
  */
 @customElement("webwriter-chart")
 export class WebwriterChart extends LitElementWw {
@@ -95,9 +109,27 @@ export class WebwriterChart extends LitElementWw {
     "sl-icon": SlIcon,
   };
 
+  static convertFrom = { table: loadTable, ".csv": importCsv, "text/csv": importCsv, ".xlsx": importXlsx, [XLSX_TYPE]: importXlsx };
+  static convertTo = { table: toTable, "text/csv": exportCsv, "image/png": exportPng };
+
+  static effects = {
+    "data-from": {
+      label: (widget: { msg: MsgFn }) => widget.msg("Chart data from"),
+      connect(this: WebwriterChart, source: { get(): unknown }, lifetime: AbortSignal) {
+        this.#source.set(source);
+        lifetime.addEventListener("abort", () => this.#source.set(null), { once: true });
+      },
+    },
+  };
+
   // The Delete key removes the selection of the scatter plot; the action stays out of the drawer.
   static override actions = {
     configureChart: { label: (widget: { msg: MsgFn }) => widget.msg("Chart settings") },
+    clearChartData: {
+      label: (widget: { msg: MsgFn }) => widget.msg("Clear Data"),
+      confirm: (widget: { msg: MsgFn }) => widget.msg("Remove all data from the chart?"),
+      intent: "danger" as const,
+    },
     deleteSelection: { hidden: true, shortcut: ["Delete", "Backspace"] },
   };
 
@@ -114,11 +146,18 @@ export class WebwriterChart extends LitElementWw {
 
   readonly #shortcuts = new Shortcuts(this);
 
+  #lifetime?: AbortController;
+
   readonly #data = jsonData<Partial<ChartState>>(this, {
     defaults: {},
     changed: () => this.requestUpdate("sharedState", this.#merged?.state),
   });
-  #merged?: { source: object; locale: string; state: ChartState };
+  #merged?: { source: object; locale: string; linked: DataTable | null; state: ChartState };
+  readonly #source = signal<{ get(): unknown } | null>(null);
+  readonly #table = signal<DataTable | null>(null);
+
+  /** The chart data as a table `{columns, rows}`: the title and category names in the header, one row per series. Empty (null) without data. */
+  signals = { table: computed(() => this.#table.get()) };
 
   /** Whether a chart tab is active. */
   @property({ type: Boolean, attribute: true, reflect: true }) accessor showChart: boolean = false;
@@ -142,54 +181,53 @@ export class WebwriterChart extends LitElementWw {
     const saved = this.#data.get();
     // Without a data block the defaults carry localized titles, so they follow the language.
     const locale = Object.keys(saved).length === 0 ? this.localize.getLocale() : "";
-    if (this.#merged?.source !== saved || this.#merged.locale !== locale) {
-      const defaults = this.defaultChartState();
+    const linked = this.#linkedTable();
+    if (this.#merged?.source !== saved || this.#merged.locale !== locale || this.#merged.linked !== linked) {
+      const merged = mergeChartState(defaultChartState(this.msg), saved);
+      const data = linked && tableToData(linked, defaultNames(this));
       this.#merged = {
-        source: saved,
-        locale,
-        state: {
-          ...defaults,
-          ...saved,
-          teacherOptions: { ...defaults.teacherOptions, ...saved.teacherOptions },
-          chart: { ...defaults.chart, ...saved.chart },
-        },
+        source: saved, locale, linked,
+        state: data ? { ...merged, chart: { ...merged.chart, datasets: { labels: data.labels, sets: data.sets } } } : merged,
       };
     }
     return this.#merged.state;
   }
 
   set sharedState(value: ChartState) {
-    const { chart: { optionDefinition, ...chart }, ...authored } = value;
     const previous = this.#merged?.state;
-    const next = { ...authored, chart } as Partial<ChartState>;
-    const removed = Object.fromEntries(Object.keys(this.#data.get()).filter((key) => !(key in next)).map((key) => [key, undefined]));
-    this.#data.set({ ...removed, ...next }, { force: this.#data.invalid });
-    const saved = this.#data.get();
-    this.#merged = { source: saved, locale: Object.keys(saved).length === 0 ? this.localize.getLocale() : "", state: value };
+    const linked = this.#linkedTable();
+    // Linked data is shown, not saved: the table edits of this state do not reach the data block.
+    const saved = this.#data.get() as Partial<ChartState>;
+    const kept = linked ? { ...value, chart: { ...value.chart, datasets: saved.chart?.datasets ?? { labels: [], sets: [] } } } : value;
+    this.#data.set(authoredState(kept, saved), { force: this.#data.invalid });
+    const next = this.#data.get();
+    this.#merged = { source: next, locale: Object.keys(next).length === 0 ? this.localize.getLocale() : "", linked, state: value };
     this.requestUpdate("sharedState", previous);
   }
 
-  private defaultChartState(): ChartState {
-    return {
-      teacherOptions: { showOptions: true, showData: true, showLockedOptions: true, changeData: true, changeOptions: true, addRemoveData: true },
-      scatterDatasets: { title: this.msg("My scatter plot"), sets: [], selected: { axis: { x: "None", y: "None" }, dataset_indexes: [] } },
-      regressionType: "none",
-      scatterLines: [],
-      visualizations: [{ id: "viz-1", name: this.msg(str`Chart ${1}`), selectedType: "Bar" }],
-      activeVisualizationId: "viz-1",
-      chart: { selectedType: "Bar", title: this.msg("My Chart"), datasets: { labels: [], sets: [] }, options: {}, optionsLocked: {}, optionDefinition: {} },
-    };
+  /** Whether the data comes from a connected widget (the `data-from` attribute). */
+  get dataLinked() {
+    return this.#linkedTable() !== null;
+  }
+
+  #linkedTable() {
+    const value = this.#source.get()?.get();
+    return isDataTable(value) && value.columns.length > 1 && value.rows.length > 0 ? value : null;
   }
 
   connectedCallback(): void {
     super.connectedCallback();
     this.requestUpdate("sharedState", undefined);
     this.addEventListener("wwci-state-change", this.onStateChange as EventListener);
+    this.#lifetime = new AbortController();
+    watchPrint(this, this.#lifetime.signal);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this.removeEventListener("wwci-state-change", this.onStateChange as EventListener);
+    this.#lifetime?.abort();
+    this.#lifetime = undefined;
   }
 
   protected override async scheduleUpdate(): Promise<unknown> {
@@ -235,7 +273,9 @@ export class WebwriterChart extends LitElementWw {
   protected override updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
     if (!changedProperties.has("sharedState")) return;
-    if (this.sharedState.activeVisualizationId === SCATTER_TAB_ID) {
+    const table = stateTable(this.sharedState);
+    if (JSON.stringify(table) !== JSON.stringify(this.#table.get())) this.#table.set(table);
+    if (this.sharedState.activeVisualizationId === SCATTER_TAB_ID && !this.dataLinked) {
       this.syncFixedScatterplotFromChartData();
     }
     const labels = this.sharedState.chart.datasets.labels ?? [];
@@ -469,57 +509,12 @@ export class WebwriterChart extends LitElementWw {
     };
   }
 
-  startInlineTabRename(e: MouseEvent, id: string) {
-    e.stopPropagation();
-    const currentName =
-      id === "data"
-        ? this.dataTabName
-        : id === SCATTER_TAB_ID
-        ? this.scatterplotTabName
-        : this.sharedState.visualizations?.find((v) => v.id === id)?.name;
-    if (!currentName) return;
-    this.editingVisualizationId = id;
-    this.editingVisualizationName = currentName;
-    requestAnimationFrame(() => {
-      const label = this.renderRoot.querySelector<HTMLElement>(
-        `.tab-label-editing[data-tab-id="${id}"]`
-      );
-      label?.focus();
-      const selection = window.getSelection();
-      if (label && selection) {
-        const range = document.createRange();
-        range.selectNodeContents(label);
-        range.collapse(false);
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }
-    });
+  startInlineTabRename(e: Event, id: string) {
+    startRename(this, e, id);
   }
 
   commitInlineTabRename(nextNameOverride?: string) {
-    const editingId = this.editingVisualizationId;
-    if (!editingId) return;
-    const nextName = (nextNameOverride ?? this.editingVisualizationName).replace(/\s+/g, " ").trim();
-    if (nextName.length > 0) {
-      if (editingId === "data") {
-        this.dataTabName = nextName;
-      } else if (editingId === SCATTER_TAB_ID) {
-        this.scatterplotTabName = nextName;
-      } else {
-        const currentViz = this.sharedState.visualizations?.find((v) => v.id === editingId);
-        if (currentViz && nextName !== currentViz.name) {
-          this.sharedState = {
-            ...this.sharedState,
-            visualizations: (this.sharedState.visualizations ?? []).map((viz) =>
-              viz.id === editingId ? { ...viz, name: nextName } : viz
-            ),
-          };
-        }
-      }
-    }
-    this.editingVisualizationId = null;
-    this.editingVisualizationName = "";
-    this.requestUpdate();
+    commitRename(this, nextNameOverride);
   }
 
   cancelInlineTabRename() {
@@ -583,6 +578,7 @@ export class WebwriterChart extends LitElementWw {
 
       <div
         id="main"
+        part="frame"
         @selectstart=${(e: Event) => e.stopPropagation()}
         @dragstart=${(e: Event) => e.stopPropagation()}
         @click=${() => this.dispatchEvent(new FocusEvent("focus", { bubbles: true }))}

@@ -38,7 +38,7 @@ export class LineChart extends GenericChart<typeof LINE_OPTIONS> {
       plugins: [createHtmlLegendPlugin(() => this.shadowRoot?.getElementById("html-legend"))],
     });
     // @ts-ignore
-    this.chartHelper = ChartHelper.create("line", chart);
+    this.chartHelper = ChartHelper.create("line", chart, this);
     this.chartHelper.setTitle(this.label);
     this.chartHelper.setLineSmooth(opts.smoothTheLine as boolean);
     this.chartHelper.setYScales(
@@ -70,8 +70,9 @@ export class LineChart extends GenericChart<typeof LINE_OPTIONS> {
   private prepareDataset() {
     const opts = this.sharedState.chart.options;
     const { columns } = this.transformByXAxis();
+    const palette = this.palette(LINE_PALETTE);
     return columns.map((col, i) => {
-      const color = col.color ?? LINE_PALETTE[i % LINE_PALETTE.length];
+      const color = col.color ?? palette[i % palette.length];
       const pointRadius = Number(opts.pointRadius ?? 0);
       return {
         label: col.label,

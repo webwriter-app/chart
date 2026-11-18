@@ -51,6 +51,10 @@ export const htmlLegendStyles = css`
       min-height: 24px;
     }
   }
+  .html-legend-list li:focus-visible {
+    outline: 2px solid var(--ww-theme-accent-1, #1a73e8);
+    outline-offset: 1px;
+  }
   .html-legend-list .legend-box {
     display: inline-block;
     flex-shrink: 0;
@@ -135,6 +139,15 @@ function wireDelegation(ul: HTMLUListElement, chart: AnyChart) {
     legendOpts().onLeave?.call(lg, asChartEvent(e), item, lg);
   });
 
+  // The items are custom buttons: Enter and Space press the focused one.
+  ul.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const li = (e.target as HTMLElement | null)?.closest?.("li");
+    if (!li || !ul.contains(li)) return;
+    e.preventDefault();
+    li.click();
+  });
+
   ul.addEventListener("click", (e) => {
     const hit = itemAt(e.target);
     if (!hit) return;
@@ -184,16 +197,23 @@ export function createHtmlLegendPlugin(
         chart.legend?.options?.labels ??
         chart.options.plugins?.legend?.labels ??
         {};
-      const font: Partial<FontSpec> = (resolvedLabels.font as Partial<FontSpec> | undefined) ?? Chart.defaults.font ?? {};
+      const font: Partial<FontSpec> = (resolvedLabels.font as Partial<FontSpec> | undefined) ?? chart.options.font ?? Chart.defaults.font ?? {};
       const fontSize = font.size ?? 12;
       const boxWidth = resolvedLabels.boxWidth ?? 40;
       const boxHeight = resolvedLabels.boxHeight ?? fontSize;
+
+      // A toggled item is rebuilt, so the keyboard focus moves to its replacement.
+      const active = (ul.getRootNode() as Document | ShadowRoot).activeElement;
+      const focusedIdx = active && ul.contains(active) ? (active as HTMLElement).dataset.idx : undefined;
 
       while (ul.firstChild) ul.firstChild.remove();
 
       items.forEach((item, i) => {
         const li = document.createElement("li");
         li.dataset.idx = String(i);
+        li.tabIndex = 0;
+        li.setAttribute("role", "button");
+        li.setAttribute("aria-pressed", String(!item.hidden));
 
         const box = document.createElement("span");
         box.className = "legend-box";
@@ -207,7 +227,7 @@ export function createHtmlLegendPlugin(
 
         const text = document.createElement("span");
         text.textContent = String(item.text ?? "");
-        text.style.color = String(item.fontColor ?? Chart.defaults.color ?? "#666");
+        text.style.color = String(item.fontColor ?? chart.options.color ?? Chart.defaults.color ?? "#666");
         text.style.fontFamily =
           font.family ?? "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
         text.style.fontSize = `${fontSize}px`;
@@ -219,6 +239,7 @@ export function createHtmlLegendPlugin(
         li.appendChild(text);
         ul!.appendChild(li);
       });
+      if (focusedIdx !== undefined) ul.querySelector<HTMLElement>(`li[data-idx="${focusedIdx}"]`)?.focus();
     },
   };
 }

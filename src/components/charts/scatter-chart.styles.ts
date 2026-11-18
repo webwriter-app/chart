@@ -56,6 +56,18 @@ export const scatterChartStyles = [htmlLegendStyles, css`
       touch-action: manipulation;
       outline: none;
     }
+    canvas:focus-visible {
+      outline: 2px solid var(--ww-theme-accent-1, #1a73e8);
+      outline-offset: -2px;
+    }
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
     .btn-col {
       flex: 0 0 auto;
       display: flex;
@@ -184,12 +196,25 @@ export const scatterChartStyles = [htmlLegendStyles, css`
       }
     }
 
-    @media (max-width: 600px) {
+    @container (max-width: 37.5rem) {
       .root {
         gap: 4px;
       }
       .btn-col {
         gap: 5px;
+      }
+    }
+
+    @media print {
+      .btn-col,
+      .connect-tooltip,
+      .coord-popup {
+        display: none;
+      }
+      .chart-annotations,
+      .annotation-regression,
+      .annotation-correlation {
+        break-inside: avoid;
       }
     }
   `];

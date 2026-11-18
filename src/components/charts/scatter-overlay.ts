@@ -189,5 +189,20 @@ export function drawScatterOverlay(chart: Chart, host: ScatterChartJs) {
     }
   }
 
+  // The keyboard cursor
+  if (host._kbIdx !== null && chart.canvas.matches(":focus-visible")) {
+    const set = sets[host._kbIdx];
+    const x = Number(set?.data[xi]);
+    const y = Number(set?.data[yi]);
+    if (set && Number.isFinite(x) && Number.isFinite(y)) {
+      ctx.beginPath();
+      ctx.arc(xSc.getPixelForValue(x), ySc.getPixelForValue(y), 11, 0, Math.PI * 2);
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.strokeStyle = "#1a73e8";
+      ctx.stroke();
+    }
+  }
+
   ctx.restore();
 }

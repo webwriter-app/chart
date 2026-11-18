@@ -1,10 +1,11 @@
-import { html, css } from "lit";
+import { html, css, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import { converter } from "../../model/chart-options";
 import type { ChartDataSets, OptionDefinitions, OptionValues } from "../../model/models";
 import { htmlLegendStyles } from "./html-legend";
 import { StateComponent } from "../stateful-component";
 import type { ChartHelper } from "./chart-helpers";
+import { themedPalette } from "../theme";
 
 export class GenericChart<
   T extends OptionDefinitions
@@ -61,6 +62,11 @@ export class GenericChart<
   
   @state()
   accessor chartHelper: ChartHelper | undefined;
+
+  /** The series colors: the base palette with the first entries replaced by the document's accent colors. */
+  protected palette(base: readonly string[]): string[] {
+    return themedPalette(this, base);
+  }
 
   protected transformByXAxis(): {
     xLabels: string[];
@@ -181,7 +187,7 @@ export class GenericChart<
   render() {
     return html`
       <div class="chart-shell">
-        <div class="canvas-wrap"><canvas id="chart-canvas"></canvas></div>
+        <div class="canvas-wrap"><canvas id="chart-canvas" role="img" aria-label=${this.label || nothing}></canvas></div>
         <div id="html-legend" class="html-legend-container"></div>
       </div>
     `;

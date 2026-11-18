@@ -17,7 +17,9 @@ import {
   framedBounds,
   hiddenAfterDelete,
   lineFormula,
+  neighbourInDirection,
   outermostLine,
+  r3,
   regressionAnnotations,
   visiblePoints,
   withPointAt,
@@ -62,6 +64,12 @@ export class ScatterChartJs extends GenericChart<Record<string, never>> {
 
 
 @state() accessor _selLineIdx: number | null = null;
+
+/** The point the keyboard cursor is on (index into the working sets), or null. */
+@state() accessor _kbIdx: number | null = null;
+
+/** What a screen reader announces about the point under the keyboard cursor. */
+@state() accessor _announcement = "";
 
 /** Local shadow copy of dataset sets — all plot edits live here until "Apply to data" is clicked. */
 @state() accessor _localSets: ChartDataSet[] | null = null;
@@ -195,6 +203,13 @@ private _createChart() {
     }
   }
 
+/** Draws the plot at the current size; creates it when it was never visible (the canvas of a hidden tab has no size). */
+override refreshChart() {
+  const canvas = this.shadowRoot?.getElementById("chart-canvas");
+  if (this._chart) this._chart.resize();
+  else if (canvas && canvas.clientWidth > 0 && canvas.clientHeight > 0) this._createChart();
+}
+
 override disconnectedCallback() {
     super.disconnectedCallback();
     this.ptr.dispose();
@@ -285,6 +300,7 @@ override updated(changed: PropertyValues) {
 
     if (dataChanged) {
       const newCount = this._getWorkingSets().length;
+      if (this._kbIdx !== null && this._kbIdx >= newCount) this._kbIdx = null;
       this._sel.forEach((i) => { if (i >= newCount) this._sel.delete(i); });
       this._hid.forEach((i) => { if (i >= newCount) this._hid.delete(i); });
       this._selCount = this._sel.size;
@@ -448,6 +464,81 @@ private _toggle(m: ScatterMode) {
     else this._setMode(m);
   }
 
+/** The visible points with their index into the working sets. */
+private _plotPoints(): Array<{ index: number; x: number; y: number }> {
+  const xi = this.xAxisIndex;
+  const yi = this.yAxisIndex;
+  return this._getWorkingSets()
+    .map((set, index) => ({ index, x: Number(set.data[xi]), y: Number(set.data[yi]) }))
+    .filter((p) => !this._hid.has(p.index) && Number.isFinite(p.x) && Number.isFinite(p.y));
+}
+
+/** Toggles the selection of a point, as a double click does. */
+_toggleSelected(index: number) {
+  if (this._sel.has(index)) this._sel.delete(index);
+  else this._sel.add(index);
+  this._selCount = this._sel.size;
+  this._hideConnectTooltip();
+  this._refreshStyles();
+  this.requestUpdate();
+}
+
+private _moveCursor(index: number | null) {
+  this._kbIdx = index;
+  const point = this._plotPoints().find((p) => p.index === index);
+  if (point) {
+    const places = this._plotPoints();
+    const position = places.findIndex((p) => p.index === index) + 1;
+    const where = this.msg(str`Point ${position} of ${places.length}: x = ${r3(point.x)}, y = ${r3(point.y)}`);
+    this._announcement = this._sel.has(point.index) ? `${where}, ${this.msg("selected")}` : where;
+  }
+  this._chart?.update("none");
+}
+
+/** Moves the selected points by one step: a grid step while snapping, else a fiftieth of the visible range. */
+private _nudgeSelection(dx: number, dy: number) {
+  const chart = this._chart;
+  if (!chart || this._sel.size === 0) return false;
+  const stepOf = (scale: Chart["scales"][string]) => {
+    const ticks = scale.ticks.map((t) => t.value);
+    if (this._snapToGrid && ticks.length >= 2) return Math.abs(ticks[1] - ticks[0]);
+    return Math.max((scale.max - scale.min) / 50, 0.01);
+  };
+  const xStep = stepOf(chart.scales.x);
+  const yStep = stepOf(chart.scales.y);
+  const sets = this._getWorkingSets();
+  for (const index of this._sel) {
+    const x = Number(sets[index]?.data[this.xAxisIndex]);
+    const y = Number(sets[index]?.data[this.yAxisIndex]);
+    if (Number.isFinite(x) && Number.isFinite(y)) this._movePoint(index, r3(x + dx * xStep), r3(y + dy * yStep));
+  }
+  this._redrawPlot();
+  return true;
+}
+
+/** Keyboard path of the plot: arrow keys move between points, Enter or Space selects, Shift with an arrow moves the selection, Escape clears it. */
+_onCanvasKeydown(e: KeyboardEvent) {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  const arrows: Record<string, [number, number]> = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
+  const arrow = arrows[e.key];
+  let handled = true;
+  if (arrow && e.shiftKey) handled = this._nudgeSelection(...arrow);
+  else if (arrow) this._moveCursor(neighbourInDirection(this._plotPoints(), this._kbIdx, ...arrow));
+  else if (e.key === "Enter" || e.key === " ") {
+    if (this._kbIdx === null || !this._plotPoints().some((p) => p.index === this._kbIdx)) handled = false;
+    else { this._toggleSelected(this._kbIdx); this._moveCursor(this._kbIdx); }
+  } else if (e.key === "l" && this._selCount >= 2) this._connectSelected();
+  else if (e.key === "Escape" && (this._sel.size > 0 || this._selLineIdx !== null || this._editPopup)) {
+    this._sel.clear();
+    this._selCount = 0;
+    this._selLineIdx = null;
+    this._editPopup = null;
+    this._hideConnectTooltip();
+    this._refreshStyles();
+  } else handled = false;
+  if (handled) { e.preventDefault(); e.stopPropagation(); }
+}
+
 /** True while a drawn line or a point is selected: what `deleteSelection()` would remove. */
 get hasSelection(): boolean {
   return this._selLineIdx !== null || this._selCount > 0;
@@ -604,7 +695,17 @@ override render() {
       <div class="root" @click=${() => { if (this._editPopup) this._editPopup = null; }}>
         <div class="chart-col">
         <div class="chart-area" style="position:relative;">
-          <canvas id="chart-canvas"></canvas>
+          <canvas
+            id="chart-canvas"
+            tabindex="0"
+            role="application"
+            aria-label=${this.msg("Scatter plot")}
+            aria-description=${this.msg("Arrow keys move between points. Enter or Space selects a point. Shift with an arrow key moves the selected points. L connects two or more selected points with a line. Escape clears the selection.")}
+            @keydown=${this._onCanvasKeydown}
+            @focus=${() => this._chart?.update("none")}
+            @blur=${() => this._chart?.update("none")}
+          ></canvas>
+          <div class="visually-hidden" role="status" aria-live="polite">${this._announcement}</div>
 
           <!-- ── Line formula hover tooltip ────────────────────── -->
           ${this._hoveredLineIdx !== null && this.ptr._hoverPx && this._lines[this._hoveredLineIdx] ? html`

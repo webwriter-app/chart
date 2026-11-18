@@ -154,3 +154,24 @@ export function regressionAnnotations(
   }
   return { formula, correlation };
 }
+
+/** The point that the arrow key `(dx, dy)` moves to from point `from`: the nearest one in that direction, favouring those straight ahead. Without a current point it starts at the extreme point of that direction. Returns `from` when no point lies in that direction. */
+export function neighbourInDirection(points: Array<Pt & { index: number }>, from: number | null, dx: number, dy: number): number | null {
+  if (points.length === 0) return null;
+  const current = points.find((p) => p.index === from);
+  if (!current) {
+    const extreme = [...points].sort((a, b) => (a.x - b.x) * -dx + (a.y - b.y) * -dy)[0];
+    return extreme.index;
+  }
+  let best: number | null = null;
+  let bestScore = Infinity;
+  for (const p of points) {
+    if (p.index === current.index) continue;
+    const along = (p.x - current.x) * dx + (p.y - current.y) * dy;
+    if (along <= 0) continue;
+    const across = Math.abs((p.x - current.x) * dy - (p.y - current.y) * dx);
+    const score = along + 2 * across;
+    if (score < bestScore) { bestScore = score; best = p.index; }
+  }
+  return best ?? current.index;
+}

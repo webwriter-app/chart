@@ -1,6 +1,7 @@
 import { Chart } from "chart.js";
 import type { ChartEvent, ChartType, LegendElement, LegendItem, LegendOptions, Scale } from "chart.js";
 import { GenericChart } from "./chart-base";
+import { themedText } from "../theme";
 
 export const CHART_PALETTE = [
   "#3f51b5", "#f44336", "#4caf50", "#ff9800", "#9c27b0",
@@ -127,10 +128,12 @@ export class ChartHelper {
 
   public static create<T extends ChartType>(
     type: T,
-    chart: Chart<T, number[], string>
+    chart: Chart<T, number[], string>,
+    host?: Element,
   ): ChartHelper {
     const helper = new ChartHelper();
     helper.initialize(type, chart as unknown as Chart<ChartType, number[], string>);
+    if (host) helper.applyTheme(host);
     helper.setLegendHoverHighlight();
     helper.setupTouchDismiss();
     helper.setupMobileLegendTap();
@@ -142,6 +145,13 @@ export class ChartHelper {
     if (!chart.options) throw new Error("Chart options are not initialized.");
     this.chart = chart;
     this.chartType = type;
+  }
+
+  /** Gives the chart text the color and font of the document theme; without a theme it keeps the Chart.js defaults. */
+  public applyTheme(host: Element) {
+    const { color, family } = themedText(host);
+    if (color) this.chart.options.color = color;
+    if (family) this.chart.options.font = { ...this.chart.options.font, family };
   }
 
   public setTitle(_title: string) {

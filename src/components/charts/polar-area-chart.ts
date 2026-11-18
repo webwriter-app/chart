@@ -74,7 +74,7 @@ export class PolarChart extends GenericChart<typeof POLAR_OPTIONS> {
       plugins: [createHtmlLegendPlugin(() => this.shadowRoot?.getElementById("html-legend"))],
     });
     const opts0 = this.sharedState.chart.options;
-    this.chartHelper = ChartHelper.create("polarArea", chart);
+    this.chartHelper = ChartHelper.create("polarArea", chart, this);
     this.chartHelper.setTitle(this.label);
     this.chartHelper.setRScales(
       opts0.dynamicSize !== false,
@@ -106,14 +106,15 @@ export class PolarChart extends GenericChart<typeof POLAR_OPTIONS> {
   private prepareDataset(sectorData: number[]) {
     const opts = this.sharedState.chart.options;
     const borderWidth = Number(opts.borderWidth ?? 1);
+    const palette = this.palette(CHART_PALETTE);
     return [{
       data: sectorData,
       backgroundColor: sectorData.map((_, si) =>
-        addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], opts.filled ? 1 : 0.2)
+        addAlphaToRGB(palette[si % palette.length], opts.filled ? 1 : 0.2)
       ),
-      borderColor: sectorData.map((_, si) => CHART_PALETTE[si % CHART_PALETTE.length]),
+      borderColor: sectorData.map((_, si) => palette[si % palette.length]),
       hoverBackgroundColor: sectorData.map((_, si) =>
-        addAlphaToRGB(CHART_PALETTE[si % CHART_PALETTE.length], opts.filled ? 1 : 0.7)
+        addAlphaToRGB(palette[si % palette.length], opts.filled ? 1 : 0.7)
       ),
       hoverBorderWidth: borderWidth + 1,
       borderWidth,
