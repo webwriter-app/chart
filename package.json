@@ -141,6 +141,9 @@
     "lit": "^3.3.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
+  "prebuiltDependencies": [
+    "xlsx"
+  ],
   "devDependencies": {
     "@lit/localize-tools": "^0.8.2",
     "@types/chai": "^5.2.3",
