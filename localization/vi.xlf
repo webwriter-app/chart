@@ -266,6 +266,13 @@
 <trans-unit id="sb5dca811884aa909">
   <source>Logarithmic Regression</source>
 <target>Hồi quy lôgarit</target></trans-unit>
+<trans-unit id="sca42abad8c8fa258"><source>The data comes from a connected widget. Changes to the table are not kept while it is connected.</source><target>Dữ liệu đến từ một tiện ích được kết nối. Các thay đổi trong bảng không được giữ lại khi tiện ích đang kết nối.</target></trans-unit>
+<trans-unit id="s868ececd6f1ea3b5"><source>Point <x id="0" equiv-text="${position}"/> of <x id="1" equiv-text="${places.length}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></source><target>Điểm <x id="0" equiv-text="${position}"/> trên <x id="1" equiv-text="${places.length}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></target></trans-unit>
+<trans-unit id="s76bd060f6f749f6d"><source>Arrow keys move between points. Enter or Space selects a point. Shift with an arrow key moves the selected points. L connects two or more selected points with a line. Escape clears the selection.</source><target>Dùng phím mũi tên để di chuyển giữa các điểm. Enter hoặc Space chọn một điểm. Shift cùng phím mũi tên di chuyển các điểm đã chọn. Nhấn L để nối từ hai điểm trở lên. Escape xóa lựa chọn.</target></trans-unit>
+<trans-unit id="s2093b1bf84864b8f"><source>Chart data from</source><target>Dữ liệu biểu đồ từ</target></trans-unit>
+<trans-unit id="s848a7817b9afdc66"><source>Remove all data from the chart?</source><target>Xóa tất cả dữ liệu khỏi biểu đồ?</target></trans-unit>
+<trans-unit id="s9c83e9e54d545adb"><source>The file needs a header row and at least one row with a name and values.</source><target>Tệp cần có một hàng tiêu đề và ít nhất một hàng có tên và giá trị.</target></trans-unit>
+<trans-unit id="s03c44f5a1b0581d4"><source>selected</source><target>đã chọn</target></trans-unit>
 </body>
 </file>
 </xliff>

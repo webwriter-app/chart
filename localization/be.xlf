@@ -3,8 +3,8 @@
 <file target-language="be" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
 <trans-unit id="se88220063fb37241">
-  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
-<target>Лінія <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+  <source>Line <x id="0" equiv-text="${index + 1}"/></source>
+<target>Лінія <x id="0" equiv-text="${i + 1}"/></target></trans-unit>
 <trans-unit id="sbeab0d8a4ec2b217">
   <source>Preview line</source>
 <target>Лінія папярэдняга прагляду</target></trans-unit>
@@ -87,11 +87,11 @@
   <source>Chart Title</source>
 <target>Загаловак дыяграмы</target></trans-unit>
 <trans-unit id="sa14c12118a766127">
-  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
-<target>Катэгорыя <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+  <source>Category <x id="0" equiv-text="${this.sharedState.chart.datasets.labels.length + 1}"/></source>
+<target>Катэгорыя <x id="0" equiv-text="${labels.length + 1}"/></target></trans-unit>
 <trans-unit id="sf5dc01a3ccf20c4a">
-  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
-<target>Шэраг <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
+  <source>Series <x id="0" equiv-text="${1}"/></source>
+<target>Шэраг <x id="0" equiv-text="${rowIndex}"/></target></trans-unit>
 <trans-unit id="s0b786a0e85eb6783">
   <source>Border Radius</source>
 <target>Радыус рамкі</target></trans-unit>
@@ -146,15 +146,12 @@
 <trans-unit id="s34250d39671d5c5d">
   <source>Show Mean</source>
 <target>Паказаць сярэдняе</target></trans-unit>
-<trans-unit id="s20a3aebdf0a9fabf">
-  <source>Lock this option</source>
-<target>Заблакіруйце гэты параметр</target></trans-unit>
 <trans-unit id="s88798c01f6bd95c0">
   <source>My scatter plot</source>
 <target>Мая дыяграма рассейвання</target></trans-unit>
 <trans-unit id="s81d60333bb76471d">
-  <source>Chart <x id="0" equiv-text="${1}" /></source>
-<target>Дыяграма <x id="0" equiv-text="${1}" /></target></trans-unit>
+  <source>Chart <x id="0" equiv-text="${1}"/></source>
+<target>Дыяграма <x id="0" equiv-text="${1}"/></target></trans-unit>
 <trans-unit id="s31bccdb022de127c">
   <source>Chart settings</source>
 <target>Налады дыяграмы</target></trans-unit>
@@ -266,6 +263,37 @@
 <trans-unit id="sb5dca811884aa909">
   <source>Logarithmic Regression</source>
 <target>Лагарыфмічная рэгрэсія</target></trans-unit>
+<trans-unit id="s9c83e9e54d545adb">
+  <source>The file needs a header row and at least one row with a name and values.</source>
+        <target>Файл павінен мець радок загалоўкаў і прынамсі адзін радок з назвай і значэннямі.</target>
+</trans-unit>
+<trans-unit id="sca42abad8c8fa258">
+  <source>The data comes from a connected widget. Changes to the table are not kept while it is connected.</source>
+        <target>Даныя паступаюць з падключанага віджэта. Змены ў табліцы не захоўваюцца, пакуль ён падключаны.</target>
+</trans-unit>
+<trans-unit id="s868ececd6f1ea3b5">
+  <source>Point <x id="0" equiv-text="${position}"/> of <x id="1" equiv-text="${places.length}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></source>
+        <target>Пункт <x id="0" equiv-text="${position}"/> з <x id="1" equiv-text="${places.length}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></target>
+</trans-unit>
+<trans-unit id="s03c44f5a1b0581d4">
+  <source>selected</source>
+        <target>выбрана</target>
+</trans-unit>
+<trans-unit id="s76bd060f6f749f6d">
+  <source>Arrow keys move between points. Enter or Space selects a point. Shift with an arrow key moves the selected points. L connects two or more selected points with a line. Escape clears the selection.</source>
+        <target>Перамяшчайцеся паміж пунктамі стрэлкамі. Enter або прабел выбірае пункт. Shift са стрэлкай перамяшчае выбраныя пункты. Націсніце L, каб злучыць два ці больш пунктаў. Escape здымае выбар.</target>
+</trans-unit>
+<trans-unit id="s2093b1bf84864b8f">
+  <source>Chart data from</source>
+        <target>Даныя дыяграмы з</target>
+</trans-unit>
+<trans-unit id="s848a7817b9afdc66">
+  <source>Remove all data from the chart?</source>
+        <target>Выдаліць усе даныя дыяграмы?</target>
+</trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>Заблакіруйце гэты параметр</target></trans-unit>
 </body>
 </file>
 </xliff>

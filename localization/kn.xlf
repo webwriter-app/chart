@@ -3,8 +3,8 @@
 <file target-language="kn" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
 <trans-unit id="se88220063fb37241">
-  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
-<target>ರೇಖೆ <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+  <source>Line <x id="0" equiv-text="${index + 1}"/></source>
+<target>ರೇಖೆ <x id="0" equiv-text="${i + 1}"/></target></trans-unit>
 <trans-unit id="sbeab0d8a4ec2b217">
   <source>Preview line</source>
 <target>ರೇಖೆಯ ಮುನ್ನೋಟ</target></trans-unit>
@@ -87,11 +87,11 @@
   <source>Chart Title</source>
 <target>ಚಾರ್ಟ್ ಶೀರ್ಷಿಕೆ</target></trans-unit>
 <trans-unit id="sa14c12118a766127">
-  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
-<target>ವರ್ಗ <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+  <source>Category <x id="0" equiv-text="${this.sharedState.chart.datasets.labels.length + 1}"/></source>
+<target>ವರ್ಗ <x id="0" equiv-text="${labels.length + 1}"/></target></trans-unit>
 <trans-unit id="sf5dc01a3ccf20c4a">
-  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
-<target>ಸರಣಿ <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
+  <source>Series <x id="0" equiv-text="${1}"/></source>
+<target>ಸರಣಿ <x id="0" equiv-text="${rowIndex}"/></target></trans-unit>
 <trans-unit id="s0b786a0e85eb6783">
   <source>Border Radius</source>
 <target>ಅಂಚಿನ ವಕ್ರತೆ</target></trans-unit>
@@ -146,15 +146,12 @@
 <trans-unit id="s34250d39671d5c5d">
   <source>Show Mean</source>
 <target>ಸರಾಸರಿ ತೋರಿಸು</target></trans-unit>
-<trans-unit id="s20a3aebdf0a9fabf">
-  <source>Lock this option</source>
-<target>ಈ ಆಯ್ಕೆಯನ್ನು ಲಾಕ್ ಮಾಡಿ</target></trans-unit>
 <trans-unit id="s88798c01f6bd95c0">
   <source>My scatter plot</source>
 <target>ನನ್ನ ಸ್ಕ್ಯಾಟರ್ ಪ್ಲಾಟ್</target></trans-unit>
 <trans-unit id="s81d60333bb76471d">
-  <source>Chart <x id="0" equiv-text="${1}" /></source>
-<target>ಚಾರ್ಟ್ <x id="0" equiv-text="${1}" /></target></trans-unit>
+  <source>Chart <x id="0" equiv-text="${1}"/></source>
+<target>ಚಾರ್ಟ್ <x id="0" equiv-text="${1}"/></target></trans-unit>
 <trans-unit id="s31bccdb022de127c">
   <source>Chart settings</source>
 <target>ಚಾರ್ಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</target></trans-unit>
@@ -266,6 +263,37 @@
 <trans-unit id="sb5dca811884aa909">
   <source>Logarithmic Regression</source>
 <target>ಲಾಗರಿಥಮಿಕ್ ಪ್ರತಿಗಮನ</target></trans-unit>
+<trans-unit id="s9c83e9e54d545adb">
+  <source>The file needs a header row and at least one row with a name and values.</source>
+        <target>ಫೈಲ್‌ನಲ್ಲಿ ಹೆಡರ್ ಸಾಲು ಮತ್ತು ಹೆಸರು ಹಾಗೂ ಮೌಲ್ಯಗಳನ್ನು ಹೊಂದಿರುವ ಕನಿಷ್ಠ ಒಂದು ಸಾಲು ಇರಬೇಕು.</target>
+</trans-unit>
+<trans-unit id="sca42abad8c8fa258">
+  <source>The data comes from a connected widget. Changes to the table are not kept while it is connected.</source>
+        <target>ಡೇಟಾ ಸಂಪರ್ಕಿತ ವಿಜೆಟ್‌ನಿಂದ ಬಂದಿದೆ. ಅದು ಸಂಪರ್ಕದಲ್ಲಿರುವಾಗ ಪಟ್ಟಿಯ ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಲಾಗುವುದಿಲ್ಲ.</target>
+</trans-unit>
+<trans-unit id="s868ececd6f1ea3b5">
+  <source>Point <x id="0" equiv-text="${position}"/> of <x id="1" equiv-text="${places.length}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></source>
+        <target><x id="1" equiv-text="${places.length}"/>ರಲ್ಲಿ <x id="0" equiv-text="${position}"/>ನೇ ಬಿಂದು: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></target>
+</trans-unit>
+<trans-unit id="s03c44f5a1b0581d4">
+  <source>selected</source>
+        <target>ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</target>
+</trans-unit>
+<trans-unit id="s76bd060f6f749f6d">
+  <source>Arrow keys move between points. Enter or Space selects a point. Shift with an arrow key moves the selected points. L connects two or more selected points with a line. Escape clears the selection.</source>
+        <target>ಬಿಂದುಗಳ ನಡುವೆ ಚಲಿಸಲು ಬಾಣದ ಕೀಲಿಗಳನ್ನು ಬಳಸಿ. Enter ಅಥವಾ Space ಬಿಂದುವನ್ನು ಆಯ್ಕೆ ಮಾಡುತ್ತದೆ. Shift ಜೊತೆಗೆ ಬಾಣದ ಕೀಲಿ ಆಯ್ದ ಬಿಂದುಗಳನ್ನು ಚಲಿಸುತ್ತದೆ. ಎರಡು ಅಥವಾ ಹೆಚ್ಚಿನ ಬಿಂದುಗಳನ್ನು ಸಂಪರ್ಕಿಸಲು L ಒತ್ತಿರಿ. Escape ಆಯ್ಕೆಯನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ.</target>
+</trans-unit>
+<trans-unit id="s2093b1bf84864b8f">
+  <source>Chart data from</source>
+        <target>ಚಾರ್ಟ್ ಡೇಟಾ ಮೂಲ</target>
+</trans-unit>
+<trans-unit id="s848a7817b9afdc66">
+  <source>Remove all data from the chart?</source>
+        <target>ಚಾರ್ಟ್‌ನ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ತೆಗೆದುಹಾಕಬೇಕೇ?</target>
+</trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>ಈ ಆಯ್ಕೆಯನ್ನು ಲಾಕ್ ಮಾಡಿ</target></trans-unit>
 </body>
 </file>
 </xliff>

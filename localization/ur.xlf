@@ -3,8 +3,8 @@
 <file target-language="ur" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
 <trans-unit id="se88220063fb37241">
-  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
-<target>لائن <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+  <source>Line <x id="0" equiv-text="${index + 1}"/></source>
+<target>لائن <x id="0" equiv-text="${i + 1}"/></target></trans-unit>
 <trans-unit id="sbeab0d8a4ec2b217">
   <source>Preview line</source>
 <target>لائن کا پیش منظر</target></trans-unit>
@@ -87,11 +87,11 @@
   <source>Chart Title</source>
 <target>چارٹ کا عنوان</target></trans-unit>
 <trans-unit id="sa14c12118a766127">
-  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
-<target>زمرہ <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+  <source>Category <x id="0" equiv-text="${this.sharedState.chart.datasets.labels.length + 1}"/></source>
+<target>زمرہ <x id="0" equiv-text="${labels.length + 1}"/></target></trans-unit>
 <trans-unit id="sf5dc01a3ccf20c4a">
-  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
-<target>سلسلہ <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
+  <source>Series <x id="0" equiv-text="${1}"/></source>
+<target>سلسلہ <x id="0" equiv-text="${rowIndex}"/></target></trans-unit>
 <trans-unit id="s0b786a0e85eb6783">
   <source>Border Radius</source>
 <target>بارڈر کا خم</target></trans-unit>
@@ -146,15 +146,12 @@
 <trans-unit id="s34250d39671d5c5d">
   <source>Show Mean</source>
 <target>اوسط دکھائیں</target></trans-unit>
-<trans-unit id="s20a3aebdf0a9fabf">
-  <source>Lock this option</source>
-<target>اس اختیار کو لاک کریں</target></trans-unit>
 <trans-unit id="s88798c01f6bd95c0">
   <source>My scatter plot</source>
 <target>میرا سکیٹر پلاٹ</target></trans-unit>
 <trans-unit id="s81d60333bb76471d">
-  <source>Chart <x id="0" equiv-text="${1}" /></source>
-<target>چارٹ <x id="0" equiv-text="${1}" /></target></trans-unit>
+  <source>Chart <x id="0" equiv-text="${1}"/></source>
+<target>چارٹ <x id="0" equiv-text="${1}"/></target></trans-unit>
 <trans-unit id="s31bccdb022de127c">
   <source>Chart settings</source>
 <target>چارٹ کی ترتیبات</target></trans-unit>
@@ -266,6 +263,37 @@
 <trans-unit id="sb5dca811884aa909">
   <source>Logarithmic Regression</source>
 <target>لوگارتھمی رجعت</target></trans-unit>
+<trans-unit id="s9c83e9e54d545adb">
+  <source>The file needs a header row and at least one row with a name and values.</source>
+        <target>فائل میں سرخی کی قطار اور نام اور اقدار والی کم از کم ایک قطار ہونی چاہیے۔</target>
+</trans-unit>
+<trans-unit id="sca42abad8c8fa258">
+  <source>The data comes from a connected widget. Changes to the table are not kept while it is connected.</source>
+        <target>ڈیٹا ایک منسلک ویجیٹ سے آتا ہے۔ منسلک رہنے کے دوران جدول کی تبدیلیاں محفوظ نہیں ہوتیں۔</target>
+</trans-unit>
+<trans-unit id="s868ececd6f1ea3b5">
+  <source>Point <x id="0" equiv-text="${position}"/> of <x id="1" equiv-text="${places.length}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></source>
+        <target><x id="1" equiv-text="${places.length}"/> میں سے نقطہ <x id="0" equiv-text="${position}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>، y = <x id="3" equiv-text="${r3(point.y)}"/></target>
+</trans-unit>
+<trans-unit id="s03c44f5a1b0581d4">
+  <source>selected</source>
+        <target>منتخب شدہ</target>
+</trans-unit>
+<trans-unit id="s76bd060f6f749f6d">
+  <source>Arrow keys move between points. Enter or Space selects a point. Shift with an arrow key moves the selected points. L connects two or more selected points with a line. Escape clears the selection.</source>
+        <target>نقاط کے درمیان جانے کے لیے تیر والے بٹن استعمال کریں۔ Enter یا Space نقطہ منتخب کرتا ہے۔ Shift کے ساتھ تیر منتخبہ نقاط کو حرکت دیتا ہے۔ دو یا زیادہ نقاط ملانے کے لیے L دبائیں۔ Escape انتخاب صاف کرتا ہے۔</target>
+</trans-unit>
+<trans-unit id="s2093b1bf84864b8f">
+  <source>Chart data from</source>
+        <target>چارٹ ڈیٹا کا ماخذ</target>
+</trans-unit>
+<trans-unit id="s848a7817b9afdc66">
+  <source>Remove all data from the chart?</source>
+        <target>چارٹ کا تمام ڈیٹا ہٹا دیں؟</target>
+</trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>اس اختیار کو لاک کریں</target></trans-unit>
 </body>
 </file>
 </xliff>

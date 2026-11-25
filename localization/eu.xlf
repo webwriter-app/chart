@@ -3,8 +3,8 @@
 <file target-language="eu" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
 <trans-unit id="se88220063fb37241">
-  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
-<target><x id="0" equiv-text="${i + 1}" />. lerroa</target></trans-unit>
+  <source>Line <x id="0" equiv-text="${index + 1}"/></source>
+<target><x id="0" equiv-text="${i + 1}"/>. lerroa</target></trans-unit>
 <trans-unit id="sbeab0d8a4ec2b217">
   <source>Preview line</source>
 <target>Aurrebistako lerroa</target></trans-unit>
@@ -87,11 +87,11 @@
   <source>Chart Title</source>
 <target>Grafikoaren izenburua</target></trans-unit>
 <trans-unit id="sa14c12118a766127">
-  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
-<target><x id="0" equiv-text="${labels.length + 1}" />. kategoria</target></trans-unit>
+  <source>Category <x id="0" equiv-text="${this.sharedState.chart.datasets.labels.length + 1}"/></source>
+<target><x id="0" equiv-text="${labels.length + 1}"/>. kategoria</target></trans-unit>
 <trans-unit id="sf5dc01a3ccf20c4a">
-  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
-<target><x id="0" equiv-text="${rowIndex}" />. seriea</target></trans-unit>
+  <source>Series <x id="0" equiv-text="${1}"/></source>
+<target><x id="0" equiv-text="${rowIndex}"/>. seriea</target></trans-unit>
 <trans-unit id="s0b786a0e85eb6783">
   <source>Border Radius</source>
 <target>Ertzaren erradioa</target></trans-unit>
@@ -146,15 +146,12 @@
 <trans-unit id="s34250d39671d5c5d">
   <source>Show Mean</source>
 <target>Erakutsi batezbestekoa</target></trans-unit>
-<trans-unit id="s20a3aebdf0a9fabf">
-  <source>Lock this option</source>
-<target>Blokeatu aukera hau</target></trans-unit>
 <trans-unit id="s88798c01f6bd95c0">
   <source>My scatter plot</source>
 <target>Nire sakabanatze-diagrama</target></trans-unit>
 <trans-unit id="s81d60333bb76471d">
-  <source>Chart <x id="0" equiv-text="${1}" /></source>
-<target><x id="0" equiv-text="${1}" />. diagrama</target></trans-unit>
+  <source>Chart <x id="0" equiv-text="${1}"/></source>
+<target><x id="0" equiv-text="${1}"/>. diagrama</target></trans-unit>
 <trans-unit id="s31bccdb022de127c">
   <source>Chart settings</source>
 <target>Grafikoaren ezarpenak</target></trans-unit>
@@ -266,6 +263,37 @@
 <trans-unit id="sb5dca811884aa909">
   <source>Logarithmic Regression</source>
 <target>Erregresio logaritmikoa</target></trans-unit>
+<trans-unit id="s9c83e9e54d545adb">
+  <source>The file needs a header row and at least one row with a name and values.</source>
+        <target>Fitxategiak goiburu-errenkada bat eta izenak eta balioak dituen errenkada bat gutxienez izan behar ditu.</target>
+</trans-unit>
+<trans-unit id="sca42abad8c8fa258">
+  <source>The data comes from a connected widget. Changes to the table are not kept while it is connected.</source>
+        <target>Datuak konektatutako widget batetik datoz. Konexioa dagoen bitartean, taulako aldaketak ez dira gordetzen.</target>
+</trans-unit>
+<trans-unit id="s868ececd6f1ea3b5">
+  <source>Point <x id="0" equiv-text="${position}"/> of <x id="1" equiv-text="${places.length}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></source>
+        <target><x id="1" equiv-text="${places.length}"/> puntutik <x id="0" equiv-text="${position}"/> puntua: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></target>
+</trans-unit>
+<trans-unit id="s03c44f5a1b0581d4">
+  <source>selected</source>
+        <target>hautatutakoa</target>
+</trans-unit>
+<trans-unit id="s76bd060f6f749f6d">
+  <source>Arrow keys move between points. Enter or Space selects a point. Shift with an arrow key moves the selected points. L connects two or more selected points with a line. Escape clears the selection.</source>
+        <target>Erabili gezi-teklak puntuen artean mugitzeko. Enter edo Zuriuneak puntu bat hautatzen du. Shift eta gezi batek hautatutako puntuak mugitzen ditu. Sakatu L bi puntu edo gehiago lotzeko. Escape teklak hautapena garbitzen du.</target>
+</trans-unit>
+<trans-unit id="s2093b1bf84864b8f">
+  <source>Chart data from</source>
+        <target>Diagramako datuen jatorria</target>
+</trans-unit>
+<trans-unit id="s848a7817b9afdc66">
+  <source>Remove all data from the chart?</source>
+        <target>Diagramako datu guztiak kendu?</target>
+</trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>Blokeatu aukera hau</target></trans-unit>
 </body>
 </file>
 </xliff>

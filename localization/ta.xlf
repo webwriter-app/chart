@@ -3,8 +3,8 @@
 <file target-language="ta" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
 <trans-unit id="se88220063fb37241">
-  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
-<target>கோடு <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+  <source>Line <x id="0" equiv-text="${index + 1}"/></source>
+<target>கோடு <x id="0" equiv-text="${i + 1}"/></target></trans-unit>
 <trans-unit id="sbeab0d8a4ec2b217">
   <source>Preview line</source>
 <target>கோட்டின் முன்னோட்டம்</target></trans-unit>
@@ -87,11 +87,11 @@
   <source>Chart Title</source>
 <target>விளக்கப்படத் தலைப்பு</target></trans-unit>
 <trans-unit id="sa14c12118a766127">
-  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
-<target>வகை <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+  <source>Category <x id="0" equiv-text="${this.sharedState.chart.datasets.labels.length + 1}"/></source>
+<target>வகை <x id="0" equiv-text="${labels.length + 1}"/></target></trans-unit>
 <trans-unit id="sf5dc01a3ccf20c4a">
-  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
-<target>தொடர் <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
+  <source>Series <x id="0" equiv-text="${1}"/></source>
+<target>தொடர் <x id="0" equiv-text="${rowIndex}"/></target></trans-unit>
 <trans-unit id="s0b786a0e85eb6783">
   <source>Border Radius</source>
 <target>எல்லையின் வளைவு</target></trans-unit>
@@ -146,15 +146,12 @@
 <trans-unit id="s34250d39671d5c5d">
   <source>Show Mean</source>
 <target>சராசரியைக் காட்டு</target></trans-unit>
-<trans-unit id="s20a3aebdf0a9fabf">
-  <source>Lock this option</source>
-<target>இந்த விருப்பத்தைப் பூட்டு</target></trans-unit>
 <trans-unit id="s88798c01f6bd95c0">
   <source>My scatter plot</source>
 <target>எனது சிதறல் விளக்கப்படம்</target></trans-unit>
 <trans-unit id="s81d60333bb76471d">
-  <source>Chart <x id="0" equiv-text="${1}" /></source>
-<target>விளக்கப்படம் <x id="0" equiv-text="${1}" /></target></trans-unit>
+  <source>Chart <x id="0" equiv-text="${1}"/></source>
+<target>விளக்கப்படம் <x id="0" equiv-text="${1}"/></target></trans-unit>
 <trans-unit id="s31bccdb022de127c">
   <source>Chart settings</source>
 <target>விளக்கப்பட அமைப்புகள்</target></trans-unit>
@@ -266,6 +263,37 @@
 <trans-unit id="sb5dca811884aa909">
   <source>Logarithmic Regression</source>
 <target>மடக்கைப் பின்னடைவு</target></trans-unit>
+<trans-unit id="s9c83e9e54d545adb">
+  <source>The file needs a header row and at least one row with a name and values.</source>
+        <target>கோப்பில் தலைப்பு வரியும் பெயர் மற்றும் மதிப்புகள் கொண்ட குறைந்தது ஒரு வரியும் இருக்க வேண்டும்.</target>
+</trans-unit>
+<trans-unit id="sca42abad8c8fa258">
+  <source>The data comes from a connected widget. Changes to the table are not kept while it is connected.</source>
+        <target>தரவு இணைக்கப்பட்ட விட்ஜெட்டிலிருந்து வருகிறது. அது இணைக்கப்பட்டிருக்கும் போது அட்டவணை மாற்றங்கள் சேமிக்கப்படாது.</target>
+</trans-unit>
+<trans-unit id="s868ececd6f1ea3b5">
+  <source>Point <x id="0" equiv-text="${position}"/> of <x id="1" equiv-text="${places.length}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></source>
+        <target><x id="1" equiv-text="${places.length}"/> இல் <x id="0" equiv-text="${position}"/>-வது புள்ளி: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></target>
+</trans-unit>
+<trans-unit id="s03c44f5a1b0581d4">
+  <source>selected</source>
+        <target>தேர்ந்தெடுக்கப்பட்டது</target>
+</trans-unit>
+<trans-unit id="s76bd060f6f749f6d">
+  <source>Arrow keys move between points. Enter or Space selects a point. Shift with an arrow key moves the selected points. L connects two or more selected points with a line. Escape clears the selection.</source>
+        <target>புள்ளிகளுக்கு இடையில் நகர அம்புக்குறி விசைகளைப் பயன்படுத்தவும். Enter அல்லது Space புள்ளியைத் தேர்ந்தெடுக்கும். Shift உடன் அம்புக்குறி தேர்ந்தெடுத்த புள்ளிகளை நகர்த்தும். இரண்டு அல்லது அதற்கு மேற்பட்ட புள்ளிகளை இணைக்க L அழுத்தவும். Escape தேர்வை நீக்கும்.</target>
+</trans-unit>
+<trans-unit id="s2093b1bf84864b8f">
+  <source>Chart data from</source>
+        <target>விளக்கப்படத் தரவு மூலம்</target>
+</trans-unit>
+<trans-unit id="s848a7817b9afdc66">
+  <source>Remove all data from the chart?</source>
+        <target>விளக்கப்படத்தின் எல்லா தரவையும் நீக்கவா?</target>
+</trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>இந்த விருப்பத்தைப் பூட்டு</target></trans-unit>
 </body>
 </file>
 </xliff>

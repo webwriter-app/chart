@@ -86,10 +86,6 @@
         <source>Chart Title</source>
         <target>Titre du graphique</target>
       </trans-unit>
-      <trans-unit id="s079a052719914d71">
-        <source>Category</source>
-        <target>Catégorie</target>
-      </trans-unit>
       <trans-unit id="s0b786a0e85eb6783">
         <source>Border Radius</source>
         <target>Rayon de la bordure</target>
@@ -269,8 +265,8 @@
   <source>Close</source>
 <target>Fermer</target></trans-unit>
 <trans-unit id="se88220063fb37241">
-  <source>Line <x id="0" equiv-text="${i + 1}" /></source>
-<target>Ligne <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
+  <source>Line <x id="0" equiv-text="${index + 1}"/></source>
+<target>Ligne <x id="0" equiv-text="${i + 1}"/></target></trans-unit>
 <trans-unit id="sbeab0d8a4ec2b217">
   <source>Preview line</source>
 <target>Ligne d’aperçu</target></trans-unit>
@@ -284,20 +280,17 @@
   <source>Could not parse the file. Please ensure it is a valid Excel or CSV file.</source>
 <target>Impossible de lire le fichier. Vérifiez qu’il s’agit d’un fichier Excel ou CSV valide.</target></trans-unit>
 <trans-unit id="sa14c12118a766127">
-  <source>Category <x id="0" equiv-text="${labels.length + 1}" /></source>
-<target>Catégorie <x id="0" equiv-text="${labels.length + 1}" /></target></trans-unit>
+  <source>Category <x id="0" equiv-text="${this.sharedState.chart.datasets.labels.length + 1}"/></source>
+<target>Catégorie <x id="0" equiv-text="${labels.length + 1}"/></target></trans-unit>
 <trans-unit id="sf5dc01a3ccf20c4a">
-  <source>Series <x id="0" equiv-text="${rowIndex}" /></source>
-<target>Série <x id="0" equiv-text="${rowIndex}" /></target></trans-unit>
-<trans-unit id="s20a3aebdf0a9fabf">
-  <source>Lock this option</source>
-<target>Verrouiller cette option</target></trans-unit>
+  <source>Series <x id="0" equiv-text="${1}"/></source>
+<target>Série <x id="0" equiv-text="${rowIndex}"/></target></trans-unit>
 <trans-unit id="s88798c01f6bd95c0">
   <source>My scatter plot</source>
 <target>Mon nuage de points</target></trans-unit>
 <trans-unit id="s81d60333bb76471d">
-  <source>Chart <x id="0" equiv-text="${1}" /></source>
-<target>Graphique <x id="0" equiv-text="${1}" /></target></trans-unit>
+  <source>Chart <x id="0" equiv-text="${1}"/></source>
+<target>Graphique <x id="0" equiv-text="${1}"/></target></trans-unit>
 <trans-unit id="s949645bf1d8d57d9">
   <source>Pie Chart</source>
 <target>Diagramme circulaire</target></trans-unit>
@@ -334,6 +327,41 @@
 <trans-unit id="sb5dca811884aa909">
   <source>Logarithmic Regression</source>
 <target>Régression logarithmique</target></trans-unit>
+<trans-unit id="s9c83e9e54d545adb">
+  <source>The file needs a header row and at least one row with a name and values.</source>
+        <target>Le fichier doit contenir une ligne d’en-tête et au moins une ligne avec un nom et des valeurs.</target>
+</trans-unit>
+<trans-unit id="sca42abad8c8fa258">
+  <source>The data comes from a connected widget. Changes to the table are not kept while it is connected.</source>
+        <target>Les données proviennent d’un widget connecté. Les modifications du tableau ne sont pas conservées pendant la connexion.</target>
+</trans-unit>
+<trans-unit id="s868ececd6f1ea3b5">
+  <source>Point <x id="0" equiv-text="${position}"/> of <x id="1" equiv-text="${places.length}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></source>
+        <target>Point <x id="0" equiv-text="${position}"/> sur <x id="1" equiv-text="${places.length}"/> : x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></target>
+</trans-unit>
+<trans-unit id="s03c44f5a1b0581d4">
+  <source>selected</source>
+        <target>sélectionné</target>
+</trans-unit>
+<trans-unit id="s76bd060f6f749f6d">
+  <source>Arrow keys move between points. Enter or Space selects a point. Shift with an arrow key moves the selected points. L connects two or more selected points with a line. Escape clears the selection.</source>
+        <target>Utilisez les flèches pour passer d’un point à l’autre. Entrée ou Espace sélectionne un point. Maj avec une flèche déplace les points sélectionnés. Appuyez sur L pour relier au moins deux points. Échap efface la sélection.</target>
+</trans-unit>
+<trans-unit id="s2093b1bf84864b8f">
+  <source>Chart data from</source>
+        <target>Données du graphique provenant de</target>
+</trans-unit>
+<trans-unit id="s848a7817b9afdc66">
+  <source>Remove all data from the chart?</source>
+        <target>Supprimer toutes les données du graphique ?</target>
+</trans-unit>
+<trans-unit id="s079a052719914d71">
+        <source>Category</source>
+        <target>Catégorie</target>
+      </trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>Verrouiller cette option</target></trans-unit>
 </body>
   </file>
 </xliff>
