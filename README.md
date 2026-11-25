@@ -1,7 +1,7 @@
 # Chart (`@webwriter/chart@2.0.0`)
 [License: MIT](LICENSE) | Version: 2.0.0
 
-ww-chart is an interactive data visualization widget for the WebWriter tool that implements various charts and diagrams for static and exploratory data visualization.
+Create and edit charts from data with an interactive visual editor.
 
 ## Snippets
 [Snippets](https://webwriter.app/docs/snippets/snippets/) are examples and templates using the package's widgets.
@@ -138,4 +138,4 @@ npm install @webwriter/chart
 
 
 ---
-*Generated with @webwriter/build@1.14.0*
+*Generated with @webwriter/build@1.15.0*

@@ -637,9 +637,7 @@
             "package": "@webwriter/lit"
           },
           "tagName": "webwriter-chart",
-          "customElement": true,
-          "modulePath": "src/widgets/webwriter-chart.ts",
-          "definitionPath": "src/widgets/webwriter-chart.ts"
+          "customElement": true
         },
         {
           "kind": "variable",
