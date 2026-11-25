@@ -1,4 +1,5 @@
-<xliff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" version="1.2">
   <file original="lit-localize-inputs" datatype="plaintext" source-language="en" target-language="nb">
     <body>
       <trans-unit id="s7853336e2d49e552">
@@ -84,10 +85,6 @@
       <trans-unit id="sd6243fa23e8f2f3d">
         <source>Chart Title</source>
         <target>Diagramtittel</target>
-      </trans-unit>
-      <trans-unit id="s079a052719914d71">
-        <source>Category</source>
-        <target>Kategori</target>
       </trans-unit>
       <trans-unit id="s0b786a0e85eb6783">
         <source>Border Radius</source>
@@ -261,6 +258,110 @@
         <source>No unsaved plot changes — move or add points first</source>
         <target>Ingen ulagrede endringer i plottet — flytt eller legg til punkter først</target>
       </trans-unit>
-    </body>
+    <trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+<target>Lukk</target></trans-unit>
+<trans-unit id="s31bccdb022de127c">
+  <source>Chart settings</source>
+<target>Diagraminnstillinger</target></trans-unit>
+<trans-unit id="se88220063fb37241">
+  <source>Line <x id="0" equiv-text="${index + 1}"/></source>
+<target>Linje <x id="0" equiv-text="${i + 1}"/></target></trans-unit>
+<trans-unit id="sbeab0d8a4ec2b217">
+  <source>Preview line</source>
+<target>Forhåndsvisningslinje</target></trans-unit>
+<trans-unit id="s5be250e35cab2f5c">
+  <source>Pick custom color</source>
+<target>Velg en egendefinert farge</target></trans-unit>
+<trans-unit id="s76a88aa1ae8b851f">
+  <source>My Chart</source>
+<target>Mitt diagram</target></trans-unit>
+<trans-unit id="s380ecc0df3cd6a9f">
+  <source>Could not parse the file. Please ensure it is a valid Excel or CSV file.</source>
+<target>Kunne ikke lese filen. Kontroller at den er en gyldig Excel- eller CSV-fil.</target></trans-unit>
+<trans-unit id="sa14c12118a766127">
+  <source>Category <x id="0" equiv-text="${this.sharedState.chart.datasets.labels.length + 1}"/></source>
+<target>Kategori <x id="0" equiv-text="${labels.length + 1}"/></target></trans-unit>
+<trans-unit id="sf5dc01a3ccf20c4a">
+  <source>Series <x id="0" equiv-text="${1}"/></source>
+<target>Serie <x id="0" equiv-text="${rowIndex}"/></target></trans-unit>
+<trans-unit id="s88798c01f6bd95c0">
+  <source>My scatter plot</source>
+<target>Mitt spredningsdiagram</target></trans-unit>
+<trans-unit id="s81d60333bb76471d">
+  <source>Chart <x id="0" equiv-text="${1}"/></source>
+<target>Diagram <x id="0" equiv-text="${1}"/></target></trans-unit>
+<trans-unit id="s949645bf1d8d57d9">
+  <source>Pie Chart</source>
+<target>Sektordiagram</target></trans-unit>
+<trans-unit id="s098c7cd9fea6205b">
+  <source>Doughnut Chart</source>
+<target>Ringdiagram</target></trans-unit>
+<trans-unit id="s8b2d6a8bfb92cf22">
+  <source>Bar Chart</source>
+<target>Søylediagram</target></trans-unit>
+<trans-unit id="se7f20b3f2e2266eb">
+  <source>Line Chart</source>
+<target>Linjediagram</target></trans-unit>
+<trans-unit id="s36f26f6aef018e04">
+  <source>Polar Area Chart</source>
+<target>Polært arealdiagram</target></trans-unit>
+<trans-unit id="s74eac1ec007cd4f7">
+  <source>Radar Chart</source>
+<target>Radardiagram</target></trans-unit>
+<trans-unit id="sd9617fc541e589df">
+  <source>No regression</source>
+<target>Ingen regresjon</target></trans-unit>
+<trans-unit id="s657a38e4ed34ebb5">
+  <source>Linear Regression</source>
+<target>Lineær regresjon</target></trans-unit>
+<trans-unit id="sa7d4d92678c16d8c">
+  <source>Polynomial Regression</source>
+<target>Polynomregresjon</target></trans-unit>
+<trans-unit id="s6a53d84f80e988bd">
+  <source>Local Regression</source>
+<target>Lokal regresjon</target></trans-unit>
+<trans-unit id="seed653f9fe02893d">
+  <source>Exponential Regression</source>
+<target>Eksponentiell regresjon</target></trans-unit>
+<trans-unit id="sb5dca811884aa909">
+  <source>Logarithmic Regression</source>
+<target>Logaritmisk regresjon</target></trans-unit>
+<trans-unit id="s9c83e9e54d545adb">
+  <source>The file needs a header row and at least one row with a name and values.</source>
+        <target>Filen må ha en overskriftsrad og minst én rad med et navn og verdier.</target>
+</trans-unit>
+<trans-unit id="sca42abad8c8fa258">
+  <source>The data comes from a connected widget. Changes to the table are not kept while it is connected.</source>
+        <target>Dataene kommer fra en tilkoblet widget. Endringer i tabellen lagres ikke mens den er tilkoblet.</target>
+</trans-unit>
+<trans-unit id="s868ececd6f1ea3b5">
+  <source>Point <x id="0" equiv-text="${position}"/> of <x id="1" equiv-text="${places.length}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></source>
+        <target>Punkt <x id="0" equiv-text="${position}"/> av <x id="1" equiv-text="${places.length}"/>: x = <x id="2" equiv-text="${r3(point.x)}"/>, y = <x id="3" equiv-text="${r3(point.y)}"/></target>
+</trans-unit>
+<trans-unit id="s03c44f5a1b0581d4">
+  <source>selected</source>
+        <target>valgt</target>
+</trans-unit>
+<trans-unit id="s76bd060f6f749f6d">
+  <source>Arrow keys move between points. Enter or Space selects a point. Shift with an arrow key moves the selected points. L connects two or more selected points with a line. Escape clears the selection.</source>
+        <target>Bruk piltastene for å flytte mellom punktene. Enter eller mellomrom velger et punkt. Shift med en piltast flytter de valgte punktene. Trykk L for å koble sammen minst to punkter. Escape fjerner markeringen.</target>
+</trans-unit>
+<trans-unit id="s2093b1bf84864b8f">
+  <source>Chart data from</source>
+        <target>Diagramdata fra</target>
+</trans-unit>
+<trans-unit id="s848a7817b9afdc66">
+  <source>Remove all data from the chart?</source>
+        <target>Fjerne alle data fra diagrammet?</target>
+</trans-unit>
+<trans-unit id="s079a052719914d71">
+        <source>Category</source>
+        <target>Kategori</target>
+      </trans-unit>
+<trans-unit id="s20a3aebdf0a9fabf">
+  <source>Lock this option</source>
+<target>Lås dette valget</target></trans-unit>
+</body>
   </file>
 </xliff>
