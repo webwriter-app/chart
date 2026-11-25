@@ -1,6 +1,6 @@
 {
   "name": "@webwriter/chart",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Create and edit charts from data with an interactive visual editor.",
   "keywords": [
     "webwriter-widget",
