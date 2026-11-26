@@ -1,5 +1,5 @@
-# Chart (`@webwriter/chart@2.0.1`)
-[License: MIT](LICENSE) | Version: 2.0.1
+# Chart (`@webwriter/chart@2.1.0`)
+[License: MIT](LICENSE) | Version: 2.1.0
 
 Create and edit charts from data with an interactive visual editor.
 

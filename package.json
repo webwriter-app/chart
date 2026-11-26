@@ -1,6 +1,6 @@
 {
   "name": "@webwriter/chart",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Create and edit charts from data with an interactive visual editor.",
   "keywords": [
     "webwriter-widget",
@@ -178,6 +178,7 @@
     "./snippets/radar-chart.html": "./snippets/radar-chart.html",
     "./snippets/sunscreen-exercise.html": "./snippets/sunscreen-exercise.html",
     "./icon": "./icon.svg",
+    "./preview": "./assets/preview.mp4",
     "./editing-config.json": "./editing-config.json",
     "./custom-elements.json": "./custom-elements.json",
     "./tests/modules.*": {
